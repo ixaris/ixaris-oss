@@ -1,0 +1,3 @@
+# enforce line endings to CRLF
+*.java eol=crlf
+pom.xml eol=crlf

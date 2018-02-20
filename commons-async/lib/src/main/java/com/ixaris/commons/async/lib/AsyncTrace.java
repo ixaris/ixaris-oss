@@ -92,14 +92,14 @@ public final class AsyncTrace extends Throwable {
             return null;
         }
         
-        final Throwable trace = TRACE.get();
+        final AsyncTrace trace = TRACE.get();
         if (trace == null) {
             return throwable;
         }
         Throwable tmp = throwable;
         while (true) {
             final Throwable cause = tmp.getCause();
-            if (cause == null) {
+            if ((cause == null) || (cause instanceof AsyncTrace)) {
                 setCause(tmp, trace);
                 return throwable;
             } else if (cause == trace) {
@@ -109,7 +109,7 @@ public final class AsyncTrace extends Throwable {
         }
     }
     
-    private static void setCause(final Throwable tmp, final Throwable trace) {
+    private static void setCause(final Throwable tmp, final AsyncTrace trace) {
         try {
             tmp.initCause(trace);
         } catch (final IllegalStateException e) {
@@ -134,12 +134,16 @@ public final class AsyncTrace extends Throwable {
         }
     }
     
+    private final int depth;
+    
     private AsyncTrace() {
-        super();
+        super("Async Trace [0] @ " + Thread.currentThread().getName());
+        this.depth = 1;
     }
     
     private AsyncTrace(final AsyncTrace parent) {
-        super(parent);
+        super("Async Trace [" + parent.depth + "] @ " + Thread.currentThread().getName(), parent);
+        this.depth = parent.depth + 1;
     }
     
 }

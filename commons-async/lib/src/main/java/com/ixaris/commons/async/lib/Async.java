@@ -115,7 +115,9 @@ public final class Async<T> {
     
     /**
      * Combine multiple asynchronous result to one, resolved when all complete or one fails.
-     * This variant is for results of the same type
+     * This variant is for results of the same type. returns List instead of array due to java's
+     * inability to create a generic array. Alternative signature could be
+     * <pre>&lt;T&gt; Async&lt;T[]&gt; allSame(Async&lt;T&gt;... asyncs, Class&lt;T&gt; type)</pre>
      *
      * @return a future resolved with a list of results in the same order as the futures argument,
      *         or rejected with the first failure from the given futures

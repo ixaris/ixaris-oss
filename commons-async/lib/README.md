@@ -5,11 +5,11 @@ This library provides a number of utilities for asynchronous execution of code
 ## Async
 
 Using Async, code can be written in a seemingly synchronous fashion. Such code is then transformed
-to equivalent asynchronous code by a transformer.
+to equivalent asynchronous code by the transformer. See [`ix-commons-async-transformer`](..\transformer\README.md).
 
 Asynchronous methods should return `Async<>` and use `Async.await()` to compose asynchronous results.
 In addition, concurrent asynchronous results can be composed in a single result using overloaded
-methods `Async.all()` and `Async.allSame`. Below are some examples
+methods `Async.all()` and `Async.allSame()`. Below are some examples:
 
 ```java
 public Async<A> asyncOperationA() throws AException {
@@ -86,13 +86,13 @@ The **CORRECT** way to implement the above is as follows:
 
 ```java
 try {
-   a = Async.await(op());
+   a = await(op());
 } catch (final SomeException e) {
    ...
 }
 
 try {
-   return Async.awaitResult(op());
+   return awaitResult(op());
 } catch (final SomeException e) {
    throw new SomeOtherException(e);
 }
@@ -100,9 +100,9 @@ try {
 
 ### Testing with Async
 
-Since test methods need to return void, one cannot `await()` during a test. It is recommended to use Async.block()
+Since test methods need to return void, one cannot `await()` during a test. It is recommended to use `Async.block()`
 to block waiting for results. For assertions, it is recommended to convert `Async<>` to `CompletionStage<>` using
-`Async.async()` and use `CompletionStageAssert` in `ix-commons-async-test`.
+`Async.async()` and use `CompletionStageAssert` in [`ix-commons-async-test`](..\test\README.md).
 
 ## Async Locals
 
@@ -127,103 +127,96 @@ For async locals to actually be propagated to asynchronous tasks, the tasks need
 `AsyncLocal.wrap()` as follows:
 
 ```java
-executor.execute(AsyncLocal.wrap(() -> {
-    ...
-}));
+executor.execute(AsyncLocal.wrap(() -> { ... }));
+
+// Or simplified as:
+AsyncExecutor.exec(executor, () -> { ... });
 ```
 
 Alternatively, invoking code should take a snapshot and apply the snapshot in the asynchronous
 task as follows:
  
 ```java
-final Snapshot snapshot = AsyncLocal.takeSnapshot();
+final Snapshot snapshot = AsyncLocal.snapshot();
 ...
 // use this in place of the task
 executor.execute(() -> AsyncLocal.exec(snapshot, () -> {
     ...
 }));
-...
 ```
 
 ### Stacking
 
-Async Local value can be stackable. If stackable, value will be pushed to a stack and popped 
-afterwards, otherwise an error is thrown if the local value is already set.
+Async Local value can be stackable. If stackable, values are pushed to a stack and popped 
+afterwards, otherwise, an error is thrown if a value is already set.
 
 ## Async Trace
 
 Asynchronous processes are notoriously hard to debug because the stack traces do not show the 
 whole process, but only the last synchronous leg. To mitigate this, the AsyncTrace class
 attaches the stack of the process forking an asynchronous task to the task itself such that on
-exception, the task can attach the trace as it's cause. use if as follows:
+exception, the task can attach the trace as it's cause. Traces for exceptions throws from
+`Async<>` returning methods are automatically joined. Use as follows:
 
 ```java
 final CompletableFuture<?> future = new CompletableFuture<>();
 executor.execute(AsyncTrace.wrap(() -> {
-   ...
-   // AsyncTrace.join() joins the caller's stack to the exception stack
-   future.completeExceptionally(AsyncTrace.join(t));
-   ...
+    ...
+    try {
+        ...
+    } catch (final Throwable t) {
+        // AsyncTrace.join() joins the caller's stack to the exception stack
+        future.completeExceptionally(AsyncTrace.join(t));
+    }
 }));
+
+// Or simplified as:
+AsyncExecutor.exec(executor, () -> { ... });
+// which wraps the task and automatically joins the traces for thrown exceptions.
 ```
 
 This produces stack traces similar to the following (stack trace from `AsyncTraceTest`):
 
 ```
-java.util.concurrent.ExecutionException: java.lang.IllegalStateException
-	at java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:357)
-	at java.util.concurrent.CompletableFuture.get(CompletableFuture.java:1895)
-	at com.ixaris.commons.async.lib.AsyncTraceTest.testLogging(AsyncTraceTest.java:48)
-	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.lang.reflect.Method.invoke(Method.java:498)
-	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
-	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
-	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
-	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
-	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
-	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
-	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
-	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
-	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
-	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
-	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
-	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
-	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
-	at org.junit.runner.JUnitCore.run(JUnitCore.java:137)
-	at com.intellij.junit4.JUnit4IdeaTestRunner.startRunnerWithArgs(JUnit4IdeaTestRunner.java:68)
-	at com.intellij.rt.execution.junit.IdeaTestRunner$Repeater.startRunnerWithArgs(IdeaTestRunner.java:47)
-	at com.intellij.rt.execution.junit.JUnitStarter.prepareStreamsAndStart(JUnitStarter.java:242)
-	at com.intellij.rt.execution.junit.JUnitStarter.main(JUnitStarter.java:70)
-Caused by: java.lang.IllegalStateException
-	at com.ixaris.commons.async.lib.AsyncTraceTest.lambda$null$0(AsyncTraceTest.java:26)
-	at com.ixaris.commons.async.lib.thread.ThreadLocalHelper.lambda$exec$0(ThreadLocalHelper.java:69)
-	at com.ixaris.commons.async.lib.thread.ThreadLocalHelper.exec(ThreadLocalHelper.java:61)
-	at com.ixaris.commons.async.lib.thread.ThreadLocalHelper.exec(ThreadLocalHelper.java:68)
-	at com.ixaris.commons.async.lib.AsyncTrace.exec(AsyncTrace.java:81)
-	at com.ixaris.commons.async.lib.AsyncTrace.lambda$wrap$1(AsyncTrace.java:28)
-	at com.ixaris.commons.async.lib.thread.ThreadLocalHelper.lambda$exec$0(ThreadLocalHelper.java:69)
-	at com.ixaris.commons.async.lib.thread.ThreadLocalHelper.exec(ThreadLocalHelper.java:61)
-	at com.ixaris.commons.async.lib.thread.ThreadLocalHelper.exec(ThreadLocalHelper.java:68)
-	at com.ixaris.commons.async.lib.AsyncExecutor.lambda$wrap$0(AsyncExecutor.java:45)
-	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
-	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
-	at java.lang.Thread.run(Thread.java:745)
-Caused by: com.ixaris.commons.async.lib.AsyncTrace: com.ixaris.commons.async.lib.AsyncTrace: com.ixaris.commons.async.lib.AsyncTrace
-	at com.ixaris.commons.async.lib.AsyncTrace.get(AsyncTrace.java:74)
-	at com.ixaris.commons.async.lib.AsyncTrace.wrap(AsyncTrace.java:27)
-	at com.ixaris.commons.async.lib.AsyncTraceTest.lambda$null$2(AsyncTraceTest.java:25)
-	... 12 more
-Caused by: com.ixaris.commons.async.lib.AsyncTrace: com.ixaris.commons.async.lib.AsyncTrace
-	at com.ixaris.commons.async.lib.AsyncTrace.get(AsyncTrace.java:74)
-	at com.ixaris.commons.async.lib.AsyncTrace.wrap(AsyncTrace.java:27)
-	at com.ixaris.commons.async.lib.AsyncTraceTest.lambda$testLogging$4(AsyncTraceTest.java:23)
-	... 12 more
-Caused by: com.ixaris.commons.async.lib.AsyncTrace
-	at com.ixaris.commons.async.lib.AsyncTrace.get(AsyncTrace.java:74)
-	at com.ixaris.commons.async.lib.AsyncTrace.wrap(AsyncTrace.java:27)
-	at com.ixaris.commons.async.lib.AsyncTraceTest.testLogging(AsyncTraceTest.java:21)
+java.lang.IllegalStateException
+	at com.ixaris.commons.async.lib.AsyncTraceTest.async$execute(AsyncTraceTest.java:45)
+	at com.ixaris.commons.async.lib.AsyncTraceTest.async$lambda$execute$7(AsyncTraceTest.java:47)
+	at com.ixaris.commons.async.lib.AsyncExecutor.lambda$exec$5(AsyncExecutor.java:123)
+	at com.ixaris.commons.async.lib.AsyncLocal.lambda$exec$16(AsyncLocal.java:188)
+	at com.ixaris.commons.async.lib.AsyncLocal.executeAndRestoreAsyncLocals(AsyncLocal.java:197)
+	at com.ixaris.commons.async.lib.AsyncLocal.exec(AsyncLocal.java:183)
+	at com.ixaris.commons.async.lib.AsyncLocal.exec(AsyncLocal.java:187)
+	at com.ixaris.commons.async.lib.AsyncLocal.lambda$wrap$1(AsyncLocal.java:127)
+	at com.ixaris.commons.async.lib.thread.ThreadLocalHelper.lambda$exec$0(ThreadLocalHelper.java:72)
+	at com.ixaris.commons.async.lib.thread.ThreadLocalHelper.exec(ThreadLocalHelper.java:64)
+	at com.ixaris.commons.async.lib.thread.ThreadLocalHelper.exec(ThreadLocalHelper.java:71)
+	at com.ixaris.commons.async.lib.AsyncTrace.exec(AsyncTrace.java:83)
+	at com.ixaris.commons.async.lib.AsyncTrace.lambda$wrap$1(AsyncTrace.java:30)
+	at com.ixaris.commons.async.lib.thread.ThreadLocalHelper.lambda$exec$0(ThreadLocalHelper.java:72)
+	at com.ixaris.commons.async.lib.thread.ThreadLocalHelper.exec(ThreadLocalHelper.java:64)
+	at com.ixaris.commons.async.lib.thread.ThreadLocalHelper.exec(ThreadLocalHelper.java:71)
+	at com.ixaris.commons.async.lib.AsyncExecutor.lambda$wrap$0(AsyncExecutor.java:46)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: com.ixaris.commons.async.lib.AsyncTrace: Async Trace [2] @ pool-1-thread-1
+	at com.ixaris.commons.async.lib.AsyncTrace.get(AsyncTrace.java:76)
+	at com.ixaris.commons.async.lib.AsyncTrace.wrap(AsyncTrace.java:29)
+	at com.ixaris.commons.async.lib.AsyncExecutor.async$exec(AsyncExecutor.java:121)
+	at com.ixaris.commons.async.lib.AsyncTraceTest.async$execute(AsyncTraceTest.java:47)
+	... 19 more
+Caused by: com.ixaris.commons.async.lib.AsyncTrace: Async Trace [1] @ pool-1-thread-1
+	at com.ixaris.commons.async.lib.AsyncTrace.get(AsyncTrace.java:76)
+	at com.ixaris.commons.async.lib.AsyncTrace.wrap(AsyncTrace.java:29)
+	at com.ixaris.commons.async.lib.AsyncExecutor.async$exec(AsyncExecutor.java:121)
+	at com.ixaris.commons.async.lib.AsyncTraceTest.async$execute(AsyncTraceTest.java:47)
+	at com.ixaris.commons.async.lib.AsyncTraceTest.async$lambda$testLogging$0(AsyncTraceTest.java:26)
+	... 18 more
+Caused by: com.ixaris.commons.async.lib.AsyncTrace: Async Trace [0] @ main
+	at com.ixaris.commons.async.lib.AsyncTrace.get(AsyncTrace.java:76)
+	at com.ixaris.commons.async.lib.AsyncTrace.wrap(AsyncTrace.java:29)
+	at com.ixaris.commons.async.lib.AsyncExecutor.async$exec(AsyncExecutor.java:121)
+	at com.ixaris.commons.async.lib.AsyncTraceTest.testLogging(AsyncTraceTest.java:26)
 	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
@@ -261,12 +254,22 @@ By wrapping an executor in an AsyncExecutorWrapper, each thread will track its e
 code relay result processing tasks back to the originating executor, as follows:
 
 ```java
-final Executor executor = AsyncExecutor.get();
+final Executor originalExecutor = AsyncExecutor.get();
 ioExecutor.execute(() -> {
     // assuming some code gets a result using blocking I/O, the next line relays computation 
     // back to the original executor
-    executor.execute(() -> {
+    originalExecutor.execute(() -> {
         // do something with result
     });
 });
+
+// Or simplified as:
+result = Async.await(AsyncExecutor.relay(() -> AsyncExecutor.exec(ioExecutor, () -> { ... })));
+// which relays the future from the given executor back to the executor associated with the
+// original thread
 ```
+
+## Async Queue
+
+The async queue can be used to control concurrent access to resources by queueing such access.
+

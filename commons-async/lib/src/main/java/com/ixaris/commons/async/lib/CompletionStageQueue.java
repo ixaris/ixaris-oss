@@ -14,10 +14,9 @@ import com.ixaris.commons.misc.lib.function.RunnableThrows;
 import com.ixaris.commons.misc.lib.object.Tuple2;
 
 /**
- * A queue of {@link CompletionStage}s that are chained together on completion of the previous CompletionStage.  Use this if you want to achieve serial access to a shared resource identified
- * by a long/string id.  When the queues are empty, they are automatically garbage collected.
- *
- * @author brian.vella
+ * A queue of {@link CompletionStage}s that are chained together on completion. Use to serialize access to a shared resource.
+ * <p>
+ * Use the static methods exec(long/string, callable) for resources identified by a long/string id.
  */
 public final class CompletionStageQueue {
     
@@ -184,7 +183,11 @@ public final class CompletionStageQueue {
     public CompletionStageQueue(final CompletableFuture<?> initialValue) {
         lastStage = new AtomicReference<>(initialValue);
     }
-    
+
+    public <T, E extends Exception> CompletionStage<T> exec(final CallableThrows<CompletionStage<T>, E> execCallable) {
+        return exec(execCallable, null);
+    }
+
     public <T, E extends Exception> CompletionStage<T> exec(final CallableThrows<CompletionStage<T>, E> execCallable,
                                                             final DoneCallback doneCallback) {
         final CompletableFuture<T> stage = new CompletableFuture<>();

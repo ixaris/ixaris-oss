@@ -22,6 +22,9 @@ import com.ixaris.commons.misc.lib.object.Tuple3;
 import com.ixaris.commons.misc.lib.object.Tuple4;
 import com.ixaris.commons.misc.lib.object.Tuple5;
 
+/**
+ * Utility methods around {@link CompletionStage} to remove some complexity from Transformer
+ */
 public final class CompletionStageUtil {
     
     private static final CompletionStage<Void> COMPLETED = CompletableFuture.completedFuture(null);
@@ -100,9 +103,15 @@ public final class CompletionStageUtil {
     }
     
     /**
+     * Combine multiple asynchronous result to one, resolved when all complete or one fails.
+     * This variant is for results of the same type
+     * <p>
      * returns List instead of array due to java's inability to create a generic array. Alternative signature
-     * would be <T> CompletionStage<T[]> allSame(CompletionStage<T>... stages, Class&lt;T&gt; type) 
+     * would be &lt;T&gt; CompletionStage&lt;T[]&gt; allSame(CompletionStage&lt;T&gt;... stages, Class&lt;T&gt; type)
      * and use (T[]) Array.newInstance(type, capacity) to create the result array
+     *
+     * @return a future resolved with a list of results in the same order as the futures argument,
+     *         or rejected with the first failure from the given futures
      */
     @SafeVarargs
     @SuppressWarnings("unchecked")
@@ -120,6 +129,13 @@ public final class CompletionStageUtil {
         return allSame(futures);
     }
     
+    /**
+     * Combine multiple asynchronous result to one, resolved when all complete or one fails
+     * This variant is for results of the same type
+     *
+     * @return a future resolved with a list of results in the same order as the futures argument,
+     *         or rejected with the first failure from the given futures
+     */
     @SuppressWarnings("unchecked")
     public static <T> CompletionStage<List<T>> allSame(final List<CompletionStage<T>> stages) {
         if (stages == null) {
@@ -150,6 +166,13 @@ public final class CompletionStageUtil {
         });
     }
     
+    /**
+     * Combine multiple asynchronous result to one, resolved when all complete or one fails.
+     * This variant is for results of the same type
+     *
+     * @return a future resolved with a map of results corresponding to the keys in the futures argument,
+     *         or rejected with the first failure from the given futures
+     */
     @SuppressWarnings("unchecked")
     public static <K, V> CompletionStage<Map<K, V>> allSame(final Map<K, CompletionStage<V>> stages) {
         if (stages == null) {
@@ -177,6 +200,13 @@ public final class CompletionStageUtil {
         });
     }
     
+    /**
+     * Combine multiple asynchronous result to one, resolved when all complete or one fails
+     * This variant is for results of any type
+     *
+     * @return a future resolved with an array of results in the same order or the futures parameter,
+     *         or rejected with the first failure from the given futures
+     */
     public static CompletionStage<Object[]> all(final CompletionStage<?>... stages) {
         if (stages == null) {
             throw new IllegalArgumentException("stages is null");
@@ -191,6 +221,13 @@ public final class CompletionStageUtil {
         return all(futures);
     }
     
+    /**
+     * Combine multiple asynchronous result to one, resolved when all complete or one fails
+     * This variant is for results of any type
+     *
+     * @return a future resolved with a list of results in the same order as the futures argument,
+     *         or rejected with the first failure from the given futures
+     */
     @SuppressWarnings("unchecked")
     public static CompletionStage<List<Object>> all(final List<? extends CompletionStage<?>> stages) {
         if (stages == null) {
@@ -221,6 +258,13 @@ public final class CompletionStageUtil {
         });
     }
     
+    /**
+     * Combine multiple asynchronous result to one, resolved when all complete or one fails.
+     * This variant is for results of the same type
+     *
+     * @return a future resolved with a map of results corresponding to the keys in the futures argument,
+     *         or rejected with the first failure from the given futures
+     */
     @SuppressWarnings("unchecked")
     public static <K> CompletionStage<Map<K, ?>> all(final Map<K, CompletionStage<?>> stages) {
         if (stages == null) {
@@ -248,12 +292,20 @@ public final class CompletionStageUtil {
         });
     }
     
+    /**
+     * Combine multiple asynchronous result to one, resolved when all complete or one fails
+     * This variant is for 2 results of any type
+     */
     @SuppressWarnings("unchecked")
     public static <T1, T2> CompletionStage<Tuple2<T1, T2>> all(final CompletionStage<T1> s1, final CompletionStage<T2> s2) {
         return all(new CompletionStage<?>[] { s1, s2 })
             .thenApply(r -> tuple((T1) r[0], (T2) r[1]));
     }
     
+    /**
+     * Combine multiple asynchronous result to one, resolved when all complete or one fails
+     * This variant is for 2 results of any type
+     */
     @SuppressWarnings("unchecked")
     public static <T1, T2, T3> CompletionStage<Tuple3<T1, T2, T3>> all(final CompletionStage<T1> s1,
                                                                        final CompletionStage<T2> s2,
@@ -262,6 +314,10 @@ public final class CompletionStageUtil {
             .thenApply(r -> tuple((T1) r[0], (T2) r[1], (T3) r[2]));
     }
     
+    /**
+     * Combine multiple asynchronous result to one, resolved when all complete or one fails
+     * This variant is for 2 results of any type
+     */
     @SuppressWarnings("unchecked")
     public static <T1, T2, T3, T4> CompletionStage<Tuple4<T1, T2, T3, T4>> all(final CompletionStage<T1> s1,
                                                                                final CompletionStage<T2> s2,
@@ -271,6 +327,10 @@ public final class CompletionStageUtil {
             .thenApply(r -> tuple((T1) r[0], (T2) r[1], (T3) r[2], (T4) r[3]));
     }
     
+    /**
+     * Combine multiple asynchronous result to one, resolved when all complete or one fails
+     * This variant is for 2 results of any type
+     */
     @SuppressWarnings("unchecked")
     public static <T1, T2, T3, T4, T5> CompletionStage<Tuple5<T1, T2, T3, T4, T5>> all(final CompletionStage<T1> s1,
                                                                                        final CompletionStage<T2> s2,

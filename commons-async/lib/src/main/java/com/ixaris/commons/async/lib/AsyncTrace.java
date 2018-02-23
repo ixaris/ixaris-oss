@@ -13,6 +13,9 @@ import com.ixaris.commons.misc.lib.function.ConsumerThrows;
 import com.ixaris.commons.misc.lib.function.FunctionThrows;
 import com.ixaris.commons.misc.lib.function.RunnableThrows;
 
+/**
+ * Maintains stack trace of separate parts of an asynchronous process
+ */
 public final class AsyncTrace extends Throwable {
     
     public static final String ASYNC_TRACE_SKIP_PROPERTY = "async.trace.skip";
@@ -88,6 +91,9 @@ public final class AsyncTrace extends Throwable {
     }
     
     public static <T extends Throwable> T join(final T throwable) {
+        if (throwable instanceof AsyncTrace) {
+            throw new IllegalArgumentException("Cannot join traces to themselves");
+        }
         if (throwable == null) {
             return null;
         }

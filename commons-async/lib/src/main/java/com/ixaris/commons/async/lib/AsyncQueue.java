@@ -1,8 +1,7 @@
 package com.ixaris.commons.async.lib;
 
-import static com.ixaris.commons.async.lib.Async.*;
+import static com.ixaris.commons.async.lib.Async.async;
 
-import com.ixaris.commons.async.lib.CompletionStageQueue.DoneCallback;
 import com.ixaris.commons.misc.lib.function.CallableThrows;
 import com.ixaris.commons.misc.lib.function.RunnableThrows;
 
@@ -42,14 +41,9 @@ public final class AsyncQueue {
     public AsyncQueue() {
         queue = new CompletionStageQueue();
     }
-
+    
     public <T, E extends Exception> Async<T> exec(final CallableThrows<Async<T>, E> execCallable) throws E {
         return async(queue.exec(() -> async(execCallable.call())));
-    }
-
-    public <T, E extends Exception> Async<T> exec(final CallableThrows<Async<T>, E> execCallable,
-                                                  final DoneCallback doneCallback) throws E {
-        return async(queue.exec(() -> async(execCallable.call()), doneCallback));
     }
     
 }

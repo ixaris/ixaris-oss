@@ -59,7 +59,7 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
     @Test
     @SuppressWarnings("unchecked")
     public void regularConstructorCall() throws Exception {
-        final Async task = createClass(AsyncFunction.class, cw -> {
+        final Async<?> task = createClass(AsyncFunction.class, cw -> {
             MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
             mv.visitCode();
             mv.visitTypeInsn(NEW, "java/lang/Integer");
@@ -85,7 +85,7 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
     @SuppressWarnings("unchecked")
     public void uninitializedStore() throws Exception {
         // check what happens when the uninitialized object is stored in a local variable
-        final Async task = createClass(AsyncFunction.class, cw -> {
+        final Async<?> task = createClass(AsyncFunction.class, cw -> {
             MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
             mv.visitCode();
             mv.visitTypeInsn(NEW, "java/lang/Integer");
@@ -122,7 +122,7 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
     public void uninitializedStoreWithWideVarsAndGaps() throws Exception {
         // check what happens when the uninitialized object is stored in a local variable
         // and with gaps and wide var (long and double)
-        final Async task = createClass(AsyncFunction.class, cw -> {
+        final Async<?> task = createClass(AsyncFunction.class, cw -> {
             MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
             mv.visitCode();
             mv.visitLdcInsn(2.0);
@@ -165,7 +165,7 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
     public void uninitializedInTheStackSingle() throws Exception {
         // check what happens if there only one copy of the uninitialized object in the stack.
         // the java compiler usually leaves two copies
-        final Async task = createClass(AsyncFunction.class, cw -> {
+        final Async<?> task = createClass(AsyncFunction.class, cw -> {
             MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
             mv.visitCode();
             mv.visitTypeInsn(NEW, "java/lang/Integer");
@@ -197,7 +197,7 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
     public void uninitializedInTheStackOneExtraCopy() throws Exception {
         // check what happens when the uninitialized object appears 3 consecutive times in the stack
         // the java compiler usually puts two copies.
-        final Async task = createClass(AsyncFunction.class, cw -> {
+        final Async<?> task = createClass(AsyncFunction.class, cw -> {
             MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
             mv.visitCode();
             mv.visitTypeInsn(NEW, "java/lang/Integer");
@@ -236,7 +236,7 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
             int extra = extraCopies;
             // check what happens when the uninitialized object is stored in a local variable
             // without proper stack management this will fail in the jvm verifier
-            final Async task = createClass(AsyncFunction.class, cw -> {
+            final Async<?> task = createClass(AsyncFunction.class, cw -> {
                 MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
                 mv.visitCode();
                 mv.visitTypeInsn(NEW, "java/lang/Integer");
@@ -280,7 +280,7 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
         // -- { new dup dup ... <init> }
         // this tests what happens if:
         // -- { new dup push_1 swap ... <init> pop }
-        final Async task = createClass(AsyncFunction.class, cw -> {
+        final Async<?> task = createClass(AsyncFunction.class, cw -> {
             MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
             mv.visitCode();
             mv.visitTypeInsn(NEW, "java/lang/Integer");

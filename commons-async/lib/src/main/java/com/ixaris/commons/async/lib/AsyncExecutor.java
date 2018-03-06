@@ -1,6 +1,7 @@
 package com.ixaris.commons.async.lib;
 
 import static com.ixaris.commons.async.lib.Async.async;
+import static com.ixaris.commons.async.lib.Async.await;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,11 +10,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper;
+import com.ixaris.commons.async.lib.scheduler.Scheduler;
 import com.ixaris.commons.async.lib.thread.ThreadLocalHelper;
 import com.ixaris.commons.misc.lib.function.CallableThrows;
 import com.ixaris.commons.misc.lib.function.RunnableThrows;
@@ -128,6 +132,72 @@ public final class AsyncExecutor {
         return async(future);
     }
     
+    public static <T, E extends Exception> Async<T> scheduleSync(final long delay,
+                                                                 final TimeUnit timeUnit,
+                                                                 final CallableThrows<T, E> callable) throws E {
+        return scheduleSync(get(), delay, timeUnit, callable);
+    }
+    
+    /**
+     * Schedule a task and return a future that is fulfilled on the given executor from the scheduled task's result
+     *
+     * @param executor
+     * @param callable
+     * @param <T>
+     * @param <E>
+     * @return
+     * @throws E
+     */
+    public static <T, E extends Exception> Async<T> scheduleSync(final Executor executor,
+                                                                 final long delay,
+                                                                 final TimeUnit timeUnit,
+                                                                 final CallableThrows<T, E> callable) throws E {
+        final CompletableFuture<T> future = new CompletableFuture<>();
+        final Runnable wrapped = AsyncTrace.wrap(AsyncLocal.wrap(() -> CompletableFutureUtil.complete(future, callable)));
+        if (executor instanceof ScheduledExecutorService) {
+            ((ScheduledExecutorService) executor).schedule(wrapped, delay, timeUnit);
+        } else {
+            Scheduler.commonScheduler().schedule(() -> executor.execute(wrapped), delay, timeUnit);
+        }
+        return async(future);
+    }
+    
+    public static <T, E extends Exception> Async<T> schedule(final long delay,
+                                                             final TimeUnit timeUnit,
+                                                             final CallableThrows<Async<T>, E> callable) throws E {
+        return schedule(get(), delay, timeUnit, callable);
+    }
+    
+    /**
+     * Schedule a task and return a future that is fulfilled on the given executor from the scheduled task's future
+     *
+     * @param executor
+     * @param callable
+     * @param <T>
+     * @param <E>
+     * @return
+     * @throws E
+     */
+    public static <T, E extends Exception> Async<T> schedule(final Executor executor,
+                                                             final long delay,
+                                                             final TimeUnit timeUnit,
+                                                             final CallableThrows<Async<T>, E> callable) throws E {
+        final CompletableFuture<T> future = new CompletableFuture<>();
+        final Runnable wrapped = AsyncTrace.wrap(AsyncLocal.wrap(() -> {
+            try {
+                async(callable.call()).whenComplete((r, t) -> CompletableFutureUtil.complete(future, r, t));
+            } catch (final Exception e) {
+                future.completeExceptionally(AsyncTrace.join(e));
+            }
+        }));
+        if (executor instanceof ScheduledExecutorService) {
+            ((ScheduledExecutorService) executor).schedule(wrapped, delay, timeUnit);
+        } else {
+            Scheduler.commonScheduler().schedule(() -> executor.execute(wrapped), delay, timeUnit);
+        }
+        return async(future);
+    }
+    
     /**
      * Relay execution back to the executor service associated with this thread (defaulting to common pool). This is
      * achieved by completing a future on this executor from the future obtained through the callable. The callable
@@ -182,26 +252,33 @@ public final class AsyncExecutor {
         return async(future);
     }
     
-    public static final class ExecutorAsyncIterator<E> implements AsyncIterator<E>, Wrapper<AsyncIterator<E>> {
+    public static final class YieldingAsyncIterator<E> implements AsyncIterator<E>, Wrapper<AsyncIterator<E>> {
         
         private final AsyncIterator<E> wrapped;
         private final int yieldEvery;
-        private int countUntilYield = 0;
+        private int countUntilYield;
         
-        public ExecutorAsyncIterator(final AsyncIterator<E> wrapped, final int yieldEvery) {
+        public YieldingAsyncIterator(final AsyncIterator<E> wrapped, final int yieldEvery) {
+            if (wrapped == null) {
+                throw new IllegalArgumentException("wrapped is null");
+            }
+            if (yieldEvery < 1) {
+                throw new IllegalArgumentException("yieldEvery is < 1");
+            }
+            
             this.wrapped = wrapped;
             this.yieldEvery = yieldEvery;
         }
         
-        public ExecutorAsyncIterator(final AsyncIterator<E> wrapped) {
+        public YieldingAsyncIterator(final AsyncIterator<E> wrapped) {
             this(wrapped, 1);
         }
         
         @Override
         public Async<E> next() throws NoMoreElementsException {
             if (++countUntilYield >= yieldEvery) {
-                yield();
                 countUntilYield = 0;
+                await(yield());
             }
             return wrapped.next();
         }
@@ -211,10 +288,6 @@ public final class AsyncExecutor {
             return wrapped;
         }
         
-    }
-    
-    public static <E> AsyncIterator<E> wrap(final AsyncIterator<E> iterator) {
-        return new ExecutorAsyncIterator<>(iterator);
     }
     
     private AsyncExecutor() {}

@@ -13,7 +13,6 @@ import org.reactivestreams.Subscriber;
 import com.ixaris.commons.async.lib.AsyncExecutor;
 import com.ixaris.commons.async.lib.executor.AsyncExecutorServiceWrapper;
 import com.ixaris.commons.async.lib.executor.AsyncScheduledExecutorServiceWrapper;
-import com.ixaris.commons.async.lib.scheduler.AsyncSchedulerWrapper;
 import com.ixaris.commons.async.lib.scheduler.Scheduler;
 import com.ixaris.commons.async.lib.thread.NamedThreadFactory;
 import com.ixaris.commons.misc.lib.object.Wrapper;
@@ -58,8 +57,7 @@ public final class ExecutorPublisherSupportFactory implements PublisherSupportFa
         
         this.executor = Wrapper.isWrappedBy(executor, AsyncExecutorServiceWrapper.class)
             ? executor : new AsyncExecutorServiceWrapper<>(executor);
-        this.scheduler = Wrapper.isWrappedBy(scheduler, AsyncSchedulerWrapper.class)
-            ? scheduler : new AsyncSchedulerWrapper<>(scheduler, executor);
+        this.scheduler = scheduler;
     }
     
     @Override
@@ -70,7 +68,7 @@ public final class ExecutorPublisherSupportFactory implements PublisherSupportFa
     @Override
     public ScheduledTask schedule(final Runnable runnable, final long delay, final TimeUnit unit) {
         if (scheduler != null) {
-            final TimerTask task = scheduler.schedule(runnable, delay, unit);
+            final TimerTask task = scheduler.schedule(() -> executor.execute(runnable), delay, unit);
             return task::cancel;
         } else {
             final ScheduledFuture<?> schedule = ((ScheduledExecutorService) executor).schedule(runnable, delay, unit);

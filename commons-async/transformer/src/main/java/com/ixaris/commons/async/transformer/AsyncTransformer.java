@@ -78,6 +78,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -127,6 +128,7 @@ final class AsyncTransformer {
     private static final String COMP_STAGE_NAME = "java/util/concurrent/CompletionStage";
     private static final Type COMP_STAGE_TYPE = Type.getObjectType(COMP_STAGE_NAME);
     private static final String ASYNC_NAME = "com/ixaris/commons/async/lib/Async";
+    private static final Type ASYNC_TYPE = Type.getObjectType(ASYNC_NAME);
     private static final Pattern ASYNC_PARAMS = Pattern.compile("\\(.*L" + ASYNC_NAME + ";.*\\).*");
     private static final String GET_METHOD_NAME = "get";
     private static final String GET_METHOD_DESC = "(L" + COMP_STAGE_NAME + ";)L" + OBJECT_NAME + ";";
@@ -194,6 +196,16 @@ final class AsyncTransformer {
             this.name = name;
             this.iArgumentLocal = iArgumentLocal;
         }
+    }
+    
+    private final Consumer<String> warnConsumer;
+    
+    AsyncTransformer(final Consumer<String> warnConsumer) {
+        this.warnConsumer = warnConsumer;
+    }
+    
+    AsyncTransformer() {
+        this(System.err::println);
     }
     
     /**
@@ -420,7 +432,7 @@ final class AsyncTransformer {
         public void visitInvokeDynamicInsn(final String name, final String desc, final Handle bsm, final Object... bsmArgs) {
             if (bsmArgs[0] instanceof String) {
                 // in jdk9 this is sometimes a string?? strange but otherwise no changes needed
-                // TODO investigate whether this is the correct way to handle it
+                // TODO investigate whether this is the correct way to handle this situation in jdk9
                 super.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
                 return;
             }
@@ -595,12 +607,23 @@ final class AsyncTransformer {
         {
             int ii = 0;
             int count = 0;
+            int lastLine = 0;
+            
             // create a switch entry for every await() calls - these will result in a continuation invocation
             for (AbstractInsnNode insn = original.instructions.getFirst(); insn != null; ii++, insn = insn.getNext()) {
                 if ((insn instanceof MethodInsnNode && isStaticAsyncMethod((MethodInsnNode) insn, AWAIT_METHOD_NAME, AWAIT_RESULT_METHOD_NAME))) {
                     final AwaitSwitchEntry se = new AwaitSwitchEntry(++count, (ExtendedFrame) frames[ii], ii);
                     switchLabels.add(se.resumeLabel);
                     switchEntries.add(se);
+                } else if ((insn instanceof InsnNode) && (insn.getOpcode() == POP)) {
+                    // while we're here, also check if we have POP instructions where the operand stack head is an Async or a CompletionStage
+                    // which indicates an abandoned stage, for which we warn
+                    final BasicValue headOfOperandStack = frames[ii].getStack(frames[ii].getStackSize() - 1);
+                    if (headOfOperandStack.getType().equals(ASYNC_TYPE) || headOfOperandStack.getType().equals(COMP_STAGE_TYPE)) {
+                        warn(classNode.name, lastLine, "Possibly abandoning asynchronous result of type %s", headOfOperandStack.getType());
+                    }
+                } else if (insn instanceof LineNumberNode) {
+                    lastLine = ((LineNumberNode) insn).line;
                 }
             }
         }
@@ -668,7 +691,8 @@ final class AsyncTransformer {
                 }
             }
             // maps the stack locals to arguments
-            // skipping the last one which will be the Async transformed to CompletionStage and which we will get back in doneConsume
+            // skipping the last one which will be the Async transformed to CompletionStage and
+            // which we will get back in doneConsume
             for (int j = 0; j < se.frame.getStackSize() - 1; j++) {
                 final int iLocal = se.stackToNewLocal[j];
                 if (iLocal >= 0) {
@@ -742,6 +766,7 @@ final class AsyncTransformer {
             lambdaDesc = Type.getMethodDescriptor(Type.getType("L" + FUNCTION_THROWS_NAME + ";"), lambdaArguments);
         }
         
+        // TODO is the below comment relevant? was in EA transformer
         // adding the switch entries and restore code
         // the local variable restoration has to occur outside
         // the try-catch blocks to avoid problems with the
@@ -1251,7 +1276,7 @@ final class AsyncTransformer {
         
         // {  ... future? future }
         mv.visitMethodInsn(INVOKESTATIC, COMP_STAGE_UTIL_NAME, GET_METHOD_NAME, GET_METHOD_DESC, false);
-        // {  ... future? result } or throw exception. 
+        // {  ... future? result } or throw exception.
         // For first iteration, async$ method catches exeption and rejects the future
         // For continuations, an exception rejects the composing future
         
@@ -1497,8 +1522,13 @@ final class AsyncTransformer {
         }
     }
     
-    private static AsyncTransformerException error(final String className, final int lineNumber, final String format, Object... args) {
-        final String error = (className + " " + ((lineNumber > 0) ? "LINE " + lineNumber + ": " : "") + String.format(format, args));
+    private void warn(final String className, final int lineNumber, final String format, final Object... args) {
+        final String error = className + " " + ((lineNumber > 0) ? "LINE " + lineNumber + ": " : "") + String.format(format, args);
+        warnConsumer.accept(error);
+    }
+    
+    private static AsyncTransformerException error(final String className, final int lineNumber, final String format, final Object... args) {
+        final String error = className + " " + ((lineNumber > 0) ? "LINE " + lineNumber + ": " : "") + String.format(format, args);
         return new AsyncTransformerException(error);
     }
     

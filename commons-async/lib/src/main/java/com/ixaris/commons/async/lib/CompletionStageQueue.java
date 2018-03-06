@@ -21,7 +21,7 @@ import com.ixaris.commons.misc.lib.object.Tuple2;
 public final class CompletionStageQueue {
     
     @FunctionalInterface
-    public interface DoneCallback {
+    private interface DoneCallback {
         
         /**
          * Called when a promise is done
@@ -44,7 +44,11 @@ public final class CompletionStageQueue {
         public <T, E extends Exception> CompletionStage<T> exec(final String id, final CallableThrows<CompletionStage<T>, E> callable) {
             final CompletableFuture<T> stage = new CompletableFuture<>();
             final Tuple2<CompletionStageQueue, CompletableFuture<?>> queue = getOrCreate(id, stage);
-            return queue.get1().internalExec(queue.get2(), stage, callable, () -> onDone(queue.get1(), id));
+            return queue.get1().internalExec(queue.get2(), stage, callable, () -> {
+                if (queue.get1().lastStage.get() == null) {
+                    tryRemove(id);
+                }
+            });
         }
         
         public <E extends Exception> CompletionStage<Void> exec(final String id, final RunnableThrows<E> runnable) {
@@ -69,12 +73,6 @@ public final class CompletionStageQueue {
             return queue.lastStage.get() == null;
         }
         
-        private void onDone(final CompletionStageQueue queue, final String id) {
-            if (queue.lastStage.get() == null) {
-                tryRemove(id);
-            }
-        }
-        
     }
     
     public static final class LongMap extends AbstractLazyReadWriteLockedLongMap<CompletionStageQueue, CompletableFuture<?>, CompletableFuture<?>> {
@@ -91,7 +89,11 @@ public final class CompletionStageQueue {
         public <T, E extends Exception> CompletionStage<T> exec(final long id, final CallableThrows<CompletionStage<T>, E> callable) {
             final CompletableFuture<T> stage = new CompletableFuture<>();
             final Tuple2<CompletionStageQueue, CompletableFuture<?>> queue = getOrCreate(id, stage);
-            return queue.get1().internalExec(queue.get2(), stage, callable, () -> onDone(queue.get1(), id));
+            return queue.get1().internalExec(queue.get2(), stage, callable, () -> {
+                if (queue.get1().lastStage.get() == null) {
+                    tryRemove(id);
+                }
+            });
         }
         
         public <E extends Exception> CompletionStage<Void> exec(final long id, final RunnableThrows<E> runnable) {
@@ -114,12 +116,6 @@ public final class CompletionStageQueue {
         @Override
         protected boolean shouldRemove(final CompletionStageQueue queue) {
             return queue.lastStage.get() == null;
-        }
-        
-        private void onDone(final CompletionStageQueue queue, final long id) {
-            if (queue.lastStage.get() == null) {
-                tryRemove(id);
-            }
         }
         
     }
@@ -183,16 +179,11 @@ public final class CompletionStageQueue {
     public CompletionStageQueue(final CompletableFuture<?> initialValue) {
         lastStage = new AtomicReference<>(initialValue);
     }
-
+    
     public <T, E extends Exception> CompletionStage<T> exec(final CallableThrows<CompletionStage<T>, E> execCallable) {
-        return exec(execCallable, null);
-    }
-
-    public <T, E extends Exception> CompletionStage<T> exec(final CallableThrows<CompletionStage<T>, E> execCallable,
-                                                            final DoneCallback doneCallback) {
         final CompletableFuture<T> stage = new CompletableFuture<>();
         final CompletableFuture<?> prevStage = lastStage.getAndSet(stage);
-        return internalExec(prevStage, stage, execCallable, doneCallback);
+        return internalExec(prevStage, stage, execCallable, null);
     }
     
     private <T, E extends Exception> CompletableFuture<T> internalExec(final CompletableFuture<?> prevStage,

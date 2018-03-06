@@ -14,6 +14,7 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
@@ -53,7 +54,8 @@ public class AsyncProcessor extends AbstractProcessor {
             // obtain the java file manager. Depends directly on JavacProcessingEnvironment,
             // so will not work with other compilers
             final JavaFileManager javaFileManager = getJavaFileManager(procEnv);
-            final AsyncTransformer transformer = new AsyncTransformer();
+            final AsyncTransformer transformer =
+                new AsyncTransformer(message -> procEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING, message));
             
             // set up the listener to react to every written class file
             JavacTask.instance(procEnv).addTaskListener(new TaskListener() {

@@ -78,7 +78,7 @@ public class ConstructorReplacementTest extends BaseTransformerTest {
         // with replacement
         {
             final ClassNode cn = createClassNode(Function.class, null);
-            TRANSFORMER.replaceObjectInitialization(mv,
+            AsyncTransformer.replaceObjectInitialization(mv,
                 new FrameAnalyzer().analyze(cn.name, mv),
                 findConstructors(mv));
             mv.accept(cn);
@@ -122,7 +122,7 @@ public class ConstructorReplacementTest extends BaseTransformerTest {
         // with replacement
         {
             final ClassNode cn = createClassNode(Function.class, null);
-            TRANSFORMER.replaceObjectInitialization(mv,
+            AsyncTransformer.replaceObjectInitialization(mv,
                 new FrameAnalyzer().analyze(cn.name, mv),
                 findConstructors(mv));
             mv.accept(cn);
@@ -131,7 +131,7 @@ public class ConstructorReplacementTest extends BaseTransformerTest {
         }
     }
     
-    public Set<AbstractInsnNode> findConstructors(final MethodNode mv) {
+    private Set<AbstractInsnNode> findConstructors(final MethodNode mv) {
         return Stream.of(mv.instructions.toArray())
             .filter(i -> i.getOpcode() == NEW)
             .collect(Collectors.toSet());
@@ -185,7 +185,7 @@ public class ConstructorReplacementTest extends BaseTransformerTest {
         // with replacement
         {
             final ClassNode cn = createClassNode(Function.class, null);
-            TRANSFORMER.replaceObjectInitialization(mv,
+            AsyncTransformer.replaceObjectInitialization(mv,
                 new FrameAnalyzer().analyze(cn.name, mv),
                 findConstructors(mv));
             mv.accept(cn);

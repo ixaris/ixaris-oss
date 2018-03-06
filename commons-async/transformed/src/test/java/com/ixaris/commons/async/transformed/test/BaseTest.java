@@ -39,10 +39,10 @@ import com.ixaris.commons.misc.lib.object.Tuple2;
 public class BaseTest {
     
     // pairs of completable futures and the future completions.
-    protected Queue<Tuple2<CompletableFuture<?>, Object>> blockedFutures = new LinkedList<>();
+    private Queue<Tuple2<CompletableFuture<?>, Object>> blockedFutures = new LinkedList<>();
     
     // just calls a function
-    public <T> Async<T> futureFrom(final Supplier<Async<T>> supplier) {
+    <T> Async<T> futureFrom(final Supplier<Async<T>> supplier) {
         return supplier.get();
     }
     

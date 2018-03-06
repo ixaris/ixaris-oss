@@ -67,7 +67,7 @@ public class BaseTestTransformerTest extends BaseTransformerTest {
     // sanity check of the creator
     @Test
     public void simpleAsyncMethod() throws Exception {
-        final Async task = createClass(AsyncCallable.class, cw -> {
+        final Async<?> task = createClass(AsyncCallable.class, cw -> {
             MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "call", "()Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
             mv.visitCode();
             mv.visitMethodInsn(INVOKESTATIC, "java/util/concurrent/CompletionStage", "done", "()Ljava/util/concurrent/CompletionStage;", false);
@@ -87,7 +87,7 @@ public class BaseTestTransformerTest extends BaseTransformerTest {
     @Test
     @SuppressWarnings("unchecked")
     public void simpleBlockingAsyncMethod() throws Exception {
-        final Async task = createClass(AsyncFunction.class, cw -> {
+        final Async<?> task = createClass(AsyncFunction.class, cw -> {
             MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
             mv.visitCode();
             mv.visitVarInsn(ALOAD, 1);

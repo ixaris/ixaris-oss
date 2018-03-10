@@ -171,6 +171,15 @@ final class AsyncTransformer {
         private int[] argumentToLocal;
         private int[] localToiArgument;
         
+        private AwaitSwitchEntry(final ExtendedFrame frame,
+                                 final Label resumeLabel) {
+            this.key = 0;
+            this.frame = frame;
+            this.index = 0;
+            this.isDoneLabel = null;
+            this.resumeLabel = resumeLabel;
+        }
+        
         private AwaitSwitchEntry(final int key,
                                  final ExtendedFrame frame,
                                  final int index) {
@@ -601,7 +610,18 @@ final class AsyncTransformer {
         final Analyzer<BasicValue> analyzer = new FrameAnalyzer();
         final Frame<BasicValue>[] frames = analyzer.analyze(classNode.name, original);
         
-        final AwaitSwitchEntry entryPoint = new AwaitSwitchEntry(0, (ExtendedFrame) frames[0], 0);
+        final AwaitSwitchEntry entryPoint;
+        final boolean entryPointLabelFromOriginal;
+        if (original.instructions.getFirst() instanceof LabelNode) {
+            // if original method starts with a label, use that as the entry point label
+            // we will add this ourselves instead of using the visitor
+            entryPoint = new AwaitSwitchEntry((ExtendedFrame) frames[0], ((LabelNode) original.instructions.getFirst()).getLabel());
+            entryPointLabelFromOriginal = true;
+        } else {
+            entryPoint = new AwaitSwitchEntry((ExtendedFrame) frames[0], new Label());
+            entryPointLabelFromOriginal = false;
+        }
+        
         switchLabels.add(entryPoint.resumeLabel);
         
         {
@@ -804,7 +824,24 @@ final class AsyncTransformer {
             
             // original entry point
             continuation.visitLabel(entryPoint.resumeLabel);
-            continuation.visitFrame(F_FULL, defaultFrame.length, defaultFrame, 0, new Object[0]);
+            if (entryPointLabelFromOriginal) {
+                // remove this instruction as we already added the label
+                original.instructions.remove(original.instructions.getFirst());
+                if (original.instructions.getFirst() instanceof LineNumberNode) {
+                    // if we are reusing the entry point label from the original method,
+                    // also add the line number and remove it from the method
+                    final LineNumberNode lineNumberNode = (LineNumberNode) original.instructions.getFirst();
+                    continuation.visitLineNumber(lineNumberNode.line, entryPoint.resumeLabel);
+                    original.instructions.remove(original.instructions.getFirst());
+                }
+                if (!(original.instructions.getFirst() instanceof FrameNode)) {
+                    // we add a full frame if there isn't one corresponding to the reused label
+                    // otherwise use the frame from the original method
+                    continuation.visitFrame(F_FULL, defaultFrame.length, defaultFrame, 0, new Object[0]);
+                }
+            } else {
+                continuation.visitFrame(F_FULL, defaultFrame.length, defaultFrame, 0, new Object[0]);
+            }
             
             // transform the original code to the continuation method
             // (this will use the switch labels to allow jumping right after the await calls on future completion)

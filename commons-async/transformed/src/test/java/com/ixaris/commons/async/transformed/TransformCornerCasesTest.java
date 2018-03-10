@@ -16,7 +16,7 @@ import org.junit.Test;
 import com.ixaris.commons.async.lib.AsyncTrace;
 import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper;
 
-public class TransformeCornerCasesTest {
+public class TransformCornerCasesTest {
     
     @Test
     public void testAsyncProcessCanWorkWithSingleThread() throws Exception {

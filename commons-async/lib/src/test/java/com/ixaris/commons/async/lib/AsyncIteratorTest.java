@@ -21,12 +21,11 @@ public class AsyncIteratorTest {
     }
     
     public Async<Void> iterate(final AsyncIterator<Integer> i) {
-        boolean hasNext = true;
-        while (hasNext) {
+        while (true) {
             try {
                 use(await(i.next()));
             } catch (NoMoreElementsException e) {
-                hasNext = false;
+                break;
             }
         }
         return result();

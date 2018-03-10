@@ -639,8 +639,10 @@ final class AsyncTransformer {
                     // while we're here, also check if we have POP instructions where the operand stack head is an Async or a CompletionStage
                     // which indicates an abandoned stage, for which we warn
                     final BasicValue headOfOperandStack = frames[ii].getStack(frames[ii].getStackSize() - 1);
-                    if (headOfOperandStack.getType().equals(ASYNC_TYPE) || headOfOperandStack.getType().equals(COMP_STAGE_TYPE)) {
-                        warn(classNode.name, lastLine, "Possibly abandoning asynchronous result of type %s", headOfOperandStack.getType());
+                    if (headOfOperandStack.getType().equals(ASYNC_TYPE)) {
+                        warn(classNode.name,
+                            lastLine,
+                            "Asynchronous result is abandoned. This may cause execution to fork if not intended, so take case of shared mutable data in such cases");
                     }
                 } else if (insn instanceof LineNumberNode) {
                     lastLine = ((LineNumberNode) insn).line;

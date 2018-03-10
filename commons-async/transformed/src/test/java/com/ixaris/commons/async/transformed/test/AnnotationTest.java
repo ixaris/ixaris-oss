@@ -47,15 +47,12 @@ public class AnnotationTest {
         assertNotNull(Annotated.class.getMethod("async$annotatedWithAwait").getAnnotation(Marker.class));
         
         // look in declared methods since method is synthetic and also it will have parameters in the signature
-        Arrays
+        assertNull(Arrays
             .stream(Annotated.class.getDeclaredMethods())
             .filter(m -> m.getName().equals("continuation$async$annotatedWithAwait"))
             .findAny()
-            .map(m -> {
-                assertNull(m.getAnnotation(Marker.class));
-                return m;
-            })
-            .orElseThrow(() -> new IllegalStateException("Should have method continuation$async$annotatedWithAwait"));
+            .orElseThrow(() -> new IllegalStateException("Should have method continuation$async$annotatedWithAwait"))
+            .getAnnotation(Marker.class));
     }
     
 }

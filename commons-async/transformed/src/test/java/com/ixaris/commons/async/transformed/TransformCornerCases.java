@@ -222,9 +222,9 @@ public class TransformCornerCases {
     public static Async<Void> staticThrowException() {
         throw new IllegalStateException();
     }
-
+    
     public static Async<Void> infiniteLoop() {
-        for(;;) {
+        for (;;) {
             await(result());
         }
     }

@@ -64,6 +64,10 @@ public class TransformCornerCasesTest {
     public void testLambdaAwait() throws InterruptedException {
         final TransformCornerCases tt = new TransformCornerCases();
         assertNull(block(tt.lambdaAwait()));
+    }
+    
+    @Test
+    public void testStaticLambdaAwait() throws InterruptedException {
         assertNull(block(TransformCornerCases.staticLambdaAwait()));
     }
     
@@ -71,6 +75,10 @@ public class TransformCornerCasesTest {
     public void testGenericLambdaAwait() throws InterruptedException {
         final TransformCornerCases tt = new TransformCornerCases();
         assertNull(block(tt.genericLambdaAwait()));
+    }
+    
+    @Test
+    public void testStaticGenericLambdaAwait() throws InterruptedException {
         assertNull(block(TransformCornerCases.staticGenericLambdaAwait()));
     }
     
@@ -78,6 +86,10 @@ public class TransformCornerCasesTest {
     public void testHandleException() throws InterruptedException {
         final TransformCornerCases tt = new TransformCornerCases();
         assertNull(block(tt.handleException()));
+    }
+    
+    @Test
+    public void testStaticHandleException() throws InterruptedException {
         assertNull(block(TransformCornerCases.staticHandleException()));
     }
     
@@ -88,10 +100,25 @@ public class TransformCornerCasesTest {
             block(tt.throwException());
             fail();
         } catch (final IllegalStateException expected) {}
+    }
+    
+    @Test
+    public void testStaticThrowException() throws InterruptedException {
         try {
             block(TransformCornerCases.staticThrowException());
             fail();
         } catch (final IllegalStateException expected) {}
+    }
+    
+    @Test
+    public void testMethodReference() throws InterruptedException {
+        final TransformCornerCases tt = new TransformCornerCases();
+        assertEquals(Long.valueOf(1L), block(tt.usingMethodReference()));
+    }
+    
+    @Test
+    public void testStaticMethodReference() throws InterruptedException {
+        assertEquals(Long.valueOf(1L), block(TransformCornerCases.staticUsingMethodReference()));
     }
     
 }

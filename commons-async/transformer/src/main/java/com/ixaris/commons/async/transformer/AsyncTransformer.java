@@ -157,8 +157,8 @@ final class AsyncTransformer {
             + "Ljava/lang/invoke/MethodType;"
             + "Ljava/lang/invoke/MethodHandle;"
             + "Ljava/lang/invoke/MethodType;"
-            + ")Ljava/lang/invoke/CallSite;");
-    //false); using deprecated method to improve ide support
+            + ")Ljava/lang/invoke/CallSite;",
+        false);
     
     private static class AwaitSwitchEntry {
         
@@ -465,8 +465,8 @@ final class AsyncTransformer {
                     new Handle(handle.getTag(),
                         handle.getOwner(),
                         "async$" + handle.getName(),
-                        handle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")),
-                    // handle.isInterface()), using deprecated method to improve ide support
+                        handle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";"),
+                        handle.isInterface()),
                     Type.getType(type.getDescriptor().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")));
             } else {
                 // this case is for generic interfaces, e.g. T doSomething(Callable<T> callable) where
@@ -479,8 +479,8 @@ final class AsyncTransformer {
                     new Handle(handle.getTag(),
                         handle.getOwner(),
                         "async$" + handle.getName(),
-                        handle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")),
-                    // handle.isInterface()), using deprecated method to improve ide support
+                        handle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";"),
+                        handle.isInterface()),
                     Type.getType(type.getDescriptor().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")));
             }
             changed = true;
@@ -812,8 +812,8 @@ final class AsyncTransformer {
             final Handle handle = new Handle(isStatic ? H_INVOKESTATIC : H_INVOKESPECIAL,
                 classNode.name,
                 continuation.name,
-                continuation.desc);
-            // false); using deprecated method to improve ide support
+                continuation.desc,
+                false);
             
             async.visitCode();
             continuation.visitCode();

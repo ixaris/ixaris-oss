@@ -87,7 +87,6 @@ public class TransformCornerCases {
         return CompletableFuture.completedFuture(i);
     }
     
-    // test method reference
     public Async<Long> usingMethodReference() {
         return usingMethodReferenceHelper(this::methodToReference);
     }
@@ -97,6 +96,18 @@ public class TransformCornerCases {
     }
     
     public Async<Long> methodToReference() {
+        return result(1L);
+    }
+    
+    public static Async<Long> staticUsingMethodReference() {
+        return staticUsingMethodReferenceHelper(TransformCornerCases::staticMethodToReference);
+    }
+    
+    public static Async<Long> staticUsingMethodReferenceHelper(final Callback callback) {
+        return callback.call();
+    }
+    
+    public static Async<Long> staticMethodToReference() {
         return result(1L);
     }
     

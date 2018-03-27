@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.ixaris.oss</groupId>
         <artifactId>ixaris-commons-async</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
+        <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>ixaris-commons-async-transformer</artifactId>
@@ -13,6 +13,14 @@
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-analysis</artifactId>
             <version>6.1</version>
+        </dependency>
+        <!-- remove for java >= 9 -->
+        <dependency>
+            <groupId>com.sun</groupId>
+            <artifactId>tools</artifactId>
+            <version>1.8.0</version>
+            <scope>system</scope>
+            <systemPath>${env.JAVA_HOME}/lib/tools.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
@@ -57,31 +65,8 @@
     </build>
     <profiles>
         <profile>
-            <id>java8</id>
-            <activation>
-                <property>
-                    <name>java.version</name>
-                    <value>1.8</value>
-                </property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools</artifactId>
-                    <version>1.8.0</version>
-                    <scope>system</scope>
-                    <systemPath>${env.JAVA_HOME}/lib/tools.jar</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>java9</id>
-            <activation>
-                <property>
-                    <name>java.version</name>
-                    <value>!1.8</value>
-                </property>
-            </activation>
+            <!-- unwrap this profile for java >= 9 -->
+            <id>java-exports</id>
             <build>
                 <plugins>
                     <plugin>

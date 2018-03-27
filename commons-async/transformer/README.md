@@ -13,8 +13,8 @@ To transform code, add the following to the in maven pom.xml file:
             <configuration>
                 <annotationProcessorPaths>
                     <path>
-                        <groupId>com.ixaris.commons</groupId>
-                        <artifactId>ix-commons-async-transformer</artifactId>
+                        <groupId>com.ixaris.oss</groupId>
+                        <artifactId>ixaris-commons-async-transformer</artifactId>
                         <version>VERSION</version>
                         <classifier>nodeps</classifier>
                     </path>

@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.ixaris.oss</groupId>
         <artifactId>ixaris-commons-async</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
+        <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>ixaris-commons-async-lib</artifactId>
@@ -14,12 +14,31 @@
             <artifactId>trove4j</artifactId>
             <version>3.0.3</version>
         </dependency>
-        <dependency>
-            <groupId>com.ixaris.oss</groupId>
-            <artifactId>ixaris-commons-async-transformer</artifactId>
-            <version>${project.version}</version>
-            <classifier>nodeps</classifier>
-            <optional>true</optional>
-        </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.ixaris.oss</groupId>
+                            <artifactId>ixaris-commons-async-transformer</artifactId>
+                            <version>${project.version}</version>
+                            <classifier>nodeps</classifier>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.ixaris.oss</groupId>
+                        <artifactId>ixaris-commons-async-transformer</artifactId>
+                        <version>${project.version}</version>
+                        <classifier>nodeps</classifier>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
 </project>

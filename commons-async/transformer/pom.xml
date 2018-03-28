@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.ixaris.oss</groupId>
         <artifactId>ixaris-commons-async</artifactId>
-        <version>${revision}</version>
+        <version>1.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>ixaris-commons-async-transformer</artifactId>
@@ -20,7 +20,7 @@
             <artifactId>tools</artifactId>
             <version>1.8.0</version>
             <scope>system</scope>
-            <systemPath>${env.JAVA_HOME}/lib/tools.jar</systemPath>
+            <systemPath>${java.home}/../lib/tools.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>

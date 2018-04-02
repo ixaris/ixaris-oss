@@ -25,7 +25,7 @@ To transform code, add the following to the in maven pom.xml file:
 </build>
 ```
 
-For better IDE interoperability, the reansformer can alternatively be added as a dependency. This will allow IDEs like
+For better IDE interoperability, the transformer can alternatively be added as a dependency. This will allow IDEs like
 intellij to execute the annotation processor from the classpath. Make sure that annotation processing is not turned off 
 in the compiler plugin configuration, since the transformation is hooked into the compilation as an annotation processor, 
 and add the below dependency:

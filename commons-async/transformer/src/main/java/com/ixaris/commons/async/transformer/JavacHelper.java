@@ -36,7 +36,9 @@ public class JavacHelper implements Helper {
         // obtain the java file manager. Depends directly on JavacProcessingEnvironment, so will not work with other compilers
         final JavaFileManager javaFileManager = getJavaFileManager(procEnv);
         
-        // set up the listener to react to every written class file
+        // Set up the listener to react to every written class file
+        // This approach was discovered by breaking during annotation processing and working backwards
+        // this listener is invoked in com.sun.tools.javac.main.JavaCompiler.generate(Queue<>, Queue<>)
         JavacTask.instance(procEnv).addTaskListener(new TaskListener() {
             
             @Override
@@ -49,6 +51,7 @@ public class JavacHelper implements Helper {
                 if (Kind.GENERATE.equals(taskEvent.getKind())) {
                     try {
                         // extract the javac object to get to the class file written
+                        // this code follows logic in com.sun.tools.javac.jvm.ClassWriter.writeClass(ClassSymbol)
                         final ClassSymbol typeElement = (ClassSymbol) taskEvent.getTypeElement();
                         final JavaFileObject file = javaFileManager.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT,
                             typeElement.flatname.toString(),

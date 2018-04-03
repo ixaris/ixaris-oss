@@ -10,10 +10,11 @@
     <artifactId>ixaris-commons-async</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>eclipse-transformed</module>
+        <module>javac-transformed</module>
         <module>lib</module>
         <module>reactive</module>
         <module>test</module>
         <module>transformer</module>
-        <module>transformed</module>
     </modules>
 </project>

@@ -119,6 +119,12 @@ import com.ixaris.commons.async.transformer.FrameAnalyzer.ExtendedValue;
  */
 final class AsyncTransformer {
     
+    static {
+        // eclipse compiler does something, probably with access control, that prevents classes from being loaded during compilation
+        // so we preload all the classes from this package
+        Preloader.preloadClassesInPackage(AsyncTransformer.class.getClassLoader(), "com.ixaris.commons.async.transformer");
+    }
+    
     private static final String OBJECT_NAME = "java/lang/Object";
     private static final String THROWABLE_NAME = "java/lang/Throwable";
     private static final String FUNCTION_THROWS_NAME = "com/ixaris/commons/misc/lib/function/FunctionThrows";

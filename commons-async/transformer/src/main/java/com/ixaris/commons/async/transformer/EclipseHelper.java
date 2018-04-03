@@ -17,30 +17,44 @@ import com.ixaris.commons.async.transformer.AsyncProcessor.Helper;
 
 /**
  * Handler for the eclipse compiler that intercepts calls to org.eclipse.jdt.internal.compiler.ICompilerRequestor.acceptResult()
- * and rewrites the written class
+ * and rewrites the written class.
+ *
+ * Approach was determined after looking at eclipse compiler code. This was done using mvnDebug with a dependency on
+ * org.codehaus.groovy:groovy-eclipse-compiler:2.9.2-01 and org.codehaus.groovygroovy-eclipse-batch:2.4.3-01, halting
+ * during annotation processing and working backwards.
  */
 public class EclipseHelper implements Helper {
     
     public void init(final ProcessingEnvironment procEnv, final AsyncTransformer transformer) {
         
         try {
+            // the below code works using reflection to avoid packaging the eclipse compiler with the transformer
+            // through a transitive dependency, since ide support requires a dependency on the transformer
             final Object compiler = invoke(procEnv, "getCompiler");
             final Field requestorField = compiler.getClass().getField("requestor");
             requestorField.setAccessible(true);
             final Class<?> requestorInterface = requestorField.getType();
             
             final Object requestor = requestorField.get(compiler);
-            final Object main = getParentInstance(requestor);
+            final Object main = getPrivate(requestor, "compiler");
             
+            // roundabout way of implementing the org.eclipse.jdt.internal.compiler.ICompilerRequestor
+            // interface. The compiler calls the method acceptResult() when a class is compiled. The
+            // implementor is responsible for writing the actual class file. As such, we call the original
+            // implementor and then do the transformation right after. However, the compiler reuses instances
+            // for compiled classes, so we need to copy the class file output path before the instance is
+            // reused and this path changed (found this the hard way).
+            
+            // The code below follows the same logic as org.eclipse.jdt.internal.compiler.batch.Main.outputClassFiles()
             final InvocationHandler invocationHandler = (proxy, method, args) -> {
                 String[] absolutePathsToTransform = null;
                 if (method.getName().equals("acceptResult")) {
-                    String currentDestinationPath = null;
-                    final String destinationPath = (String) get(main, "destinationPath");
                     final Object unitResult = args[0];
-                    final Object[] classFiles = (Object[]) invoke(unitResult, "getClassFiles");
+                    
+                    final String destinationPath = (String) get(main, "destinationPath");
                     final Object compilationUnit = get(unitResult, "compilationUnit");
                     final String unitDestinationPath = (String) get(compilationUnit, "destinationPath");
+                    String currentDestinationPath = null;
                     if (unitDestinationPath == null) {
                         if (destinationPath == null) {
                             currentDestinationPath = extractDestinationPathFromSourceFile(compilationUnit);
@@ -51,6 +65,7 @@ public class EclipseHelper implements Helper {
                         currentDestinationPath = unitDestinationPath;
                     }
                     
+                    final Object[] classFiles = (Object[]) invoke(unitResult, "getClassFiles");
                     if (currentDestinationPath != null) {
                         absolutePathsToTransform = new String[classFiles.length];
                         int i = 0;
@@ -107,10 +122,10 @@ public class EclipseHelper implements Helper {
         return field.get(instance);
     }
     
-    private Object getParentInstance(final Object child) throws NoSuchFieldException, IllegalAccessException {
-        Field parentField = child.getClass().getDeclaredField("this$0");
-        parentField.setAccessible(true);
-        return parentField.get(child);
+    private Object getPrivate(final Object instance, final String fieldName) throws NoSuchFieldException, IllegalAccessException {
+        final Field field = instance.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(instance);
     }
     
     private String extractDestinationPathFromSourceFile(final Object compilationUnit) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {

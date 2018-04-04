@@ -36,7 +36,20 @@ public class EclipseHelper implements Helper {
             final Class<?> requestorInterface = requestorField.getType();
             
             final Object requestor = requestorField.get(compiler);
-            final Object main = getPrivate(requestor, "compiler");
+            final Object main;
+            {
+                Object tmp;
+                try {
+                    // earlier versions of eclipse compiler have requestor as inner class of main
+                    // so getting to instance of main through inner class parent field this$0
+                    tmp = getPrivate(requestor, "this$0");
+                } catch (final NoSuchFieldException e) {
+                    // later versions of eclipse compiler have requestor field compiler referring to
+                    // instance of main
+                    tmp = getPrivate(requestor, "compiler");
+                }
+                main = tmp;
+            }
             
             // roundabout way of implementing the org.eclipse.jdt.internal.compiler.ICompilerRequestor
             // interface. The compiler calls the method acceptResult() when a class is compiled. The
@@ -110,25 +123,25 @@ public class EclipseHelper implements Helper {
         }
     }
     
-    private Object invoke(final Object instance, final String methodName) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    private static Object invoke(final Object instance, final String methodName) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         final Method method = instance.getClass().getMethod(methodName);
         method.setAccessible(true);
         return method.invoke(instance);
     }
     
-    private Object get(final Object instance, final String fieldName) throws NoSuchFieldException, IllegalAccessException {
+    private static Object get(final Object instance, final String fieldName) throws NoSuchFieldException, IllegalAccessException {
         final Field field = instance.getClass().getField(fieldName);
         field.setAccessible(true);
         return field.get(instance);
     }
     
-    private Object getPrivate(final Object instance, final String fieldName) throws NoSuchFieldException, IllegalAccessException {
+    private static Object getPrivate(final Object instance, final String fieldName) throws NoSuchFieldException, IllegalAccessException {
         final Field field = instance.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
         return field.get(instance);
     }
     
-    private String extractDestinationPathFromSourceFile(final Object compilationUnit) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    private static String extractDestinationPathFromSourceFile(final Object compilationUnit) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         if (compilationUnit != null) {
             char[] fileName = (char[]) compilationUnit.getClass().getMethod("getFileName").invoke(compilationUnit);
             int lastIndex = lastIndexOf(File.separatorChar, fileName);

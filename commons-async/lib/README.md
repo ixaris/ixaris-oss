@@ -5,7 +5,7 @@ This library provides a number of utilities for asynchronous execution of code
 ## Async
 
 Using Async, code can be written in a seemingly synchronous fashion. Such code is then transformed
-to equivalent asynchronous code by the transformer. See [`ix-commons-async-transformer`](../transformer\README.md).
+to equivalent asynchronous code by the transformer. See [`ix-commons-async-transformer`](../transformer/README.md).
 
 Asynchronous methods should return `Async<>` and use `Async.await()` to compose asynchronous results.
 In addition, concurrent asynchronous results can be composed in a single result using overloaded

@@ -5,15 +5,30 @@
     <artifactId>ixaris-oss</artifactId>
     <version>1.1.0</version>
     <packaging>pom</packaging>
+    <name>Ixaris Open Source Parent</name>
+    <description>Ixaris Open Source</description>
+    <url>https://github.com/ixaris/ixaris-oss/</url>
     <organization>
         <name>Ixaris Technologies Ltd.</name>
         <url>http://www.ixaris.com</url>
     </organization>
+    <licenses>
+        <license>
+            <name>The BSD 3-Clause License</name>
+            <url>http://opensource.org/licenses/BSD-3-Clause</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Ixaris Limited</name>
+            <url>https://www.ixaris.com</url>
+        </developer>
+    </developers>
     <scm>
         <url>https://github.com/ixaris/ixaris-oss</url>
         <connection>scm:git:https://github.com/ixaris/ixaris-oss</connection>
-      <tag>ixaris-oss-1.1.0</tag>
-  </scm>
+        <tag>1.1.0</tag>
+    </scm>
     <properties>
         <java.version>1.8</java.version>
         <slf4j.version>1.7.25</slf4j.version>

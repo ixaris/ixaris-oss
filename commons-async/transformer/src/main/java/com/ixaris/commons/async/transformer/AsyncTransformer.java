@@ -78,7 +78,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -120,6 +119,12 @@ import com.ixaris.commons.async.transformer.FrameAnalyzer.ExtendedValue;
  */
 final class AsyncTransformer {
     
+    static {
+        // eclipse compiler does something, probably with access control, that prevents classes from being loaded during compilation
+        // so we preload all the classes from this package
+        Preloader.preloadClassesInPackage(AsyncTransformer.class.getClassLoader(), "com.ixaris.commons.async.transformer");
+    }
+    
     private static final String OBJECT_NAME = "java/lang/Object";
     private static final String THROWABLE_NAME = "java/lang/Throwable";
     private static final String FUNCTION_THROWS_NAME = "com/ixaris/commons/misc/lib/function/FunctionThrows";
@@ -157,8 +162,8 @@ final class AsyncTransformer {
             + "Ljava/lang/invoke/MethodType;"
             + "Ljava/lang/invoke/MethodHandle;"
             + "Ljava/lang/invoke/MethodType;"
-            + ")Ljava/lang/invoke/CallSite;");
-    //false); using deprecated method to improve ide support
+            + ")Ljava/lang/invoke/CallSite;",
+        false);
     
     private static class AwaitSwitchEntry {
         
@@ -207,14 +212,21 @@ final class AsyncTransformer {
         }
     }
     
-    private final Consumer<String> warnConsumer;
+    @FunctionalInterface
+    interface WarningConsumer {
+        
+        void warn(final String fullyQualifiedClassName, final String methodSignature, final String message);
+        
+    }
     
-    AsyncTransformer(final Consumer<String> warnConsumer) {
+    private final WarningConsumer warnConsumer;
+    
+    AsyncTransformer(final WarningConsumer warnConsumer) {
         this.warnConsumer = warnConsumer;
     }
     
     AsyncTransformer() {
-        this(System.err::println);
+        this((fqcn, method, message) -> System.err.println(fqcn + message));
     }
     
     /**
@@ -263,7 +275,9 @@ final class AsyncTransformer {
                 // async outside the try..catch leads to an incorrect assumption that the exception was handled when in reality it was not.
                 // There is, however, no way of representing this in the java language, so a developer needs to be aware that the exceptions
                 // declared by an async method are really throws by await()
-                throw error(classNode.name, findFirstLineNumber(original), "Async<?> should not be passed as a parameter. Use CompletionStage<?> instead.");
+                throw error(extractFullyQualifiedClassName(classNode),
+                    findFirstLineNumber(original),
+                    "Async<?> should not be passed as a parameter. Use CompletionStage<?> instead.");
             }
             
             final Integer countOriginalUses = nameUseCount.get(original.name);
@@ -391,7 +405,9 @@ final class AsyncTransformer {
                         lastLine);
                     changed = true;
                 } else {
-                    throw error(classNode.name, lastLine, "non-async methods should not call await(). To block, use block()");
+                    throw error(extractFullyQualifiedClassName(classNode),
+                        lastLine,
+                        "non-async methods should not call await(). To block, use block()");
                 }
                 
             } else if (isStaticAsyncMethod(opcode, owner, name, ASYNC_METHOD_NAME)) {
@@ -465,8 +481,8 @@ final class AsyncTransformer {
                     new Handle(handle.getTag(),
                         handle.getOwner(),
                         "async$" + handle.getName(),
-                        handle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")),
-                    // handle.isInterface()), using deprecated method to improve ide support
+                        handle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";"),
+                        handle.isInterface()),
                     Type.getType(type.getDescriptor().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")));
             } else {
                 // this case is for generic interfaces, e.g. T doSomething(Callable<T> callable) where
@@ -479,8 +495,8 @@ final class AsyncTransformer {
                     new Handle(handle.getTag(),
                         handle.getOwner(),
                         "async$" + handle.getName(),
-                        handle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")),
-                    // handle.isInterface()), using deprecated method to improve ide support
+                        handle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";"),
+                        handle.isInterface()),
                     Type.getType(type.getDescriptor().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")));
             }
             changed = true;
@@ -640,9 +656,10 @@ final class AsyncTransformer {
                     // which indicates an abandoned stage, for which we warn
                     final BasicValue headOfOperandStack = frames[ii].getStack(frames[ii].getStackSize() - 1);
                     if (headOfOperandStack.getType().equals(ASYNC_TYPE)) {
-                        warn(classNode.name,
+                        warn(extractFullyQualifiedClassName(classNode),
+                            extractMethodSignature(original),
                             lastLine,
-                            "Asynchronous result is abandoned. This may cause execution to fork if not intended, so take case of shared mutable data in such cases");
+                            "Asynchronous result is abandoned. This may cause execution to fork if not intended, so take care of shared mutable data in such cases");
                     }
                 } else if (insn instanceof LineNumberNode) {
                     lastLine = ((LineNumberNode) insn).line;
@@ -812,8 +829,8 @@ final class AsyncTransformer {
             final Handle handle = new Handle(isStatic ? H_INVOKESTATIC : H_INVOKESPECIAL,
                 classNode.name,
                 continuation.name,
-                continuation.desc);
-            // false); using deprecated method to improve ide support
+                continuation.desc,
+                false);
             
             async.visitCode();
             continuation.visitCode();
@@ -1291,7 +1308,7 @@ final class AsyncTransformer {
                     mv.visitVarInsn(ALOAD, monitorLocal);
                     mv.visitInsn(MONITOREXIT);
                 } else {
-                    throw error(classNode.name,
+                    throw error(extractFullyQualifiedClassName(classNode),
                         lineNumber,
                         "Error restoring monitors in synchronized method. monitorLocal=%d, at %s.%s",
                         monitorLocal,
@@ -1486,7 +1503,7 @@ final class AsyncTransformer {
                 mv.visitInsn(ACONST_NULL);
                 return;
             default:
-                throw error(classNode.name, lineNumber, "Unknown type: " + value.getType().getSort());
+                throw error(extractFullyQualifiedClassName(classNode), lineNumber, "Unknown type: " + value.getType().getSort());
         }
     }
     
@@ -1556,19 +1573,108 @@ final class AsyncTransformer {
                 mv.visitVarInsn(ALOAD, monitorLocal);
                 mv.visitInsn(MONITORENTER);
             } else {
-                throw error(classNode.name, lineNumber, "Error restoring monitors in synchronized method. monitorLocal=%d, at %s.%s", monitorLocal, classNode.name, original.name);
+                throw error(extractFullyQualifiedClassName(classNode),
+                    lineNumber,
+                    "Error restoring monitors in synchronized method. monitorLocal=%d, at %s.%s",
+                    monitorLocal,
+                    classNode.name,
+                    original.name);
             }
         }
     }
     
-    private void warn(final String className, final int lineNumber, final String format, final Object... args) {
-        final String error = className + " " + ((lineNumber > 0) ? "LINE " + lineNumber + ": " : "") + String.format(format, args);
-        warnConsumer.accept(error);
+    private static String extractFullyQualifiedClassName(final ClassNode classNode) {
+        return classNode.name.replace('/', '.');
     }
     
-    private static AsyncTransformerException error(final String className, final int lineNumber, final String format, final Object... args) {
-        final String error = className + " " + ((lineNumber > 0) ? "LINE " + lineNumber + ": " : "") + String.format(format, args);
-        return new AsyncTransformerException(error);
+    private String extractMethodSignature(final MethodNode original) {
+        final StringBuilder sig = new StringBuilder(original.name).append('(');
+        if (original.signature.charAt(1) == ')') {
+            sig.append(')');
+        } else {
+            boolean done = false;
+            boolean type = false;
+            int genericDepth = 0;
+            String arraySuffix = "";
+            for (int i = 1; !done;) {
+                if (type) {
+                    sig.append(",");
+                }
+                
+                type = true;
+                switch (original.signature.charAt(i)) {
+                    case 'Z':
+                        sig.append("boolean");
+                        break;
+                    case 'B':
+                        sig.append("byte");
+                        break;
+                    case 'C':
+                        sig.append("char");
+                        break;
+                    case 'S':
+                        sig.append("short");
+                        break;
+                    case 'I':
+                        sig.append("int");
+                        break;
+                    case 'J':
+                        sig.append("long");
+                        break;
+                    case 'F':
+                        sig.append("float");
+                        break;
+                    case 'D':
+                        sig.append("double");
+                        break;
+                    case 'L':
+                        type = false;
+                        final int end = Math.min(original.signature.indexOf(';', i), original.signature.indexOf('<', i));
+                        sig.append(original.signature.substring(i + 1, end).replace('/', '.').replace('$', '.'));
+                        i = end - 1;
+                        break;
+                    case ';':
+                        break;
+                    case '<':
+                        type = false;
+                        genericDepth++;
+                        sig.append('<');
+                        break;
+                    case '>':
+                        type = false;
+                        genericDepth--;
+                        sig.append('>');
+                        break;
+                    case '[':
+                        type = false;
+                        arraySuffix += "[]";
+                        break;
+                }
+                
+                if (type) {
+                    sig.append(arraySuffix);
+                }
+                if (genericDepth > 0) {
+                    type = false;
+                }
+                
+                if (original.signature.charAt(++i) == ')') {
+                    sig.append(')');
+                    done = true;
+                }
+            }
+        }
+        return sig.toString();
+    }
+    
+    private void warn(final String fqcn, final String method, final int lineNumber, final String format, final Object... args) {
+        final String message = fqcn + ((lineNumber > 0) ? ":" + lineNumber + " " : " ") + String.format(format, args);
+        warnConsumer.warn(fqcn, method, message);
+    }
+    
+    private static AsyncTransformerException error(final String fqcn, final int lineNumber, final String format, final Object... args) {
+        final String message = fqcn + ((lineNumber > 0) ? ":" + lineNumber + " " : " ") + String.format(format, args);
+        return new AsyncTransformerException(message);
     }
     
 }

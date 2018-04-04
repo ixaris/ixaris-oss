@@ -32,7 +32,7 @@ import com.ixaris.commons.misc.lib.object.Wrapper;
  * <p>
  * <pre>
  * ...
- * final Result result = await(relay(() -> exec(otherExecutor, () -> transaction(tx, persistenceCallable))));
+ * final Result result = await(relay(() -&gt; exec(otherExecutor, () -&gt; transaction(tx, persistenceCallable))));
  * doSomethingWith(result);
  * ...
  * </pre>

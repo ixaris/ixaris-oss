@@ -205,7 +205,7 @@ final class FrameAnalyzer extends Analyzer<BasicValue> {
      * Used to discover the object types that are currently
      * being stored in the stack and in the locals.
      */
-    static final BasicInterpreter TYPE_INTERPRETER = new BasicInterpreter() {
+    private static final BasicInterpreter TYPE_INTERPRETER = new BasicInterpreter(ASM6) {
         
         @Override
         public BasicValue newValue(Type type) {
@@ -229,7 +229,7 @@ final class FrameAnalyzer extends Analyzer<BasicValue> {
         
         @Override
         public BasicValue merge(final BasicValue v, final BasicValue w) {
-            if (v != w && v != null && w != null && !v.equals(w)) {
+            if (v != w && !v.equals(w)) {
                 final Type t = v.getType();
                 final Type u = w.getType();
                 if (t != null && u != null

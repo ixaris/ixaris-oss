@@ -24,7 +24,7 @@ import com.ixaris.commons.misc.lib.object.Tuple5;
 public final class Async<T> {
     
     /**
-     * @return the result holder, transformed to CompletionStage<T>
+     * @return the result holder, transformed to CompletionStage&lt;T&gt;
      */
     public static Async<Void> result() {
         throw wrongUsage();
@@ -33,7 +33,7 @@ public final class Async<T> {
     /**
      * @param result the asynchronous process result
      * @param <T>
-     * @return the result holder, transformed to CompletionStage<T>
+     * @return the result holder, transformed to CompletionStage&lt;T&gt;
      */
     public static <T> Async<T> result(final T result) {
         throw wrongUsage();
@@ -70,7 +70,7 @@ public final class Async<T> {
     }
     
     /**
-     * Interop method to convert from Async<T> to CompletionStage<T>
+     * Interop method to convert from Async&lt;T&gt; to CompletionStage&lt;T&gt;
      *
      * @param async the async
      * @return the completion stage
@@ -80,7 +80,7 @@ public final class Async<T> {
     }
     
     /**
-     * Interop method to convert from CompletionStage<T> to Async<T>
+     * Interop method to convert from CompletionStage&lt;T&gt; to Async&lt;T&gt;
      *
      * @param stage the completion stage
      * @return the async

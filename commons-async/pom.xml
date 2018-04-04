@@ -4,16 +4,17 @@
     <parent>
         <groupId>com.ixaris.oss</groupId>
         <artifactId>ixaris-oss</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>ixaris-commons-async</artifactId>
     <packaging>pom</packaging>
     <modules>
+        <module>eclipse-transformed</module>
+        <module>javac-transformed</module>
         <module>lib</module>
         <module>reactive</module>
         <module>test</module>
         <module>transformer</module>
-        <module>transformed</module>
     </modules>
 </project>

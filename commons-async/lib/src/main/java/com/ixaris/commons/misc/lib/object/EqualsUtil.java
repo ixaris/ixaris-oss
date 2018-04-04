@@ -7,7 +7,7 @@ import java.util.Objects;
  *
  * <pre>
  * public boolean equals(final Object o) {
- *     return Equals.equals(this, o, that -> Objects.equals(attribute, that.attribute));
+ *     return Equals.equals(this, o, that -&gt; Objects.equals(attribute, that.attribute));
  * }
  * </pre>
  */

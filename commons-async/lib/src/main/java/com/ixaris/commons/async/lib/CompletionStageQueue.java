@@ -190,37 +190,26 @@ public final class CompletionStageQueue {
                                                                        final CompletableFuture<T> stage,
                                                                        final CallableThrows<CompletionStage<T>, E> execCallable,
                                                                        final DoneCallback doneCallback) {
-        // preserve current thread's async local
-        final CallableThrows<CompletionStage<T>, E> wrappedCallable = AsyncLocal.wrapThrows(execCallable);
+        // preserve current thread's async local and trace
+        final Runnable runnable = AsyncTrace.wrap(AsyncLocal.wrap(() -> {
+            try {
+                execCallable.call().whenComplete((rr, tt) -> {
+                    if (tt == null) {
+                        stage.complete(rr);
+                    } else {
+                        stage.completeExceptionally(tt);
+                    }
+                });
+            } catch (Throwable tt) { // NOSONAR future handling
+                stage.completeExceptionally(AsyncTrace.join(tt));
+            }
+        }));
+        
         final Executor executor = AsyncExecutor.get();
         if (prevStage == null) {
-            executor.execute(AsyncTrace.wrap(() -> {
-                try {
-                    wrappedCallable.call().whenComplete((rr, tt) -> {
-                        if (tt == null) {
-                            stage.complete(rr);
-                        } else {
-                            stage.completeExceptionally(tt);
-                        }
-                    });
-                } catch (Throwable tt) { // NOSONAR future handling
-                    stage.completeExceptionally(AsyncTrace.join(tt));
-                }
-            }));
+            executor.execute(runnable);
         } else {
-            prevStage.whenComplete((r, t) -> executor.execute(AsyncTrace.wrap(() -> {
-                try {
-                    wrappedCallable.call().whenComplete((rr, tt) -> {
-                        if (tt == null) {
-                            stage.complete(rr);
-                        } else {
-                            stage.completeExceptionally(tt);
-                        }
-                    });
-                } catch (Throwable tt) { // NOSONAR future handling
-                    stage.completeExceptionally(AsyncTrace.join(tt));
-                }
-            })));
+            prevStage.whenComplete((r, t) -> executor.execute(runnable));
         }
         
         stage.whenComplete((r, t) -> {

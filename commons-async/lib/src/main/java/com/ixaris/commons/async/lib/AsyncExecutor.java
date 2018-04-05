@@ -230,7 +230,7 @@ public final class AsyncExecutor {
         final CompletableFuture<T> future = new CompletableFuture<>();
         stage.whenComplete((r, t) -> {
             if (get() != executor) { // NOSONAR check reference
-                executor.execute(AsyncLocal.wrap(AsyncTrace.wrap(() -> CompletableFutureUtil.complete(future, r, t))));
+                executor.execute(AsyncTrace.wrap(AsyncLocal.wrap(() -> CompletableFutureUtil.complete(future, r, t))));
             } else {
                 CompletableFutureUtil.complete(future, r, t);
             }

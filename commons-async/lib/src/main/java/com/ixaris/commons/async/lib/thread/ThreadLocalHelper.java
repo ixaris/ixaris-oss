@@ -32,7 +32,20 @@ public class ThreadLocalHelper {
                 throw new IllegalArgumentException("task is null");
             }
             
-            return executeAndRestoreThreadLocals(task, map);
+            try {
+                for (final Entry<ThreadLocal<?>, Object> entry : map.entrySet()) {
+                    final ThreadLocal<?> threadLocal = entry.getKey();
+                    if (threadLocal.get() != null) {
+                        throw new IllegalStateException(threadLocal + " already set to [" + threadLocal.get() + "]");
+                    }
+                    setValue(threadLocal, entry.getValue());
+                }
+                return task.call();
+            } finally {
+                for (final ThreadLocal<?> threadLocal : map.keySet()) {
+                    threadLocal.remove();
+                }
+            }
         }
         
         public <E extends Throwable> void exec(final RunnableThrows<E> task) throws E {
@@ -72,24 +85,6 @@ public class ThreadLocalHelper {
             task.run();
             return null;
         });
-    }
-    
-    private static <V, E extends Throwable> V executeAndRestoreThreadLocals(final CallableThrows<V, E> callable,
-                                                                            final Map<ThreadLocal<?>, Object> threadLocals) throws E {
-        try {
-            for (final Entry<ThreadLocal<?>, Object> entry : threadLocals.entrySet()) {
-                final ThreadLocal<?> threadLocal = entry.getKey();
-                if (threadLocal.get() != null) {
-                    throw new IllegalStateException(threadLocal + " already set to [" + threadLocal.get() + "]");
-                }
-                setValue(threadLocal, entry.getValue());
-            }
-            return callable.call();
-        } finally {
-            for (final ThreadLocal<?> threadLocal : threadLocals.keySet()) {
-                threadLocal.remove();
-            }
-        }
     }
     
     @SuppressWarnings("unchecked")

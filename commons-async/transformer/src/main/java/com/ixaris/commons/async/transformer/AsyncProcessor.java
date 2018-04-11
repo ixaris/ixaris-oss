@@ -37,6 +37,7 @@ import org.kohsuke.MetaInfServices;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AsyncProcessor extends AbstractProcessor {
     
+    @FunctionalInterface
     interface Helper {
         
         void init(ProcessingEnvironment procEnv, AsyncTransformer transformer);

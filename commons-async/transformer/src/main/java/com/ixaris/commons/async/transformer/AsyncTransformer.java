@@ -463,9 +463,9 @@ final class AsyncTransformer {
             }
             
             final Type target = (Type) bsmArgs[0];
-            final Handle handle = (Handle) bsmArgs[1];
+            final Handle invokeHandle = (Handle) bsmArgs[1];
             final Type type = (Type) bsmArgs[2];
-            if (!handle.getDesc().endsWith(")L" + ASYNC_NAME + ";")) {
+            if (!invokeHandle.getDesc().endsWith(")L" + ASYNC_NAME + ";")) {
                 super.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
                 return;
             }
@@ -478,11 +478,11 @@ final class AsyncTransformer {
                     desc,
                     bsm,
                     Type.getType(target.getDescriptor().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")),
-                    new Handle(handle.getTag(),
-                        handle.getOwner(),
-                        "async$" + handle.getName(),
-                        handle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";"),
-                        handle.isInterface()),
+                    new Handle(invokeHandle.getTag(),
+                        invokeHandle.getOwner(),
+                        "async$" + invokeHandle.getName(),
+                        invokeHandle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";"),
+                        invokeHandle.isInterface()),
                     Type.getType(type.getDescriptor().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")));
             } else {
                 // this case is for generic interfaces, e.g. T doSomething(Callable<T> callable) where
@@ -492,11 +492,11 @@ final class AsyncTransformer {
                     desc,
                     bsm,
                     target,
-                    new Handle(handle.getTag(),
-                        handle.getOwner(),
-                        "async$" + handle.getName(),
-                        handle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";"),
-                        handle.isInterface()),
+                    new Handle(invokeHandle.getTag(),
+                        invokeHandle.getOwner(),
+                        "async$" + invokeHandle.getName(),
+                        invokeHandle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";"),
+                        invokeHandle.isInterface()),
                     Type.getType(type.getDescriptor().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")));
             }
             changed = true;

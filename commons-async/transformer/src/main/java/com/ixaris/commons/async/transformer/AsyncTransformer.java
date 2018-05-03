@@ -912,15 +912,10 @@ final class AsyncTransformer {
             async.visitInsn(ARETURN);
             async.visitLabel(l2);
             async.visitFrame(F_SAME1, 0, null, 1, new Object[] { THROWABLE_NAME });
-            async.visitVarInsn(ASTORE, 0);
             final Label l3 = new Label();
             async.visitLabel(l3);
-            async.visitVarInsn(ALOAD, 0);
             async.visitMethodInsn(INVOKESTATIC, COMP_STAGE_UTIL_NAME, REJECTED_METHOD_NAME, "(L" + THROWABLE_NAME + ";)L" + COMP_STAGE_NAME + ";", false);
             async.visitInsn(ARETURN);
-            final Label l4 = new Label();
-            async.visitLabel(l4);
-            async.visitLocalVariable("t", "L" + THROWABLE_NAME + ";", null, l3, l4, 0);
             async.visitEnd();
             
             // adding the continuation method
@@ -948,15 +943,10 @@ final class AsyncTransformer {
             async.visitTryCatchBlock(l0, l1, l1, THROWABLE_NAME);
             async.visitLabel(l1);
             async.visitFrame(F_FULL, 0, new Object[0], 1, new Object[] { THROWABLE_NAME });
-            async.visitVarInsn(ASTORE, 0);
             final Label l2 = new Label();
             async.visitLabel(l2);
-            async.visitVarInsn(ALOAD, 0);
             async.visitMethodInsn(INVOKESTATIC, COMP_STAGE_UTIL_NAME, REJECTED_METHOD_NAME, "(L" + THROWABLE_NAME + ";)L" + COMP_STAGE_NAME + ";", false);
             async.visitInsn(ARETURN);
-            final Label l3 = new Label();
-            async.visitLabel(l3);
-            async.visitLocalVariable("t", "L" + THROWABLE_NAME + ";", null, l2, l3, 0);
             async.visitEnd();
         }
         

@@ -25,46 +25,46 @@
  */
 package com.ixaris.commons.async.transformer;
 
-import static org.objectweb.asm.Opcodes.ACC_ABSTRACT;
-import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
-import static org.objectweb.asm.Opcodes.ACC_PROTECTED;
-import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
-import static org.objectweb.asm.Opcodes.ACC_SYNTHETIC;
-import static org.objectweb.asm.Opcodes.ACONST_NULL;
-import static org.objectweb.asm.Opcodes.ALOAD;
-import static org.objectweb.asm.Opcodes.ARETURN;
-import static org.objectweb.asm.Opcodes.ASM5;
-import static org.objectweb.asm.Opcodes.ASTORE;
-import static org.objectweb.asm.Opcodes.ATHROW;
-import static org.objectweb.asm.Opcodes.DCONST_0;
-import static org.objectweb.asm.Opcodes.DOUBLE;
-import static org.objectweb.asm.Opcodes.DUP;
-import static org.objectweb.asm.Opcodes.FCONST_0;
-import static org.objectweb.asm.Opcodes.FLOAT;
-import static org.objectweb.asm.Opcodes.F_FULL;
-import static org.objectweb.asm.Opcodes.F_NEW;
-import static org.objectweb.asm.Opcodes.F_SAME1;
-import static org.objectweb.asm.Opcodes.GOTO;
-import static org.objectweb.asm.Opcodes.H_INVOKESPECIAL;
-import static org.objectweb.asm.Opcodes.H_INVOKESTATIC;
-import static org.objectweb.asm.Opcodes.ICONST_0;
-import static org.objectweb.asm.Opcodes.IFNE;
-import static org.objectweb.asm.Opcodes.ILOAD;
-import static org.objectweb.asm.Opcodes.INTEGER;
-import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
-import static org.objectweb.asm.Opcodes.INVOKESTATIC;
-import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
-import static org.objectweb.asm.Opcodes.ISTORE;
-import static org.objectweb.asm.Opcodes.LCONST_0;
-import static org.objectweb.asm.Opcodes.LONG;
-import static org.objectweb.asm.Opcodes.MONITORENTER;
-import static org.objectweb.asm.Opcodes.MONITOREXIT;
-import static org.objectweb.asm.Opcodes.NEW;
-import static org.objectweb.asm.Opcodes.NULL;
-import static org.objectweb.asm.Opcodes.POP;
-import static org.objectweb.asm.Opcodes.POP2;
-import static org.objectweb.asm.Opcodes.SIPUSH;
-import static org.objectweb.asm.Opcodes.TOP;
+import static jdk.internal.org.objectweb.asm.Opcodes.ACC_ABSTRACT;
+import static jdk.internal.org.objectweb.asm.Opcodes.ACC_PRIVATE;
+import static jdk.internal.org.objectweb.asm.Opcodes.ACC_PROTECTED;
+import static jdk.internal.org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static jdk.internal.org.objectweb.asm.Opcodes.ACC_SYNTHETIC;
+import static jdk.internal.org.objectweb.asm.Opcodes.ACONST_NULL;
+import static jdk.internal.org.objectweb.asm.Opcodes.ALOAD;
+import static jdk.internal.org.objectweb.asm.Opcodes.ARETURN;
+import static jdk.internal.org.objectweb.asm.Opcodes.ASM5;
+import static jdk.internal.org.objectweb.asm.Opcodes.ASTORE;
+import static jdk.internal.org.objectweb.asm.Opcodes.ATHROW;
+import static jdk.internal.org.objectweb.asm.Opcodes.DCONST_0;
+import static jdk.internal.org.objectweb.asm.Opcodes.DOUBLE;
+import static jdk.internal.org.objectweb.asm.Opcodes.DUP;
+import static jdk.internal.org.objectweb.asm.Opcodes.FCONST_0;
+import static jdk.internal.org.objectweb.asm.Opcodes.FLOAT;
+import static jdk.internal.org.objectweb.asm.Opcodes.F_FULL;
+import static jdk.internal.org.objectweb.asm.Opcodes.F_NEW;
+import static jdk.internal.org.objectweb.asm.Opcodes.F_SAME1;
+import static jdk.internal.org.objectweb.asm.Opcodes.GOTO;
+import static jdk.internal.org.objectweb.asm.Opcodes.H_INVOKESPECIAL;
+import static jdk.internal.org.objectweb.asm.Opcodes.H_INVOKESTATIC;
+import static jdk.internal.org.objectweb.asm.Opcodes.ICONST_0;
+import static jdk.internal.org.objectweb.asm.Opcodes.IFNE;
+import static jdk.internal.org.objectweb.asm.Opcodes.ILOAD;
+import static jdk.internal.org.objectweb.asm.Opcodes.INTEGER;
+import static jdk.internal.org.objectweb.asm.Opcodes.INVOKESPECIAL;
+import static jdk.internal.org.objectweb.asm.Opcodes.INVOKESTATIC;
+import static jdk.internal.org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
+import static jdk.internal.org.objectweb.asm.Opcodes.ISTORE;
+import static jdk.internal.org.objectweb.asm.Opcodes.LCONST_0;
+import static jdk.internal.org.objectweb.asm.Opcodes.LONG;
+import static jdk.internal.org.objectweb.asm.Opcodes.MONITORENTER;
+import static jdk.internal.org.objectweb.asm.Opcodes.MONITOREXIT;
+import static jdk.internal.org.objectweb.asm.Opcodes.NEW;
+import static jdk.internal.org.objectweb.asm.Opcodes.NULL;
+import static jdk.internal.org.objectweb.asm.Opcodes.POP;
+import static jdk.internal.org.objectweb.asm.Opcodes.POP2;
+import static jdk.internal.org.objectweb.asm.Opcodes.SIPUSH;
+import static jdk.internal.org.objectweb.asm.Opcodes.TOP;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,34 +82,34 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Handle;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.TypePath;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FrameNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.InsnNode;
-import org.objectweb.asm.tree.LabelNode;
-import org.objectweb.asm.tree.LineNumberNode;
-import org.objectweb.asm.tree.LocalVariableNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.TypeInsnNode;
-import org.objectweb.asm.tree.VarInsnNode;
-import org.objectweb.asm.tree.analysis.Analyzer;
-import org.objectweb.asm.tree.analysis.AnalyzerException;
-import org.objectweb.asm.tree.analysis.BasicValue;
-import org.objectweb.asm.tree.analysis.Frame;
-import org.objectweb.asm.tree.analysis.Value;
-
 import com.ixaris.commons.async.transformer.FrameAnalyzer.ExtendedFrame;
 import com.ixaris.commons.async.transformer.FrameAnalyzer.ExtendedValue;
+
+import jdk.internal.org.objectweb.asm.AnnotationVisitor;
+import jdk.internal.org.objectweb.asm.ClassReader;
+import jdk.internal.org.objectweb.asm.ClassWriter;
+import jdk.internal.org.objectweb.asm.Handle;
+import jdk.internal.org.objectweb.asm.Label;
+import jdk.internal.org.objectweb.asm.MethodVisitor;
+import jdk.internal.org.objectweb.asm.Type;
+import jdk.internal.org.objectweb.asm.TypePath;
+import jdk.internal.org.objectweb.asm.tree.AbstractInsnNode;
+import jdk.internal.org.objectweb.asm.tree.ClassNode;
+import jdk.internal.org.objectweb.asm.tree.FrameNode;
+import jdk.internal.org.objectweb.asm.tree.InsnList;
+import jdk.internal.org.objectweb.asm.tree.InsnNode;
+import jdk.internal.org.objectweb.asm.tree.LabelNode;
+import jdk.internal.org.objectweb.asm.tree.LineNumberNode;
+import jdk.internal.org.objectweb.asm.tree.LocalVariableNode;
+import jdk.internal.org.objectweb.asm.tree.MethodInsnNode;
+import jdk.internal.org.objectweb.asm.tree.MethodNode;
+import jdk.internal.org.objectweb.asm.tree.TypeInsnNode;
+import jdk.internal.org.objectweb.asm.tree.VarInsnNode;
+import jdk.internal.org.objectweb.asm.tree.analysis.Analyzer;
+import jdk.internal.org.objectweb.asm.tree.analysis.AnalyzerException;
+import jdk.internal.org.objectweb.asm.tree.analysis.BasicValue;
+import jdk.internal.org.objectweb.asm.tree.analysis.Frame;
+import jdk.internal.org.objectweb.asm.tree.analysis.Value;
 
 /**
  * This transformer transforms seemingly blocking code, specifically using Async.await() to await future
@@ -153,17 +153,33 @@ final class AsyncTransformer {
     
     private static final Type ACONST_NULL_TYPE = Type.getObjectType("null");
     
-    private static final Handle METAFACTORY_HANDLE = new Handle(H_INVOKESTATIC,
+    private static final Handle LAMBDAMETAFACTORY_HANDLE = new Handle(H_INVOKESTATIC,
         "java/lang/invoke/LambdaMetafactory",
         "metafactory",
-        "(Ljava/lang/invoke/MethodHandles$Lookup;"
+        "("
+            + "Ljava/lang/invoke/MethodHandles$Lookup;"
             + "Ljava/lang/String;"
             + "Ljava/lang/invoke/MethodType;"
             + "Ljava/lang/invoke/MethodType;"
             + "Ljava/lang/invoke/MethodHandle;"
             + "Ljava/lang/invoke/MethodType;"
-            + ")Ljava/lang/invoke/CallSite;",
-        false);
+            + ")"
+            + "Ljava/lang/invoke/CallSite;");
+    //false);
+    
+    private static final Handle ASYNCLAMBDAMETAFACTORY_HANDLE = new Handle(H_INVOKESTATIC,
+        "com/ixaris/commons/async/lib/invoke/AsyncLambdaMetafactory",
+        "metafactory",
+        "("
+            + "Ljava/lang/invoke/MethodHandles$Lookup;"
+            + "Ljava/lang/String;"
+            + "Ljava/lang/invoke/MethodType;"
+            + "Ljava/lang/invoke/MethodType;"
+            + "Ljava/lang/invoke/MethodHandle;"
+            + "Ljava/lang/invoke/MethodType;"
+            + ")"
+            + "Ljava/lang/invoke/CallSite;");
+    //false);
     
     private static class AwaitSwitchEntry {
         
@@ -274,7 +290,7 @@ final class AsyncTransformer {
                 // NOTE This is still applicable to Async<> returning methods - doing try..catch around op(), then await()ing on the returned
                 // async outside the try..catch leads to an incorrect assumption that the exception was handled when in reality it was not.
                 // There is, however, no way of representing this in the java language, so a developer needs to be aware that the exceptions
-                // declared by an async method are really throws by await()
+                // declared by an async method are really thrown by await()
                 throw error(extractFullyQualifiedClassName(classNode),
                     findFirstLineNumber(original),
                     "Async<?> should not be passed as a parameter. Use CompletionStage<?> instead.");
@@ -455,9 +471,8 @@ final class AsyncTransformer {
         
         @Override
         public void visitInvokeDynamicInsn(final String name, final String desc, final Handle bsm, final Object... bsmArgs) {
-            if (bsmArgs[0] instanceof String) {
-                // in jdk9 this is sometimes a string?? strange but otherwise no changes needed
-                // TODO investigate whether this is the correct way to handle this situation in jdk9
+            if (!bsm.getOwner().equals("java/lang/invoke/LambdaMetafactory")) {
+                // we only transform standard java lambdas
                 super.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
                 return;
             }
@@ -476,13 +491,13 @@ final class AsyncTransformer {
                 // so replace lambds$0(...) with async$lambda$0(...)
                 super.visitInvokeDynamicInsn("async$" + name,
                     desc,
-                    bsm,
+                    ASYNCLAMBDAMETAFACTORY_HANDLE, // we need a different call site method that also generates an implementation for the async interface methods
                     Type.getType(target.getDescriptor().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")),
                     new Handle(invokeHandle.getTag(),
                         invokeHandle.getOwner(),
                         "async$" + invokeHandle.getName(),
-                        invokeHandle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";"),
-                        invokeHandle.isInterface()),
+                        invokeHandle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")),
+                    //invokeHandle.isInterface()),
                     Type.getType(type.getDescriptor().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")));
             } else {
                 // this case is for generic interfaces, e.g. T doSomething(Callable<T> callable) where
@@ -495,8 +510,8 @@ final class AsyncTransformer {
                     new Handle(invokeHandle.getTag(),
                         invokeHandle.getOwner(),
                         "async$" + invokeHandle.getName(),
-                        invokeHandle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";"),
-                        invokeHandle.isInterface()),
+                        invokeHandle.getDesc().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")),
+                    //invokeHandle.isInterface()),
                     Type.getType(type.getDescriptor().replace(")L" + ASYNC_NAME + ";", ")L" + COMP_STAGE_NAME + ";")));
             }
             changed = true;
@@ -595,12 +610,7 @@ final class AsyncTransformer {
                 null);
             
             defaultMethod.visitCode();
-            final Label l0 = new Label();
-            defaultMethod.visitLabel(l0);
-            defaultMethod.visitTypeInsn(NEW, "java/lang/UnsupportedOperationException");
-            defaultMethod.visitInsn(DUP);
-            defaultMethod.visitLdcInsn("Use AsyncTransformer to transform classes overriding abstract method " + original.name + "()");
-            defaultMethod.visitMethodInsn(INVOKESPECIAL, "java/lang/UnsupportedOperationException", "<init>", "(Ljava/lang/String;)V", false);
+            defaultMethod.visitMethodInsn(INVOKESTATIC, ASYNC_NAME, "noTransformation", "()Ljava/lang/UnsupportedOperationException;", false);
             defaultMethod.visitMethodInsn(INVOKESTATIC, COMP_STAGE_UTIL_NAME, REJECTED_METHOD_NAME, REJECTED_METHOD_DESC, false);
             defaultMethod.visitInsn(ARETURN);
             defaultMethod.visitEnd();
@@ -613,7 +623,7 @@ final class AsyncTransformer {
             original.name,
             original.desc,
             original.signature,
-            original.exceptions.toArray(new String[original.exceptions.size()]));
+            original.exceptions.toArray(new String[0]));
         replacement.visitCode();
         replacement.visitMethodInsn(INVOKESTATIC, ASYNC_NAME, "noTransformation", "()Ljava/lang/UnsupportedOperationException;", false);
         replacement.visitInsn(ATHROW);
@@ -829,8 +839,8 @@ final class AsyncTransformer {
             final Handle handle = new Handle(isStatic ? H_INVOKESTATIC : H_INVOKESPECIAL,
                 classNode.name,
                 continuation.name,
-                continuation.desc,
-                false);
+                continuation.desc);
+            //false);
             
             async.visitCode();
             continuation.visitCode();
@@ -901,19 +911,17 @@ final class AsyncTransformer {
             // the async method delegates to the continuation, catching any exceptions
             // any exceptions thrown by the continuation method following await calls are
             // handled by the enclosing completion stages
-            final Label l0 = new Label();
-            final Label l1 = new Label();
-            final Label l2 = new Label();
-            async.visitTryCatchBlock(l0, l1, l2, THROWABLE_NAME);
-            async.visitLabel(l0);
+            final Label labelTryStart = new Label();
+            final Label labelTryEnd = new Label();
+            final Label labelCatch = new Label();
+            async.visitTryCatchBlock(labelTryStart, labelTryEnd, labelCatch, THROWABLE_NAME);
+            async.visitLabel(labelTryStart);
             pushInitial(isStatic, classNode, async, arguments, -1);
             async.visitMethodInsn(isStatic ? INVOKESTATIC : INVOKESPECIAL, classNode.name, continuation.name, continuation.desc, false);
-            async.visitLabel(l1);
+            async.visitLabel(labelTryEnd);
             async.visitInsn(ARETURN);
-            async.visitLabel(l2);
+            async.visitLabel(labelCatch);
             async.visitFrame(F_SAME1, 0, null, 1, new Object[] { THROWABLE_NAME });
-            final Label l3 = new Label();
-            async.visitLabel(l3);
             async.visitMethodInsn(INVOKESTATIC, COMP_STAGE_UTIL_NAME, REJECTED_METHOD_NAME, "(L" + THROWABLE_NAME + ";)L" + COMP_STAGE_NAME + ";", false);
             async.visitInsn(ARETURN);
             async.visitEnd();
@@ -922,8 +930,8 @@ final class AsyncTransformer {
             continuation.accept(classNode);
         } else {
             async.visitCode();
-            final Label l0 = new Label();
-            async.visitLabel(l0);
+            final Label labelTryStart = new Label();
+            async.visitLabel(labelTryStart);
             // transform the original code to the async method
             // we are do not need the continuation method when there are no await calls
             final TransformMethodVisitor visitor = new TransformMethodVisitor(async,
@@ -938,13 +946,10 @@ final class AsyncTransformer {
                 switchEntries);
             original.accept(visitor);
             
-            final Label l1 = new Label();
-            // register last to not override existing try..catch blocks registered
-            async.visitTryCatchBlock(l0, l1, l1, THROWABLE_NAME);
-            async.visitLabel(l1);
+            final Label labelCatch = new Label();
+            async.visitTryCatchBlock(labelTryStart, labelCatch, labelCatch, THROWABLE_NAME); // register last to not override existing try..catch blocks registered
+            async.visitLabel(labelCatch);
             async.visitFrame(F_FULL, 0, new Object[0], 1, new Object[] { THROWABLE_NAME });
-            final Label l2 = new Label();
-            async.visitLabel(l2);
             async.visitMethodInsn(INVOKESTATIC, COMP_STAGE_UTIL_NAME, REJECTED_METHOD_NAME, "(L" + THROWABLE_NAME + ";)L" + COMP_STAGE_NAME + ";", false);
             async.visitInsn(ARETURN);
             async.visitEnd();
@@ -1272,7 +1277,7 @@ final class AsyncTransformer {
         
         mv.visitInvokeDynamicInsn("apply",
             lambdaDesc,
-            METAFACTORY_HANDLE,
+            LAMBDAMETAFACTORY_HANDLE,
             Type.getType("(L" + OBJECT_NAME + ";)L" + OBJECT_NAME + ";"),
             handle,
             Type.getType("(L" + COMP_STAGE_NAME + ";)L" + COMP_STAGE_NAME + ";"));

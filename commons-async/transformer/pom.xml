@@ -10,19 +10,6 @@
     <artifactId>ixaris-commons-async-transformer</artifactId>
     <dependencies>
         <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-analysis</artifactId>
-            <version>6.1.1</version>
-        </dependency>
-        <!-- remove for java >= 9 -->
-        <dependency>
-            <groupId>com.sun</groupId>
-            <artifactId>tools</artifactId>
-            <version>1.8.0</version>
-            <scope>system</scope>
-            <systemPath>${java.home}/../lib/tools.jar</systemPath>
-        </dependency>
-        <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
             <artifactId>metainf-services</artifactId>
             <version>1.7</version>
@@ -51,54 +38,13 @@
                         <configuration>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>nodeps</shadedClassifierName>
-                            <relocations>
-                                <relocation>
-                                    <pattern>org.objectweb.asm</pattern>
-                                    <shadedPattern>com.ixaris.commons.async.transformer.asm</shadedPattern>
-                                </relocation>
-                            </relocations>
                         </configuration>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.ow2.asm</groupId>
-                        <artifactId>asm</artifactId>
-                        <version>6.1.1</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.ow2.asm</groupId>
-                        <artifactId>asm-commons</artifactId>
-                        <version>6.1.1</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>
     <profiles>
-        <profile>
-            <!-- unwrap this profile for java >= 9 -->
-            <id>java-exports</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.7.0</version>
-                        <configuration>
-                            <compilerArgs>
-                                <arg>--add-exports</arg>
-                                <arg>jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
-                                <arg>--add-exports</arg>
-                                <arg>jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
-                                <arg>--add-exports</arg>
-                                <arg>jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
-                            </compilerArgs>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <id>deploy</id>
             <build>
@@ -108,6 +54,58 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <configuration>
                             <excludePackageNames>com.ixaris.commons.async.transformer</excludePackageNames>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>java-8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                    <version>1.8.0</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                </dependency>
+                <dependency>
+                    <groupId>com.sun</groupId>
+                    <artifactId>rt</artifactId>
+                    <version>1.8.0</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../jre/lib/rt.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>java-10</id>
+            <activation>
+                <jdk>10</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>--add-exports</arg>
+                                <arg>jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                                <arg>--add-exports</arg>
+                                <arg>jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                                <arg>--add-exports</arg>
+                                <arg>jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                                <arg>--add-exports</arg>
+                                <arg>java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED</arg>
+                                <arg>--add-exports</arg>
+                                <arg>java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED</arg>
+                                <arg>--add-exports</arg>
+                                <arg>java.base/jdk.internal.org.objectweb.asm.tree.analysis=ALL-UNNAMED</arg>
+                            </compilerArgs>
                         </configuration>
                     </plugin>
                 </plugins>

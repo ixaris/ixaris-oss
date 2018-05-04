@@ -25,25 +25,38 @@
  */
 package com.ixaris.commons.async.transformer;
 
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.FrameNode;
-import org.objectweb.asm.tree.LabelNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.TypeInsnNode;
-import org.objectweb.asm.tree.analysis.Analyzer;
-import org.objectweb.asm.tree.analysis.AnalyzerException;
-import org.objectweb.asm.tree.analysis.BasicInterpreter;
-import org.objectweb.asm.tree.analysis.BasicValue;
-import org.objectweb.asm.tree.analysis.Frame;
-import org.objectweb.asm.tree.analysis.Interpreter;
+import jdk.internal.org.objectweb.asm.Opcodes;
+import jdk.internal.org.objectweb.asm.Type;
+import jdk.internal.org.objectweb.asm.tree.AbstractInsnNode;
+import jdk.internal.org.objectweb.asm.tree.FrameNode;
+import jdk.internal.org.objectweb.asm.tree.LabelNode;
+import jdk.internal.org.objectweb.asm.tree.MethodInsnNode;
+import jdk.internal.org.objectweb.asm.tree.MethodNode;
+import jdk.internal.org.objectweb.asm.tree.TypeInsnNode;
+import jdk.internal.org.objectweb.asm.tree.analysis.Analyzer;
+import jdk.internal.org.objectweb.asm.tree.analysis.AnalyzerException;
+import jdk.internal.org.objectweb.asm.tree.analysis.BasicInterpreter;
+import jdk.internal.org.objectweb.asm.tree.analysis.BasicValue;
+import jdk.internal.org.objectweb.asm.tree.analysis.Frame;
+import jdk.internal.org.objectweb.asm.tree.analysis.Interpreter;
 
 /**
  * uses previous frames
  * consider uninitialized values
  */
 final class FrameAnalyzer extends Analyzer<BasicValue> {
+    
+    private static final int ASM_VERSION;
+    
+    static {
+        int ver;
+        try {
+            ver = (int) Opcodes.class.getField("ASM6").get(null);
+        } catch (final ReflectiveOperationException e) {
+            ver = ASM5;
+        }
+        ASM_VERSION = ver;
+    }
     
     private static final int FN_TOP = 0;
     private static final int FN_INTEGER = 1;
@@ -205,7 +218,7 @@ final class FrameAnalyzer extends Analyzer<BasicValue> {
      * Used to discover the object types that are currently
      * being stored in the stack and in the locals.
      */
-    private static final BasicInterpreter TYPE_INTERPRETER = new BasicInterpreter(ASM6) {
+    private static final BasicInterpreter TYPE_INTERPRETER = new BasicInterpreter(ASM_VERSION) {
         
         @Override
         public BasicValue newValue(Type type) {

@@ -15,14 +15,10 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-analysis</artifactId>
-            <version>6.1.1</version>
-        </dependency>
-        <dependency>
             <groupId>com.ixaris.oss</groupId>
             <artifactId>ixaris-commons-async-transformer</artifactId>
             <version>${project.version}</version>
+            <classifier>nodeps</classifier>
             <optional>true</optional>
         </dependency>
     </dependencies>
@@ -36,4 +32,30 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>java-10</id>
+            <activation>
+                <jdk>10</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>--add-exports</arg>
+                                <arg>java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED</arg>
+                                <arg>--add-exports</arg>
+                                <arg>java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED</arg>
+                                <arg>--add-exports</arg>
+                                <arg>java.base/jdk.internal.org.objectweb.asm.tree.analysis=ALL-UNNAMED</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

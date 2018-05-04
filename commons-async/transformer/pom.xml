@@ -46,20 +46,6 @@
     </build>
     <profiles>
         <profile>
-            <id>deploy</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <configuration>
-                            <excludePackageNames>com.ixaris.commons.async.transformer</excludePackageNames>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
             <id>java-8</id>
             <activation>
                 <jdk>1.8</jdk>

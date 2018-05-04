@@ -3,23 +3,11 @@ package com.ixaris.commons.async.transformer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.Processor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
-
-import org.kohsuke.MetaInfServices;
 
 import com.ixaris.commons.async.transformer.AsyncProcessor.Helper;
 import com.sun.source.util.JavacTask;

@@ -25,37 +25,38 @@
 
 package com.ixaris.commons.async.transformer;
 
+import static jdk.internal.org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static jdk.internal.org.objectweb.asm.Opcodes.ALOAD;
+import static jdk.internal.org.objectweb.asm.Opcodes.ARETURN;
+import static jdk.internal.org.objectweb.asm.Opcodes.ASTORE;
+import static jdk.internal.org.objectweb.asm.Opcodes.DUP;
+import static jdk.internal.org.objectweb.asm.Opcodes.F_FULL;
+import static jdk.internal.org.objectweb.asm.Opcodes.GOTO;
+import static jdk.internal.org.objectweb.asm.Opcodes.ICONST_1;
+import static jdk.internal.org.objectweb.asm.Opcodes.ICONST_3;
+import static jdk.internal.org.objectweb.asm.Opcodes.IF_ICMPNE;
+import static jdk.internal.org.objectweb.asm.Opcodes.ILOAD;
+import static jdk.internal.org.objectweb.asm.Opcodes.INTEGER;
+import static jdk.internal.org.objectweb.asm.Opcodes.INVOKESPECIAL;
+import static jdk.internal.org.objectweb.asm.Opcodes.INVOKESTATIC;
+import static jdk.internal.org.objectweb.asm.Opcodes.NEW;
+import static jdk.internal.org.objectweb.asm.Opcodes.POP;
+import static jdk.internal.org.objectweb.asm.Opcodes.SIPUSH;
+import static jdk.internal.org.objectweb.asm.Opcodes.SWAP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
-import static org.objectweb.asm.Opcodes.ALOAD;
-import static org.objectweb.asm.Opcodes.ARETURN;
-import static org.objectweb.asm.Opcodes.ASTORE;
-import static org.objectweb.asm.Opcodes.DUP;
-import static org.objectweb.asm.Opcodes.F_FULL;
-import static org.objectweb.asm.Opcodes.GOTO;
-import static org.objectweb.asm.Opcodes.ICONST_1;
-import static org.objectweb.asm.Opcodes.ICONST_3;
-import static org.objectweb.asm.Opcodes.IF_ICMPNE;
-import static org.objectweb.asm.Opcodes.ILOAD;
-import static org.objectweb.asm.Opcodes.INTEGER;
-import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
-import static org.objectweb.asm.Opcodes.INVOKESTATIC;
-import static org.objectweb.asm.Opcodes.NEW;
-import static org.objectweb.asm.Opcodes.POP;
-import static org.objectweb.asm.Opcodes.SIPUSH;
-import static org.objectweb.asm.Opcodes.SWAP;
 
 import org.junit.Test;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.analysis.AnalyzerException;
-import org.objectweb.asm.tree.analysis.BasicValue;
-import org.objectweb.asm.tree.analysis.Frame;
 
 import com.ixaris.commons.async.transformer.FrameAnalyzer.ExtendedValue;
+
+import jdk.internal.org.objectweb.asm.Label;
+import jdk.internal.org.objectweb.asm.Opcodes;
+import jdk.internal.org.objectweb.asm.tree.MethodNode;
+import jdk.internal.org.objectweb.asm.tree.analysis.AnalyzerException;
+import jdk.internal.org.objectweb.asm.tree.analysis.BasicValue;
+import jdk.internal.org.objectweb.asm.tree.analysis.Frame;
 
 public class AnalyserTest extends BaseTransformerTest {
     

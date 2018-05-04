@@ -26,23 +26,23 @@
 
 package com.ixaris.commons.async.transformer;
 
-import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
-import static org.objectweb.asm.Opcodes.ALOAD;
-import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
-import static org.objectweb.asm.Opcodes.RETURN;
+import static jdk.internal.org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static jdk.internal.org.objectweb.asm.Opcodes.ALOAD;
+import static jdk.internal.org.objectweb.asm.Opcodes.INVOKESPECIAL;
+import static jdk.internal.org.objectweb.asm.Opcodes.RETURN;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.ClassNode;
-
 import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.async.transformed.test.BaseTest;
+
+import jdk.internal.org.objectweb.asm.ClassVisitor;
+import jdk.internal.org.objectweb.asm.ClassWriter;
+import jdk.internal.org.objectweb.asm.MethodVisitor;
+import jdk.internal.org.objectweb.asm.Type;
+import jdk.internal.org.objectweb.asm.tree.ClassNode;
 
 public class BaseTransformerTest extends BaseTest {
     

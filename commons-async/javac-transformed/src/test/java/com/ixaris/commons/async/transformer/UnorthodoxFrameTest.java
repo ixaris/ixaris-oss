@@ -28,28 +28,29 @@ package com.ixaris.commons.async.transformer;
 
 import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.block;
+import static jdk.internal.org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static jdk.internal.org.objectweb.asm.Opcodes.ALOAD;
+import static jdk.internal.org.objectweb.asm.Opcodes.ARETURN;
+import static jdk.internal.org.objectweb.asm.Opcodes.ASTORE;
+import static jdk.internal.org.objectweb.asm.Opcodes.CHECKCAST;
+import static jdk.internal.org.objectweb.asm.Opcodes.DSTORE;
+import static jdk.internal.org.objectweb.asm.Opcodes.DUP;
+import static jdk.internal.org.objectweb.asm.Opcodes.INVOKESPECIAL;
+import static jdk.internal.org.objectweb.asm.Opcodes.INVOKESTATIC;
+import static jdk.internal.org.objectweb.asm.Opcodes.LSTORE;
+import static jdk.internal.org.objectweb.asm.Opcodes.NEW;
+import static jdk.internal.org.objectweb.asm.Opcodes.POP;
+import static jdk.internal.org.objectweb.asm.Opcodes.SIPUSH;
+import static jdk.internal.org.objectweb.asm.Opcodes.SWAP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
-import static org.objectweb.asm.Opcodes.ALOAD;
-import static org.objectweb.asm.Opcodes.ARETURN;
-import static org.objectweb.asm.Opcodes.ASTORE;
-import static org.objectweb.asm.Opcodes.CHECKCAST;
-import static org.objectweb.asm.Opcodes.DSTORE;
-import static org.objectweb.asm.Opcodes.DUP;
-import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
-import static org.objectweb.asm.Opcodes.INVOKESTATIC;
-import static org.objectweb.asm.Opcodes.LSTORE;
-import static org.objectweb.asm.Opcodes.NEW;
-import static org.objectweb.asm.Opcodes.POP;
-import static org.objectweb.asm.Opcodes.SIPUSH;
-import static org.objectweb.asm.Opcodes.SWAP;
 
 import org.junit.Test;
-import org.objectweb.asm.MethodVisitor;
 
 import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.async.lib.CompletionStageUtil;
+
+import jdk.internal.org.objectweb.asm.MethodVisitor;
 
 // testing scenarios that might have been produced by other bytecode libraries
 // sometimes valid bytecode is different from what the java compiler produces.

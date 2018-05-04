@@ -74,19 +74,21 @@ public class AsyncExecutorTest {
             }).start();
         });
         
-        block(exec(ex, () -> {
-            final Thread startThread = Thread.currentThread();
-            
-            await(yield());
-            
-            // on another thread, since the yield will have caused this part of the
-            // execution to be queued
-            Assertions.assertThat(Thread.currentThread()).isNotEqualTo(startThread);
-            
-            return result(null);
-        }));
+        block(exec(ex, AsyncExecutorTest::yielding));
         
         Assertions.assertThat(threadsCreated.get()).isEqualTo(2);
+    }
+    
+    private static Async<Void> yielding() {
+        final Thread startThread = Thread.currentThread();
+        
+        await(yield());
+        
+        // on another thread, since the yield will have caused this part of the
+        // execution to be queued
+        Assertions.assertThat(Thread.currentThread()).isNotEqualTo(startThread);
+        
+        return result();
     }
     
 }

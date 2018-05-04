@@ -22,4 +22,26 @@
             <optional>true</optional>
         </dependency>
     </dependencies>
+    <profiles>
+        <profile>
+            <id>java-10</id>
+            <activation>
+                <jdk>10</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>--add-exports</arg>
+                                <arg>java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

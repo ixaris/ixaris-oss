@@ -27,25 +27,26 @@ package com.ixaris.commons.async.transformer;
 
 import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static jdk.internal.org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static jdk.internal.org.objectweb.asm.Opcodes.ALOAD;
+import static jdk.internal.org.objectweb.asm.Opcodes.ARETURN;
+import static jdk.internal.org.objectweb.asm.Opcodes.CHECKCAST;
+import static jdk.internal.org.objectweb.asm.Opcodes.INVOKESTATIC;
+import static jdk.internal.org.objectweb.asm.Opcodes.ISTORE;
+import static jdk.internal.org.objectweb.asm.Opcodes.LCONST_0;
+import static jdk.internal.org.objectweb.asm.Opcodes.LSTORE;
+import static jdk.internal.org.objectweb.asm.Opcodes.POP;
+import static jdk.internal.org.objectweb.asm.Opcodes.SIPUSH;
 import static org.junit.Assert.assertEquals;
-import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
-import static org.objectweb.asm.Opcodes.ALOAD;
-import static org.objectweb.asm.Opcodes.ARETURN;
-import static org.objectweb.asm.Opcodes.CHECKCAST;
-import static org.objectweb.asm.Opcodes.INVOKESTATIC;
-import static org.objectweb.asm.Opcodes.ISTORE;
-import static org.objectweb.asm.Opcodes.LCONST_0;
-import static org.objectweb.asm.Opcodes.LSTORE;
-import static org.objectweb.asm.Opcodes.POP;
-import static org.objectweb.asm.Opcodes.SIPUSH;
 
 import org.junit.Test;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.tree.ClassNode;
 
 import com.ixaris.commons.async.lib.Async;
+
+import jdk.internal.org.objectweb.asm.ClassReader;
+import jdk.internal.org.objectweb.asm.ClassWriter;
+import jdk.internal.org.objectweb.asm.MethodVisitor;
+import jdk.internal.org.objectweb.asm.tree.ClassNode;
 
 public class TransformerTest extends BaseTransformerTest {
     

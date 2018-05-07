@@ -41,7 +41,6 @@ import java.util.stream.IntStream;
 
 import org.junit.Test;
 
-import com.ixaris.commons.AsyncTransformed;
 import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.async.lib.CompletionStageUtil;
 
@@ -116,5 +115,5 @@ public class LoopTest extends BaseTest {
         assertTrue(CompletionStageUtil.isDone(task));
         assertEquals(":0:1:2:3:4", block(task));
     }
-
+    
 }

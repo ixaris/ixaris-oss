@@ -80,5 +80,4 @@ public class LocalVarsTest extends BaseTest {
         assertEquals((Integer) 10, CompletionStageUtil.block(res));
     }
     
-
 }

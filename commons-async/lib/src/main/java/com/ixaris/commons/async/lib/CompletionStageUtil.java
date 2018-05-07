@@ -42,7 +42,7 @@ public final class CompletionStageUtil {
         CompletableFutureUtil.reject(f, t);
         return f;
     }
-
+    
     public static boolean isDone(final CompletionStage<?> stage) {
         return stage.toCompletableFuture().isDone();
     }
@@ -101,7 +101,7 @@ public final class CompletionStageUtil {
             }
         });
     }
-
+    
     /**
      * Combine multiple asynchronous result to one, resolved when all complete or one fails.
      * This variant is for results of the same type

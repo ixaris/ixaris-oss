@@ -50,11 +50,11 @@ public class CompletableFutureUtil {
             future.complete(r);
         }
     }
-
+    
     public static void reject(final CompletableFuture<?> future, final Throwable t) {
         future.completeExceptionally(AsyncTrace.join(t));
     }
-
+    
     private CompletableFutureUtil() {}
     
 }

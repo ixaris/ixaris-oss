@@ -46,10 +46,10 @@ import jdk.internal.org.objectweb.asm.tree.ClassNode;
 
 public class BaseTransformerTest extends BaseTest {
     
-    static final AsyncTransformer TRANSFORMER = new AsyncTransformer();
+    private static final AsyncTransformer TRANSFORMER = new AsyncTransformer();
     
     // utility method to create arbitrary classes.
-    <T> T createClass(Class<T> superClass, Consumer<ClassVisitor> populate) {
+    <T> T createClass(final Class<T> superClass, final Consumer<ClassVisitor> populate) {
         ClassNode cn = createClassNode(superClass, populate);
         return createClass(superClass, cn);
     }
@@ -84,6 +84,12 @@ public class BaseTransformerTest extends BaseTest {
     
     private byte[] transform(final byte[] bytes) throws IOException {
         final byte[] out = TRANSFORMER.instrument(new ByteArrayInputStream(bytes));
+        if (out != null) {
+            final byte[] out2 = TRANSFORMER.instrument(new ByteArrayInputStream(out));
+            if (out2 != null) {
+                throw new IllegalStateException("Transformation not idempotent");
+            }
+        }
         return out != null ? out : bytes;
     }
     

@@ -52,7 +52,7 @@ public class TransformCornerCases {
         }
         
         private void test() {
-            async(tmp());
+            tmp();
         }
         
     }
@@ -154,7 +154,7 @@ public class TransformCornerCases {
     }
     
     public CompletionStage<Long> futureOperation() {
-        return async(AsyncExecutor.execSync(() -> 3L));
+        return AsyncExecutor.execSync(() -> 3L);
     }
     
     public Async<Integer> awaitingResult(final int i) {

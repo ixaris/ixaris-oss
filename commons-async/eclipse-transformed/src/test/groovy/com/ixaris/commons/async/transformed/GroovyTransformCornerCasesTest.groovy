@@ -9,7 +9,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-import static com.ixaris.commons.async.lib.CompletionStageUtil.block
+import static com.ixaris.commons.async.lib.Async.block
 import static org.assertj.core.api.Assertions.assertThat
 import static org.assertj.core.api.Assertions.catchThrowable
 
@@ -22,7 +22,7 @@ class GroovyTransformCornerCasesTest {
 
         final CompletableFuture<Long> future = new CompletableFuture<>()
         final Runnable runnable = {
-            tt.async$operation().whenComplete({ r, t ->
+            tt.operation().whenComplete({ r, t ->
                 if (t == null) {
                     future.complete(r)
                 } else {
@@ -41,7 +41,7 @@ class GroovyTransformCornerCasesTest {
 
         final CompletableFuture<Long> future = new CompletableFuture<>()
         final Runnable runnable = {
-            tt.async$simple().whenComplete({ r, t ->
+            tt.simple().whenComplete({ r, t ->
                 if (t == null) {
                     future.complete(r)
                 } else {
@@ -56,63 +56,63 @@ class GroovyTransformCornerCasesTest {
     @Test
     void testAwaitResult() throws InterruptedException {
         final TransformCornerCases tt = new TransformCornerCases()
-        assertThat block(tt.async$awaitingResult(1)) isEqualTo 1
-        assertThat block(tt.async$awaitingResult(3)) isEqualTo -1
+        assertThat block(tt.awaitingResult(1)) isEqualTo 1
+        assertThat block(tt.awaitingResult(3)) isEqualTo -1
     }
 
     @Test
     void testLambdaAwait() throws InterruptedException {
         final TransformCornerCases tt = new TransformCornerCases()
-        assertThat block(tt.async$lambdaAwait()) isNull()
+        assertThat block(tt.lambdaAwait()) isNull()
     }
 
     @Test
     void testStaticLambdaAwait() throws InterruptedException {
-        assertThat block(TransformCornerCases.async$staticLambdaAwait()) isNull()
+        assertThat block(TransformCornerCases.staticLambdaAwait()) isNull()
     }
 
     @Test
     void testGenericLambdaAwait() throws InterruptedException {
         final TransformCornerCases tt = new TransformCornerCases()
-        assertThat block(tt.async$genericLambdaAwait()) isNull()
+        assertThat block(tt.genericLambdaAwait()) isNull()
     }
 
     @Test
     void testStaticGenericLambdaAwait() throws InterruptedException {
-        assertThat block(TransformCornerCases.async$staticGenericLambdaAwait()) isNull()
+        assertThat block(TransformCornerCases.staticGenericLambdaAwait()) isNull()
     }
 
     @Test
     void testHandleException() throws InterruptedException {
         final TransformCornerCases tt = new TransformCornerCases()
-        assertThat block(tt.async$handleException()) isNull()
+        assertThat block(tt.handleException()) isNull()
     }
 
     @Test
     void testStaticHandleException() throws InterruptedException {
-        assertThat block(TransformCornerCases.async$staticHandleException()) isNull()
+        assertThat block(TransformCornerCases.staticHandleException()) isNull()
     }
 
     @Test
     void testThrowException() {
         final TransformCornerCases tt = new TransformCornerCases()
-        assertThat catchThrowable { block(tt.async$throwException()) } isInstanceOf IllegalStateException.class
+        assertThat catchThrowable { block(tt.throwException()) } isInstanceOf IllegalStateException.class
     }
 
     @Test
     void testStaticThrowException() {
-        assertThat catchThrowable { block(TransformCornerCases.async$staticThrowException()) } isInstanceOf IllegalStateException.class
+        assertThat catchThrowable { block(TransformCornerCases.staticThrowException()) } isInstanceOf IllegalStateException.class
     }
 
     @Test
     void testMethodReference() throws InterruptedException {
         final TransformCornerCases tt = new TransformCornerCases()
-        assertThat block(tt.async$usingMethodReference()) isEqualTo Long.valueOf(1L)
+        assertThat block(tt.usingMethodReference()) isEqualTo Long.valueOf(1L)
     }
 
     @Test
     void testStaticMethodReference() throws InterruptedException {
-        assertThat block(TransformCornerCases.async$staticUsingMethodReference()) isEqualTo Long.valueOf(1L)
+        assertThat block(TransformCornerCases.staticUsingMethodReference()) isEqualTo Long.valueOf(1L)
     }
     
 }

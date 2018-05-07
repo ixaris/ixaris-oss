@@ -16,7 +16,6 @@ import org.junit.Test;
 import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.async.lib.AsyncExecutor;
 import com.ixaris.commons.async.lib.AsyncQueue;
-import com.ixaris.commons.async.lib.AsyncTrace;
 import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper;
 
 public class CriticalSectionTest {

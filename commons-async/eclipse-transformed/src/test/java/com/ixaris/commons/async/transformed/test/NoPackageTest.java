@@ -26,6 +26,7 @@
 
 package com.ixaris.commons.async.transformed.test;
 
+import static com.ixaris.commons.async.lib.Async.block;
 import static org.junit.Assert.assertEquals;
 
 import java.lang.reflect.Method;
@@ -33,18 +34,20 @@ import java.util.concurrent.CompletableFuture;
 
 import org.junit.Test;
 
+import com.ixaris.commons.async.lib.Async;
+
 public class NoPackageTest extends BaseTest {
     
     @Test
-    public void testPackageLessClass() throws ReflectiveOperationException {
+    public void testPackageLessClass() throws ReflectiveOperationException, InterruptedException {
         
         Class<?> newClass = Class.forName("NoPackageAsync");
-        final Method method = newClass.getMethod("async$noPackageMethod", CompletableFuture.class, int.class);
+        final Method method = newClass.getMethod("noPackageMethod", CompletableFuture.class, int.class);
         
         CompletableFuture<String> blocker = new CompletableFuture<>();
-        final CompletableFuture<String> res = (CompletableFuture<String>) method.invoke(newClass.newInstance(), blocker, 5);
+        final Async<String> res = (Async<String>) method.invoke(newClass.newInstance(), blocker, 5);
         blocker.complete("zzz");
-        assertEquals("5:10000000000:1.5:3.5:zzz:true", res.join());
+        assertEquals("5:10000000000:1.5:3.5:zzz:true", block(res));
     }
     
 }

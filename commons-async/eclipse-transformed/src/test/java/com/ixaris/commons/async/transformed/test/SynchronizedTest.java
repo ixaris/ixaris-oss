@@ -144,7 +144,7 @@ public class SynchronizedTest extends BaseTest {
         }
         final Async<Integer> res = new SynchronizedMethodExperiment().doIt(0);
         Method asyncMethod = Stream.of(SynchronizedMethodExperiment.class.getDeclaredMethods())
-            .filter(m -> m.getName().startsWith("async$"))
+            .filter(m -> m.getName().startsWith("continuation$"))
             .findFirst()
             .orElse(null);
         completeFutures();
@@ -183,7 +183,7 @@ public class SynchronizedTest extends BaseTest {
         
         final Async<Integer> res = StaticSynchronizedMethod_Experiment.doIt(getBlockedFuture(), 1);
         Method asyncMethod = Stream.of(StaticSynchronizedMethod_Experiment.class.getDeclaredMethods())
-            .filter(m -> m.getName().startsWith("async$"))
+            .filter(m -> m.getName().startsWith("continuation$"))
             .findFirst()
             .orElse(null);
         completeFutures();

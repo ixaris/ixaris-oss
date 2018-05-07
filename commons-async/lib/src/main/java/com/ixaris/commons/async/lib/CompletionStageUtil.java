@@ -39,10 +39,10 @@ public final class CompletionStageUtil {
     
     public static <T> CompletionStage<T> rejected(final Throwable t) {
         final CompletableFuture<T> f = new CompletableFuture<>();
-        f.completeExceptionally(AsyncTrace.join(t));
+        CompletableFutureUtil.reject(f, t);
         return f;
     }
-    
+
     public static boolean isDone(final CompletionStage<?> stage) {
         return stage.toCompletableFuture().isDone();
     }
@@ -91,8 +91,8 @@ public final class CompletionStageUtil {
         });
     }
     
-    public static <T, U> CompletionStage<U> doneCompose(final CompletionStage<T> stage,
-                                                        final FunctionThrows<CompletionStage<T>, CompletionStage<U>, ? extends Throwable> function) {
+    public static <T, U, S extends CompletionStage<T>> CompletionStage<U> doneCompose(final S stage,
+                                                                                      final FunctionThrows<S, ? extends CompletionStage<U>, ? extends Throwable> function) {
         return stage.exceptionally(t -> null).thenCompose(r -> {
             try {
                 return function.apply(stage);
@@ -101,7 +101,7 @@ public final class CompletionStageUtil {
             }
         });
     }
-    
+
     /**
      * Combine multiple asynchronous result to one, resolved when all complete or one fails.
      * This variant is for results of the same type
@@ -137,7 +137,7 @@ public final class CompletionStageUtil {
      *         or rejected with the first failure from the given futures
      */
     @SuppressWarnings("unchecked")
-    public static <T> CompletionStage<List<T>> allSame(final List<CompletionStage<T>> stages) {
+    public static <T> CompletionStage<List<T>> allSame(final List<? extends CompletionStage<T>> stages) {
         if (stages == null) {
             throw new IllegalArgumentException("stages is null");
         }
@@ -174,7 +174,7 @@ public final class CompletionStageUtil {
      *         or rejected with the first failure from the given futures
      */
     @SuppressWarnings("unchecked")
-    public static <K, V> CompletionStage<Map<K, V>> allSame(final Map<K, CompletionStage<V>> stages) {
+    public static <K, V> CompletionStage<Map<K, V>> allSame(final Map<K, ? extends CompletionStage<V>> stages) {
         if (stages == null) {
             throw new IllegalArgumentException("stages is null");
         }
@@ -183,7 +183,7 @@ public final class CompletionStageUtil {
         }
         final CompletableFuture<Tuple2<K, V>>[] futures = (CompletableFuture<Tuple2<K, V>>[]) new CompletableFuture<?>[stages.size()];
         int i = 0;
-        for (final Map.Entry<K, CompletionStage<V>> stageEntry : stages.entrySet()) {
+        for (final Map.Entry<K, ? extends CompletionStage<V>> stageEntry : stages.entrySet()) {
             futures[i++] = stageEntry.getValue().thenApply(v -> tuple(stageEntry.getKey(), v)).toCompletableFuture();
         }
         return CompletableFuture.allOf(futures).thenApply(r -> {
@@ -266,7 +266,7 @@ public final class CompletionStageUtil {
      *         or rejected with the first failure from the given futures
      */
     @SuppressWarnings("unchecked")
-    public static <K> CompletionStage<Map<K, ?>> all(final Map<K, CompletionStage<?>> stages) {
+    public static <K> CompletionStage<Map<K, ?>> all(final Map<K, ? extends CompletionStage<?>> stages) {
         if (stages == null) {
             throw new IllegalArgumentException("stages is null");
         }
@@ -275,7 +275,7 @@ public final class CompletionStageUtil {
         }
         final CompletableFuture<Tuple2<K, Object>>[] futures = (CompletableFuture<Tuple2<K, Object>>[]) new CompletableFuture<?>[stages.size()];
         int i = 0;
-        for (final Map.Entry<K, CompletionStage<?>> stageEntry : stages.entrySet()) {
+        for (final Map.Entry<K, ? extends CompletionStage<?>> stageEntry : stages.entrySet()) {
             futures[i++] = stageEntry.getValue().thenApply(v -> tuple(stageEntry.getKey(), (Object) v)).toCompletableFuture();
         }
         return CompletableFuture.allOf(futures).thenApply(r -> {

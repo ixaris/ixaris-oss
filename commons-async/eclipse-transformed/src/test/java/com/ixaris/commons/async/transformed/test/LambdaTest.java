@@ -43,27 +43,24 @@ public class LambdaTest extends BaseTest {
     
     @Test
     public void testThenCompose() throws InterruptedException {
-        CompletionStage<Integer> task =
-            thenCompose(getBlockedFuture(10), x -> result(x + await(async(getBlockedFuture(20)))));
+        CompletionStage<Integer> task = getBlockedFuture(10)
+            .thenCompose((Function<Integer, Async<Integer>>) x -> result(x + await(async(getBlockedFuture(20)))));
         completeFutures();
         assertEquals((Integer) 30, CompletionStageUtil.block(task));
     }
     
     @Test
     public void testLongLambda() throws InterruptedException {
-        CompletionStage<Integer> task = thenCompose(getBlockedFuture(5), x -> {
-            await(async(getBlockedFuture()));
-            await(async(getBlockedFuture()));
-            await(async(getBlockedFuture()));
-            await(async(getBlockedFuture()));
-            return result(11);
-        });
+        CompletionStage<Integer> task = getBlockedFuture(5)
+            .thenCompose((Function<Integer, Async<Integer>>) x -> {
+                await(async(getBlockedFuture()));
+                await(async(getBlockedFuture()));
+                await(async(getBlockedFuture()));
+                await(async(getBlockedFuture()));
+                return result(11);
+            });
         completeFutures();
         assertEquals((Integer) 11, CompletionStageUtil.block(task));
     }
-    
-    private CompletionStage<Integer> thenCompose(CompletionStage<Integer> stage, Function<Integer, Async<Integer>> function) {
-        return stage.thenCompose(r -> async(function.apply(r)));
-    }
-    
+
 }

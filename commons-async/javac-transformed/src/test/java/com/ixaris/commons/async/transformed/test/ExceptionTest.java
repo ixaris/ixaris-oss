@@ -84,7 +84,7 @@ public class ExceptionTest extends BaseTest {
     public void testTryCatch2() {
         final Async<Void> res = doTryCatch2();
         completeFutures();
-        assertTrue(CompletionStageUtil.isDone(async(res)));
+        assertTrue(CompletionStageUtil.isDone(res));
     }
     
     private Async<Void> doTryCatch2() {

@@ -77,7 +77,7 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
             mv.visitMaxs(3, 2);
             mv.visitEnd();
         }).apply(getBlockedFuture("100"));
-        assertFalse(CompletionStageUtil.isDone(async(task)));
+        assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
         assertEquals(100, block(task));
     }
@@ -113,7 +113,7 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
             mv.visitMaxs(4, 3);
             mv.visitEnd();
         }).apply(getBlockedFuture("101"));
-        assertFalse(CompletionStageUtil.isDone(async(task)));
+        assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
         assertEquals(101, block(task));
     }
@@ -156,7 +156,7 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
             mv.visitMaxs(5, 15);
             mv.visitEnd();
         }).apply(getBlockedFuture("101"));
-        assertFalse(CompletionStageUtil.isDone(async(task)));
+        assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
         assertEquals(101, block(task));
     }
@@ -187,7 +187,7 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
             mv.visitMaxs(4, 3);
             mv.visitEnd();
         }).apply(getBlockedFuture("101"));
-        assertFalse(CompletionStageUtil.isDone(async(task)));
+        assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
         // return should be null as we are using task.done()
         assertEquals(null, block(task));
@@ -223,7 +223,7 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
             mv.visitMaxs(4, 3);
             mv.visitEnd();
         }).apply(getBlockedFuture("101"));
-        assertFalse(CompletionStageUtil.isDone(async(task)));
+        assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
         assertEquals(101, block(task));
     }
@@ -266,7 +266,7 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
                 mv.visitMaxs(4 + extra, 3);
                 mv.visitEnd();
             }).apply(getBlockedFuture("101"));
-            assertFalse(CompletionStageUtil.isDone(async(task)));
+            assertFalse(CompletionStageUtil.isDone(task));
             completeFutures();
             assertEquals(101, block(task));
         }
@@ -307,7 +307,7 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
             mv.visitMaxs(16, 3);
             mv.visitEnd();
         }).apply(getBlockedFuture("101"));
-        assertFalse(CompletionStageUtil.isDone(async(task)));
+        assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
         assertEquals(101, block(task));
     }

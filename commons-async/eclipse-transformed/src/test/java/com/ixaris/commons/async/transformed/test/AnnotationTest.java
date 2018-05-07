@@ -40,18 +40,16 @@ public class AnnotationTest {
     
     @Test
     public void testAnnotationMovedToGeneratedAsyncMethod() throws NoSuchMethodException {
-        assertNull(Annotated.class.getMethod("annotated").getAnnotation(Marker.class));
-        assertNotNull(Annotated.class.getMethod("async$annotated").getAnnotation(Marker.class));
+        assertNotNull(Annotated.class.getMethod("annotated").getAnnotation(Marker.class));
         
-        assertNull(Annotated.class.getMethod("annotatedWithAwait").getAnnotation(Marker.class));
-        assertNotNull(Annotated.class.getMethod("async$annotatedWithAwait").getAnnotation(Marker.class));
+        assertNotNull(Annotated.class.getMethod("annotatedWithAwait").getAnnotation(Marker.class));
         
         // look in declared methods since method is synthetic and also it will have parameters in the signature
         assertNull(Arrays
             .stream(Annotated.class.getDeclaredMethods())
-            .filter(m -> m.getName().equals("continuation$async$annotatedWithAwait"))
+            .filter(m -> m.getName().equals("continuation$annotatedWithAwait"))
             .findAny()
-            .orElseThrow(() -> new IllegalStateException("Should have method continuation$async$annotatedWithAwait"))
+            .orElseThrow(() -> new IllegalStateException("Should have method continuation$annotatedWithAwait"))
             .getAnnotation(Marker.class));
     }
     

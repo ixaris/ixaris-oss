@@ -38,7 +38,7 @@ public class AsyncExecutorTest {
         // start on ex1
         Assertions.assertThat(AsyncExecutor.get()).isEqualTo(ex1);
         
-        Async<Void> relay = relay(() -> execSync(ex2, () -> {
+        final Async<Void> relay = relay(() -> execSync(ex2, () -> {
             // go to ex2
             Thread.sleep(100L);
             Assertions.assertThat(AsyncExecutor.get()).isEqualTo(ex2);

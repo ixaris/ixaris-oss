@@ -81,7 +81,7 @@ public class BaseTestTransformerTest extends BaseTransformerTest {
             mv.visitMaxs(1, 1);
             mv.visitEnd();
         }).call();
-        assertTrue(CompletionStageUtil.isDone(async(task)));
+        assertTrue(CompletionStageUtil.isDone(task));
     }
     
     // sanity check of the creator
@@ -103,7 +103,7 @@ public class BaseTestTransformerTest extends BaseTransformerTest {
             mv.visitMaxs(1, 2);
             mv.visitEnd();
         }).apply(getBlockedFuture("hello"));
-        assertFalse(CompletionStageUtil.isDone(async(task)));
+        assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
         assertEquals("hello", block(task));
     }

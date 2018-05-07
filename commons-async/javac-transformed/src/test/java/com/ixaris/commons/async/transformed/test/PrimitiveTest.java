@@ -207,7 +207,7 @@ public class PrimitiveTest extends BaseTest {
         float f1 = r.nextFloat();
         
         final Async<Object> res = a.melange(i1, s1, b1, d1, c1, z1, g1, o1, f1, blocker, 0);
-        assertFalse(CompletionStageUtil.isDone(async(res)));
+        assertFalse(CompletionStageUtil.isDone(res));
         blocker.complete("x");
         assertEquals(":", block(res));
         a.assertFields(i1, s1, b1, d1, c1, z1, g1, o1, f1);
@@ -231,7 +231,7 @@ public class PrimitiveTest extends BaseTest {
         float f1 = r.nextFloat();
         
         final Async<Object> res = a.melange(i1, s1, b1, d1, c1, z1, g1, o1, f1, blocker, 0);
-        assertFalse(CompletionStageUtil.isDone(async(res)));
+        assertFalse(CompletionStageUtil.isDone(res));
         blocker.complete("x");
         assertEquals(":", block(res));
         a.assertFields(i1, s1, b1, d1, c1, z1, g1, o1, f1);

@@ -49,23 +49,23 @@ public class LoopTest extends BaseTest {
     @Test
     public void testForLoop() throws InterruptedException {
         int count = 5;
-        final Async<Object> task = futureFrom(() -> {
-            String str = "";
+        final Async<Object> task = asyncFrom(() -> {
+            final StringBuilder sb = new StringBuilder();
             for (int i = 0; i < count; i++) {
-                str += ":" + await(async(getBlockedFuture(i)));
+                sb.append(":").append(await(async(getBlockedFuture(i))));
             }
-            return result(str);
+            return result(sb.toString());
         });
-        assertFalse(CompletionStageUtil.isDone(async(task)));
+        assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
-        assertTrue(CompletionStageUtil.isDone(async(task)));
+        assertTrue(CompletionStageUtil.isDone(task));
         assertEquals(":0:1:2:3:4", block(task));
     }
     
     @Test
     public void testWhileLoop() throws InterruptedException {
         int count = 5;
-        final Async<Object> task = futureFrom(() -> {
+        final Async<Object> task = asyncFrom(() -> {
             String str = "";
             int i = 0;
             while (i < count) {
@@ -74,16 +74,16 @@ public class LoopTest extends BaseTest {
             }
             return result(str);
         });
-        assertFalse(CompletionStageUtil.isDone(async(task)));
+        assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
-        assertTrue(CompletionStageUtil.isDone(async(task)));
+        assertTrue(CompletionStageUtil.isDone(task));
         assertEquals(":0:1:2:3:4", block(task));
     }
     
     @Test
     public void testDoLoop() throws InterruptedException {
         int count = 5;
-        final Async<Object> task = futureFrom(() -> {
+        final Async<Object> task = asyncFrom(() -> {
             String str = "";
             int i = 0;
             do {
@@ -92,9 +92,9 @@ public class LoopTest extends BaseTest {
             } while (i < count);
             return result(str);
         });
-        assertFalse(CompletionStageUtil.isDone(async(task)));
+        assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
-        assertTrue(CompletionStageUtil.isDone(async(task)));
+        assertTrue(CompletionStageUtil.isDone(task));
         assertEquals(":0:1:2:3:4", block(task));
     }
     
@@ -103,16 +103,16 @@ public class LoopTest extends BaseTest {
         final List<CompletableFuture<Integer>> blockedFuts = IntStream.range(0, 5)
             .mapToObj(this::getBlockedFuture)
             .collect(Collectors.toList());
-        final Async<Object> task = futureFrom(() -> {
+        final Async<Object> task = asyncFrom(() -> {
             String str = "";
-            for (CompletableFuture<?> f : blockedFuts) {
+            for (final CompletableFuture<?> f : blockedFuts) {
                 str += ":" + await(async(f));
             }
             return result(str);
         });
-        assertFalse(CompletionStageUtil.isDone(async(task)));
+        assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
-        assertTrue(CompletionStageUtil.isDone(async(task)));
+        assertTrue(CompletionStageUtil.isDone(task));
         assertEquals(":0:1:2:3:4", block(task));
     }
     

@@ -42,7 +42,7 @@ public class BaseTest {
     private Queue<Tuple2<CompletableFuture<?>, Object>> blockedFutures = new LinkedList<>();
     
     // just calls a function
-    <T> Async<T> futureFrom(final Supplier<Async<T>> supplier) {
+    <T> Async<T> asyncFrom(final Supplier<Async<T>> supplier) {
         return supplier.get();
     }
     

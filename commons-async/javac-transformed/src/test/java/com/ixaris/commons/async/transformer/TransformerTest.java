@@ -43,7 +43,6 @@ import org.junit.Test;
 
 import com.ixaris.commons.async.lib.Async;
 
-import jdk.internal.org.objectweb.asm.ClassReader;
 import jdk.internal.org.objectweb.asm.ClassWriter;
 import jdk.internal.org.objectweb.asm.MethodVisitor;
 import jdk.internal.org.objectweb.asm.tree.ClassNode;
@@ -58,21 +57,20 @@ public class TransformerTest extends BaseTransformerTest {
             MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
             mv.visitCode();
             mv.visitVarInsn(ALOAD, 1);
-            mv.visitTypeInsn(CHECKCAST, "java/util/concurrent/CompletionStage");
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "async", "(Ljava/util/concurrent/CompletionStage;)Lcom/ixaris/commons/async/lib/Async;", false);
+            mv.visitTypeInsn(CHECKCAST, "com/ixaris/commons/async/lib/Async");
             mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Lcom/ixaris/commons/async/lib/Async;)Ljava/lang/Object;", false);
             mv.visitInsn(POP);
             mv.visitVarInsn(ALOAD, 1);
-            mv.visitTypeInsn(CHECKCAST, "java/util/concurrent/CompletionStage");
+            mv.visitTypeInsn(CHECKCAST, "com/ixaris/commons/async/lib/Async");
             mv.visitInsn(ARETURN);
             mv.visitMaxs(1, 2);
             mv.visitEnd();
         });
         ClassWriter cw = new ClassWriter(0);
         cn.accept(cw);
-        final byte[] bytes = TRANSFORMER.transform(new ClassReader(cw.toByteArray()));
         //        DevDebug.debugSaveTrace(cn.name, bytes);
-        assertEquals("hello", block(createClass(AsyncFunction.class, bytes).apply(result("hello"))));
+        final AsyncFunction fn = createClass(AsyncFunction.class, cw.toByteArray());
+        assertEquals("hello", block(fn.apply(result("hello"))));
     }
     
     @Test
@@ -87,21 +85,20 @@ public class TransformerTest extends BaseTransformerTest {
             mv.visitInsn(LCONST_0);
             mv.visitVarInsn(LSTORE, 3);
             mv.visitVarInsn(ALOAD, 1);
-            mv.visitTypeInsn(CHECKCAST, "java/util/concurrent/CompletionStage");
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "async", "(Ljava/util/concurrent/CompletionStage;)Lcom/ixaris/commons/async/lib/Async;", false);
+            mv.visitTypeInsn(CHECKCAST, "com/ixaris/commons/async/lib/Async");
             mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Lcom/ixaris/commons/async/lib/Async;)Ljava/lang/Object;", false);
             mv.visitInsn(POP);
             mv.visitVarInsn(ALOAD, 1);
-            mv.visitTypeInsn(CHECKCAST, "java/util/concurrent/CompletionStage");
+            mv.visitTypeInsn(CHECKCAST, "com/ixaris/commons/async/lib/Async");
             mv.visitInsn(ARETURN);
             mv.visitMaxs(2, 5);
             mv.visitEnd();
         });
         ClassWriter cw = new ClassWriter(0);
         cn.accept(cw);
-        final byte[] bytes = TRANSFORMER.transform(new ClassReader(cw.toByteArray()));
         // DevDebug.debugSaveTrace(cn.name, bytes);
-        assertEquals("hello", block(createClass(AsyncFunction.class, bytes).apply(result("hello"))));
+        final AsyncFunction fn = createClass(AsyncFunction.class, cw.toByteArray());
+        assertEquals("hello", block(fn.apply(result("hello"))));
     }
     
     @Test(timeout = 10_000L)
@@ -126,18 +123,19 @@ public class TransformerTest extends BaseTransformerTest {
             
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, "java/util/concurrent/CompletionStage");
+            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "async", "(Ljava/util/concurrent/CompletionStage;)Lcom/ixaris/commons/async/lib/Async;", false);
             mv.visitInsn(ARETURN);
             mv.visitMaxs(2, 5);
             mv.visitEnd();
         });
         ClassWriter cw = new ClassWriter(0);
         cn.accept(cw);
-        final byte[] bytes = TRANSFORMER.transform(new ClassReader(cw.toByteArray()));
         //        DevDebug.debugSaveTrace(cn.name, bytes);
+
+        AsyncBiFunction fn = createClass(AsyncBiFunction.class, cw.toByteArray());
+        assertEquals("hello", block(fn.apply(result("hello"), result("world"))));
         
-        assertEquals("hello", block(createClass(AsyncBiFunction.class, bytes).apply(result("hello"), result("world"))));
-        
-        final Async rest = createClass(AsyncBiFunction.class, bytes).apply(getBlockedFuture("hello"), getBlockedFuture("world"));
+        final Async<?> rest = fn.apply(getBlockedFuture("hello"), getBlockedFuture("world"));
         completeFutures();
         assertEquals("hello", block(rest));
     }

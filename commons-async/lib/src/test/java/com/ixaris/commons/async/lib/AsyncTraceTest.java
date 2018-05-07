@@ -1,6 +1,5 @@
 package com.ixaris.commons.async.lib;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.AsyncExecutor.exec;
 import static com.ixaris.commons.async.lib.AsyncExecutor.execSync;
@@ -22,8 +21,7 @@ public class AsyncTraceTest {
     @Test
     public void testLogging() {
         final Executor ex = new AsyncExecutorWrapper<>(Executors.newFixedThreadPool(1));
-        
-        CompletionStage<Void> c = async(exec(ex, () -> execute(ex, 2)));
+        final CompletionStage<Void> c = exec(ex, () -> execute(ex, 2));
         
         Awaitility.await().atMost(5, SECONDS).until(() -> CompletionStageUtil.isDone(c));
         
@@ -40,7 +38,7 @@ public class AsyncTraceTest {
                             .hasNoCause()))));
     }
     
-    private final Async<Void> execute(final Executor ex, final int depth) {
+    private Async<Void> execute(final Executor ex, final int depth) {
         if (depth == 0) {
             throw new IllegalStateException();
         } else {
@@ -51,8 +49,7 @@ public class AsyncTraceTest {
     @Test
     public void testLoggingFromAsync() {
         final Executor ex = new AsyncExecutorWrapper<>(Executors.newFixedThreadPool(1));
-        
-        final CompletionStage<Void> c = async(exec(ex, () -> throwAfterAwait(ex)));
+        final CompletionStage<Void> c = exec(ex, () -> throwAfterAwait(ex));
         
         Awaitility.await().atMost(5, SECONDS).until(() -> CompletionStageUtil.isDone(c));
         
@@ -66,8 +63,7 @@ public class AsyncTraceTest {
     @Test
     public void testLoggingFromAsyncMap() {
         final Executor ex = new AsyncExecutorWrapper<>(Executors.newFixedThreadPool(1));
-        
-        final CompletionStage<Void> c = async(exec(ex, () -> throwInMap(ex)));
+        final CompletionStage<Void> c = exec(ex, () -> throwInMap(ex));
         
         Awaitility.await().atMost(5, SECONDS).until(() -> CompletionStageUtil.isDone(c));
         

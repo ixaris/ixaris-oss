@@ -62,7 +62,7 @@ public class CriticalSectionTest {
         final int counter = shared.counter;
         System.out.println(Thread.currentThread().getName() + " start from " + counter);
         // simulate work being done
-        return AsyncExecutor.scheduleSync(10, TimeUnit.MILLISECONDS, () -> {
+        return scheduleSync(10, TimeUnit.MILLISECONDS, () -> {
             System.out.println(Thread.currentThread().getName() + " continue from " + counter);
             shared.counter = counter + 1;
             return null;

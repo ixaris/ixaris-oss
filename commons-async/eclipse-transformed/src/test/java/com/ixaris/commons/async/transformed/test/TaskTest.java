@@ -80,7 +80,7 @@ public class TaskTest extends BaseTest {
         final TaskSomethingAsync a = new TaskSomethingAsync();
         
         Async<String> blocker = result("x");
-        final Async<Object> res = a.doSomething(async(blocker));
+        final Async<Object> res = a.doSomething(blocker);
         assertEquals(":x", block(res));
     }
     

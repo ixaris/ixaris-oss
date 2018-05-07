@@ -137,12 +137,12 @@ final class AsyncTransformer {
     private static final String REJECTED_METHOD_DESC = "(L" + THROWABLE_NAME + ";)L" + ASYNC_NAME + ";";
     private static final String DONE_COMPOSE_METHOD_NAME = "doneCompose";
     private static final String DONE_COMPOSE_METHOD_DESC = "(L" + ASYNC_NAME + ";L" + FUNCTION_THROWS_NAME + ";)L" + ASYNC_NAME + ";";
-
+    
     private static final Pattern ASYNC_PARAMS = Pattern.compile("\\(.*L" + ASYNC_NAME + ";.*\\).*");
-
+    
     private static final String AWAIT_METHOD_NAME = "await";
     private static final String AWAIT_RESULT_METHOD_NAME = "awaitResult";
-
+    
     private static final Type ACONST_NULL_TYPE = Type.getObjectType("null");
     
     private static final Handle LAMBDAMETAFACTORY_HANDLE = new Handle(H_INVOKESTATIC,
@@ -256,10 +256,10 @@ final class AsyncTransformer {
         final Map<String, Integer> nameUseCount = new HashMap<>();
         
         for (final MethodNode original : new ArrayList<>(classNode.methods)) {
-
+            
             final Integer countOriginalUses = nameUseCount.get(original.name);
             nameUseCount.put(original.name, countOriginalUses == null ? 1 : countOriginalUses + 1);
-
+            
             boolean alreadyTransformed = false;
             if (isAsync(original)) {
                 if (original.visibleAnnotations != null) {
@@ -277,7 +277,7 @@ final class AsyncTransformer {
             } else {
                 checkSyncMethod(classNode, original);
             }
-
+            
             if (!alreadyTransformed && ASYNC_PARAMS.matcher(original.desc).matches()) {
                 // disallow passing Async as parameters as error handling would become misleading since methods that return Async<> throw
                 // exceptions on the assumption that the same method that calls the async method handles the exceptions around await(), or
@@ -332,38 +332,38 @@ final class AsyncTransformer {
     private boolean isAsync(final MethodNode original) {
         return original.desc.endsWith(")L" + ASYNC_NAME + ";");
     }
-
+    
     private static class CheckSyncMethodVisitor extends MethodVisitor {
-
+        
         private final ClassNode classNode;
-
+        
         private int lastLine;
-
+        
         private CheckSyncMethodVisitor(final ClassNode classNode) {
             super(ASM5, null);
             this.classNode = classNode;
         }
-
+        
         @Override
         public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc, final boolean itf) {
             if (isStaticAsyncMethod(opcode, owner, name, AWAIT_METHOD_NAME, AWAIT_RESULT_METHOD_NAME)) {
                 throw error(extractFullyQualifiedClassName(classNode),
                     lastLine,
                     "non-async methods should not call await() and awaitResult(). To block, use block()");
-
+                
             } else {
                 super.visitMethodInsn(opcode, owner, name, desc, itf);
             }
         }
-
+        
         @Override
         public void visitLineNumber(final int line, final Label start) {
             lastLine = line;
             super.visitLineNumber(line, start);
         }
-
+        
     }
-
+    
     private static class TransformMethodVisitor extends MethodVisitor {
         
         private final MethodNode methodToAnnotate;
@@ -377,7 +377,7 @@ final class AsyncTransformer {
         private int awaitIndex = 0;
         private int lastLine;
         private AwaitSwitchEntry awaitSwitchEntry;
-
+        
         private TransformMethodVisitor(final MethodNode method,
                                        final MethodNode methodToAnnotate,
                                        final ClassNode classNode,
@@ -433,7 +433,7 @@ final class AsyncTransformer {
                     arguments,
                     handle,
                     lastLine);
-
+                
             } else {
                 super.visitMethodInsn(opcode, owner, name, desc, itf);
             }
@@ -456,22 +456,22 @@ final class AsyncTransformer {
     private void checkSyncMethod(final ClassNode classNode, final MethodNode original) {
         original.accept(new CheckSyncMethodVisitor(classNode));
     }
-
+    
     private boolean transformAsyncMethod(final ClassNode classNode, final MethodNode original, final Map<String, Integer> nameUseCount) throws AnalyzerException {
         final boolean isAbstract = Modifier.isAbstract(original.access);
         if (isAbstract) {
             return false;
         }
-
+        
         final boolean isStatic = Modifier.isStatic(original.access);
-
+        
         final MethodNode replacement = new MethodNode(original.access,
             original.name,
             original.desc,
             original.signature,
             original.exceptions.toArray(new String[0]));
         replacement.visitAnnotation("L" + ASYNC_TRANSFORMED_NAME + ";", true);
-
+        
         final List<AwaitSwitchEntry> switchEntries = new ArrayList<>();
         final List<Argument> arguments = new ArrayList<>();
         final List<Label> switchLabels = new ArrayList<>();
@@ -665,7 +665,7 @@ final class AsyncTransformer {
                 null,
                 new String[] { THROWABLE_NAME });
             continuation.visitAnnotation("L" + ASYNC_TRANSFORMED_NAME + ";", true);
-
+            
             replacement.visitCode();
             continuation.visitCode();
             

@@ -131,7 +131,6 @@ public class TransformerTest extends BaseTransformerTest {
         ClassWriter cw = new ClassWriter(0);
         cn.accept(cw);
         //        DevDebug.debugSaveTrace(cn.name, bytes);
-
         AsyncBiFunction fn = createClass(AsyncBiFunction.class, cw.toByteArray());
         assertEquals("hello", block(fn.apply(result("hello"), result("world"))));
         

@@ -1,4 +1,4 @@
-package com.ixaris.commons;
+package com.ixaris.commons.async.lib;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

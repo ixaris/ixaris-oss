@@ -62,5 +62,5 @@ public class LambdaTest extends BaseTest {
         completeFutures();
         assertEquals((Integer) 11, CompletionStageUtil.block(task));
     }
-
+    
 }

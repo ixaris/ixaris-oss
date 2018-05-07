@@ -169,7 +169,7 @@ public class AnalyserTest extends BaseTransformerTest {
             mv.visitTryCatchBlock(l0, l1, l2, "java/lang/Exception");
             mv.visitLabel(l0);
             mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletableFuture;)Ljava/lang/Object;", false);
+            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletableFuture;)Ljava/lang/Object;", true);
             mv.visitInsn(POP);
             mv.visitLabel(l1);
             Label l3 = new Label();
@@ -182,7 +182,7 @@ public class AnalyserTest extends BaseTransformerTest {
                 new Object[] { "java/lang/Exception" });
             mv.visitVarInsn(ASTORE, 2);
             mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/transformer/Await", "await", "(Ljava/util/concurrent/CompletableFuture;)Ljava/lang/Object;", false);
+            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/transformer/Await", "await", "(Ljava/util/concurrent/CompletableFuture;)Ljava/lang/Object;", true);
             mv.visitInsn(POP);
             mv.visitLabel(l3);
             mv.visitFrame(Opcodes.F_FULL,

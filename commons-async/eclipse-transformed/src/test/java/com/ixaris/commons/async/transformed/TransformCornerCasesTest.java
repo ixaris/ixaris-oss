@@ -1,6 +1,6 @@
 package com.ixaris.commons.async.transformed;
 
-import static com.ixaris.commons.async.lib.Async.block;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
@@ -97,6 +97,17 @@ public class TransformCornerCasesTest {
     @Test
     public void testStaticMethodReference() throws InterruptedException {
         assertThat(block(TransformCornerCases.staticUsingMethodReference())).isEqualTo(Long.valueOf(1L));
+    }
+    
+    @Test
+    public void testAsyncIgnoringException() throws InterruptedException {
+        final TransformCornerCases tt = new TransformCornerCases();
+        tt.asyncIgnoringException();
+    }
+    
+    @Test
+    public void testStaticAsyncIgnoringException() throws InterruptedException {
+        TransformCornerCases.staticAsyncIgnoringException();
     }
     
 }

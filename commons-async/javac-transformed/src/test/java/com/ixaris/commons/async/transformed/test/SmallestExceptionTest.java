@@ -26,10 +26,9 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
@@ -47,7 +46,7 @@ public class SmallestExceptionTest extends BaseTest {
     
     private Async<Void> doIt() {
         try {
-            await(async(getBlockedFuture()));
+            await(getBlockedFuture());
             return result();
         } catch (Exception ex) {
             return result();

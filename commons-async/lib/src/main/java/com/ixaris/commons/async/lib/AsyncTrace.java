@@ -105,10 +105,14 @@ public final class AsyncTrace extends Throwable {
         Throwable tmp = throwable;
         while (true) {
             final Throwable cause = tmp.getCause();
-            if ((cause == null) || (cause instanceof AsyncTrace)) {
+            if (cause == null) {
                 setCause(tmp, trace);
                 return throwable;
             } else if (cause == trace) {
+                return throwable;
+            } else if (cause instanceof AsyncTrace) {
+                // replace it if there is a different trace attached
+                setCause(tmp, trace);
                 return throwable;
             }
             tmp = cause;

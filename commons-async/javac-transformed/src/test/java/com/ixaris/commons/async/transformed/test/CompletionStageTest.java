@@ -26,11 +26,10 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.awaitResult;
-import static com.ixaris.commons.async.lib.Async.block;
+import static com.ixaris.commons.async.lib.Async.awaitExceptions;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.CompletableFuture;
@@ -48,7 +47,7 @@ public class CompletionStageTest extends BaseTest {
         class Experiment {
             
             Async<Integer> doIt(int a, int b) {
-                await(async(getBlockedFuture()));
+                await(getBlockedFuture());
                 return result(a + b);
             }
         }
@@ -65,7 +64,7 @@ public class CompletionStageTest extends BaseTest {
         class Experiment {
             
             Async<String> doIt(CompletionStage<String> stage) {
-                return awaitResult(async(stage));
+                return awaitExceptions(Async.from(stage));
             }
             
         }
@@ -82,13 +81,13 @@ public class CompletionStageTest extends BaseTest {
         class Experiment {
             
             Async<Integer> doIt(CompletionStage<Integer> stage, int b) {
-                int a = await(async(stage));
+                int a = await(stage);
                 return result(a + b);
             }
         }
         
         CompletionStage<Integer> task = getBlockedFuture(1);
-        Async<Integer> res = new Experiment().doIt(task, 2);
+        CompletionStage<Integer> res = new Experiment().doIt(task, 2);
         
         completeFutures();
         assertEquals(3, block(res).intValue());

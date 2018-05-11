@@ -42,7 +42,6 @@ import static jdk.internal.org.objectweb.asm.Opcodes.FCONST_0;
 import static jdk.internal.org.objectweb.asm.Opcodes.FLOAT;
 import static jdk.internal.org.objectweb.asm.Opcodes.F_FULL;
 import static jdk.internal.org.objectweb.asm.Opcodes.F_NEW;
-import static jdk.internal.org.objectweb.asm.Opcodes.F_SAME1;
 import static jdk.internal.org.objectweb.asm.Opcodes.GOTO;
 import static jdk.internal.org.objectweb.asm.Opcodes.H_INVOKESPECIAL;
 import static jdk.internal.org.objectweb.asm.Opcodes.H_INVOKESTATIC;
@@ -50,6 +49,7 @@ import static jdk.internal.org.objectweb.asm.Opcodes.ICONST_0;
 import static jdk.internal.org.objectweb.asm.Opcodes.IFNE;
 import static jdk.internal.org.objectweb.asm.Opcodes.ILOAD;
 import static jdk.internal.org.objectweb.asm.Opcodes.INTEGER;
+import static jdk.internal.org.objectweb.asm.Opcodes.INVOKEINTERFACE;
 import static jdk.internal.org.objectweb.asm.Opcodes.INVOKESPECIAL;
 import static jdk.internal.org.objectweb.asm.Opcodes.INVOKESTATIC;
 import static jdk.internal.org.objectweb.asm.Opcodes.ISTORE;
@@ -75,7 +75,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -127,21 +126,33 @@ final class AsyncTransformer {
     private static final String THROWABLE_NAME = "java/lang/Throwable";
     private static final String FUNCTION_THROWS_NAME = "com/ixaris/commons/misc/lib/function/FunctionThrows";
     
+    private static final String COMP_FUTURE_NAME = "java/util/concurrent/CompletableFuture";
+    
+    private static final String COMP_STAGE_NAME = "java/util/concurrent/CompletionStage";
+    private static final Type COMP_STAGE_TYPE = Type.getObjectType(COMP_STAGE_NAME);
+    private static final String COMP_STAGE_TO_COMPLETABLE_FUTURE_NAME = "toCompletableFuture";
+    private static final String COMP_STAGE_TO_COMPLETABLE_FUTURE_DESC = "()L" + COMP_FUTURE_NAME + ";";
+    
     private static final String ASYNC_NAME = "com/ixaris/commons/async/lib/Async";
     private static final Type ASYNC_TYPE = Type.getObjectType(ASYNC_NAME);
-    private static final String ASYNC_TRANSFORMED_NAME = "com/ixaris/commons/async/lib/AsyncTransformed";
-    private static final String ASYNC_UTIL_NAME = "com/ixaris/commons/async/lib/AsyncUtil";
-    private static final String GET_METHOD_NAME = "get";
-    private static final String GET_METHOD_DESC = "(L" + ASYNC_NAME + ";)L" + OBJECT_NAME + ";";
-    private static final String REJECTED_METHOD_NAME = "rejected";
-    private static final String REJECTED_METHOD_DESC = "(L" + THROWABLE_NAME + ";)L" + ASYNC_NAME + ";";
-    private static final String DONE_COMPOSE_METHOD_NAME = "doneCompose";
-    private static final String DONE_COMPOSE_METHOD_DESC = "(L" + ASYNC_NAME + ";L" + FUNCTION_THROWS_NAME + ";)L" + ASYNC_NAME + ";";
+    private static final String ASYNC_FROM_NAME = "from";
+    private static final String ASYNC_FROM_DESC = "(L" + COMP_STAGE_NAME + ";)L" + ASYNC_NAME + ";";
+    private static final String ASYNC_AWAIT_METHOD_NAME = "await";
+    private static final String ASYNC_AWAIT_RESULT_METHOD_NAME = "awaitResult";
+    private static final String ASYNC_AWAIT_EXCEPTIONS_METHOD_NAME = "awaitExceptions";
     
-    private static final Pattern ASYNC_PARAMS = Pattern.compile("\\(.*L" + ASYNC_NAME + ";.*\\).*");
+    private static final String ASYNC_TRANSFORMED_ANNOTATION_NAME = "com/ixaris/commons/async/lib/annotation/AsyncTransformed";
+    private static final String ASYNC_ANNOTATION_NAME = "com/ixaris/commons/async/lib/annotation/Async";
     
-    private static final String AWAIT_METHOD_NAME = "await";
-    private static final String AWAIT_RESULT_METHOD_NAME = "awaitResult";
+    private static final String COMP_STAGE_UTIL_NAME = "com/ixaris/commons/async/lib/CompletionStageUtil";
+    private static final String COMP_STAGE_UTIL_IS_DONE_NAME = "isDone";
+    private static final String COMP_STAGE_UTIL_IS_DONE_DESC = "(L" + COMP_STAGE_NAME + ";)Z";
+    private static final String COMP_STAGE_UTIL_GET_NAME = "get";
+    private static final String COMP_STAGE_UTIL_GET_DESC = "(L" + COMP_STAGE_NAME + ";)L" + OBJECT_NAME + ";";
+    private static final String COMP_STAGE_UTIL_DONE_COMPOSE_NAME = "doneCompose";
+    private static final String COMP_STAGE_UTIL_DONE_COMPOSE_DESC = "(L" + COMP_STAGE_NAME + ";L" + FUNCTION_THROWS_NAME + ";)L" + COMP_STAGE_NAME + ";";
+    
+    private static final String STATIC_FROM_COMPLETION_STAGE_NAME = "fromCompletionStage";
     
     private static final Type ACONST_NULL_TYPE = Type.getObjectType("null");
     
@@ -247,7 +258,7 @@ final class AsyncTransformer {
         // using EXPAND_FRAMES because F_SAME causes problems when inserting new frames
         cr.accept(classNode, ClassReader.EXPAND_FRAMES);
         
-        if (classNode.name.equals(ASYNC_NAME) || classNode.name.equals(ASYNC_UTIL_NAME)) {
+        if (classNode.name.equals(ASYNC_NAME)) {
             // avoid transforming Async itself
             return null;
         }
@@ -256,41 +267,22 @@ final class AsyncTransformer {
         final Map<String, Integer> nameUseCount = new HashMap<>();
         
         for (final MethodNode original : new ArrayList<>(classNode.methods)) {
-            
             final Integer countOriginalUses = nameUseCount.get(original.name);
             nameUseCount.put(original.name, countOriginalUses == null ? 1 : countOriginalUses + 1);
             
-            boolean alreadyTransformed = false;
-            if (isAsync(original)) {
-                if (original.visibleAnnotations != null) {
-                    for (final AnnotationNode visibleAnnotation : original.visibleAnnotations) {
-                        if (visibleAnnotation.desc.equals("L" + ASYNC_TRANSFORMED_NAME + ";")) {
-                            // skip already transformed
-                            alreadyTransformed = true;
-                            break;
-                        }
-                    }
-                }
-                if (!alreadyTransformed) {
-                    changed |= transformAsyncMethod(classNode, original, nameUseCount);
+            final Type retType = Type.getReturnType(original.desc);
+            final boolean synthetic = (original.access & ACC_SYNTHETIC) == ACC_SYNTHETIC;
+            // cater for
+            // - Async<> returning methods
+            // - Methods annotated with @Async
+            // - synthetic methods (typically lambda bodies) we err on the lenient side and transform all lambdas that
+            // use await(), even if they don't return an implementation of CompletionStage
+            if (retType.equals(ASYNC_TYPE) || hasAnnotation(original, ASYNC_ANNOTATION_NAME) || (synthetic && retType.getSort() == Type.OBJECT)) {
+                if (!hasAnnotation(original, ASYNC_TRANSFORMED_ANNOTATION_NAME)) {
+                    changed |= transformAsyncMethod(classNode, original, nameUseCount, retType.getInternalName());
                 }
             } else {
                 checkSyncMethod(classNode, original);
-            }
-            
-            if (!alreadyTransformed && ASYNC_PARAMS.matcher(original.desc).matches()) {
-                // disallow passing Async as parameters as error handling would become misleading since methods that return Async<> throw
-                // exceptions on the assumption that the same method that calls the async method handles the exceptions around await(), or
-                // propagates the async and exception by re-declaring the exception. If one handles the declared exception but passes the
-                // Async as a parameter, that situation is not representative of what would really happen, because the exception would
-                // technically be throws when the recipient of the Async does await().
-                // NOTE This is also applicable to storing Async<> in a local variable - doing try..catch around op(), then await()ing on
-                // the returned async outside the try..catch leads to an incorrect assumption that the exception was handled when in reality
-                // it was not. There is, however, no way of representing this in the java language, so a developer needs to be aware that
-                // the exceptions declared by an async method are really thrown by await()
-                throw error(extractFullyQualifiedClassName(classNode),
-                    findFirstLineNumber(original),
-                    "Async<?> should not be passed as a parameter. Use CompletionStage<?> instead.");
             }
         }
         
@@ -320,17 +312,16 @@ final class AsyncTransformer {
         return cw.toByteArray();
     }
     
-    private int findFirstLineNumber(final MethodNode method) {
-        for (AbstractInsnNode insn = method.instructions.getFirst(); insn != null; insn = insn.getNext()) {
-            if (insn instanceof LineNumberNode) {
-                return ((LineNumberNode) insn).line;
+    private boolean hasAnnotation(final MethodNode original, final String annotationName) {
+        if (original.visibleAnnotations != null) {
+            for (final AnnotationNode visibleAnnotation : original.visibleAnnotations) {
+                if (visibleAnnotation.desc.equals("L" + annotationName + ";")) {
+                    // skip already transformed
+                    return true;
+                }
             }
         }
-        return -1;
-    }
-    
-    private boolean isAsync(final MethodNode original) {
-        return original.desc.endsWith(")L" + ASYNC_NAME + ";");
+        return false;
     }
     
     private static class CheckSyncMethodVisitor extends MethodVisitor {
@@ -346,7 +337,13 @@ final class AsyncTransformer {
         
         @Override
         public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc, final boolean itf) {
-            if (isStaticAsyncMethod(opcode, owner, name, AWAIT_METHOD_NAME, AWAIT_RESULT_METHOD_NAME)) {
+            if (isStaticAsyncMethod(opcode,
+                owner,
+                name,
+                ASYNC_AWAIT_METHOD_NAME,
+                ASYNC_AWAIT_RESULT_METHOD_NAME,
+                ASYNC_AWAIT_EXCEPTIONS_METHOD_NAME)) {
+                
                 throw error(extractFullyQualifiedClassName(classNode),
                     lastLine,
                     "non-async methods should not call await() and awaitResult(). To block, use block()");
@@ -421,9 +418,9 @@ final class AsyncTransformer {
         
         @Override
         public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc, final boolean itf) {
-            if (isStaticAsyncMethod(opcode, owner, name, AWAIT_METHOD_NAME, AWAIT_RESULT_METHOD_NAME)) {
+            if (isStaticAsyncMethod(opcode, owner, name, ASYNC_AWAIT_METHOD_NAME, ASYNC_AWAIT_RESULT_METHOD_NAME, ASYNC_AWAIT_EXCEPTIONS_METHOD_NAME)) {
                 awaitSwitchEntry = switchEntries.get(awaitIndex++);
-                transformAwait(AWAIT_METHOD_NAME.equals(name),
+                transformAwait(ASYNC_AWAIT_METHOD_NAME.equals(name),
                     Modifier.isStatic(original.access),
                     classNode,
                     original,
@@ -457,7 +454,10 @@ final class AsyncTransformer {
         original.accept(new CheckSyncMethodVisitor(classNode));
     }
     
-    private boolean transformAsyncMethod(final ClassNode classNode, final MethodNode original, final Map<String, Integer> nameUseCount) throws AnalyzerException {
+    private boolean transformAsyncMethod(final ClassNode classNode,
+                                         final MethodNode original,
+                                         final Map<String, Integer> nameUseCount,
+                                         final String retType) throws AnalyzerException {
         final boolean isAbstract = Modifier.isAbstract(original.access);
         if (isAbstract) {
             return false;
@@ -470,7 +470,7 @@ final class AsyncTransformer {
             original.desc,
             original.signature,
             original.exceptions.toArray(new String[0]));
-        replacement.visitAnnotation("L" + ASYNC_TRANSFORMED_NAME + ";", true);
+        replacement.visitAnnotation("L" + ASYNC_TRANSFORMED_ANNOTATION_NAME + ";", true);
         
         final List<AwaitSwitchEntry> switchEntries = new ArrayList<>();
         final List<Argument> arguments = new ArrayList<>();
@@ -499,7 +499,8 @@ final class AsyncTransformer {
             
             // create a switch entry for every await() calls - these will result in a continuation invocation
             for (AbstractInsnNode insn = original.instructions.getFirst(); insn != null; ii++, insn = insn.getNext()) {
-                if ((insn instanceof MethodInsnNode && isStaticAsyncMethod((MethodInsnNode) insn, AWAIT_METHOD_NAME, AWAIT_RESULT_METHOD_NAME))) {
+                if ((insn instanceof MethodInsnNode
+                    && isStaticAsyncMethod((MethodInsnNode) insn, ASYNC_AWAIT_METHOD_NAME, ASYNC_AWAIT_RESULT_METHOD_NAME, ASYNC_AWAIT_EXCEPTIONS_METHOD_NAME))) {
                     final AwaitSwitchEntry se = new AwaitSwitchEntry(++count, (ExtendedFrame) frames[ii], ii);
                     switchLabels.add(se.resumeLabel);
                     switchEntries.add(se);
@@ -507,7 +508,7 @@ final class AsyncTransformer {
                     // while we're here, also check if we have POP instructions where the operand stack head is an Async or a CompletionStage
                     // which indicates an abandoned stage, for which we warn
                     final BasicValue headOfOperandStack = frames[ii].getStack(frames[ii].getStackSize() - 1);
-                    if (headOfOperandStack.getType().equals(ASYNC_TYPE)) {
+                    if (headOfOperandStack.getType().equals(ASYNC_TYPE) || headOfOperandStack.getType().equals(COMP_STAGE_TYPE)) {
                         warn(extractFullyQualifiedClassName(classNode),
                             extractMethodSignature(original),
                             lastLine,
@@ -608,10 +609,10 @@ final class AsyncTransformer {
         arguments.forEach(p -> p.tmpLocalMapping = -2);
         final Argument stateArgument =
             mapLocalToLambdaArgument(isStatic, original, null, arguments, 0, BasicValue.INT_VALUE);
-        final Argument asyncArgument =
-            mapLocalToLambdaArgument(isStatic, original, null, arguments, 0, new BasicValue(ASYNC_TYPE));
+        final Argument stageArgument =
+            mapLocalToLambdaArgument(isStatic, original, null, arguments, 0, new BasicValue(COMP_STAGE_TYPE));
         stateArgument.name = "async$state";
-        asyncArgument.name = "async$async";
+        stageArgument.name = "async$stage";
         final Object[] defaultFrame;
         {
             final List<Object> frame = new ArrayList<>(arguments.size() + (isStatic ? 0 : 1));
@@ -661,10 +662,10 @@ final class AsyncTransformer {
             final MethodNode continuation = new MethodNode(
                 ACC_SYNTHETIC | ACC_PRIVATE | (original.access & ~ACC_PUBLIC & ~ACC_PROTECTED),
                 continuationName + (countUses == null ? "" : "$" + countUses),
-                Type.getMethodDescriptor(ASYNC_TYPE, typeArguments),
+                Type.getMethodDescriptor(COMP_STAGE_TYPE, typeArguments),
                 null,
                 new String[] { THROWABLE_NAME });
-            continuation.visitAnnotation("L" + ASYNC_TRANSFORMED_NAME + ";", true);
+            continuation.visitAnnotation("L" + ASYNC_TRANSFORMED_ANNOTATION_NAME + ";", true);
             
             replacement.visitCode();
             continuation.visitCode();
@@ -730,57 +731,41 @@ final class AsyncTransformer {
             continuation.visitEnd();
             // continuation.maxStack = Math.max(16, continuation.maxStack + 16);
             // continuation.maxLocals = Math.max(16, continuation.maxLocals + 16);
+            // adding the continuation method
+            continuation.accept(classNode);
             
             // the async method delegates to the continuation, catching any exceptions
             // any exceptions thrown by the continuation method following await calls are
             // handled by the enclosing completion stages
-            final Label labelTryStart = new Label();
-            final Label labelTryEnd = new Label();
-            final Label labelCatch = new Label();
-            replacement.visitTryCatchBlock(labelTryStart, labelTryEnd, labelCatch, THROWABLE_NAME);
-            replacement.visitLabel(labelTryStart);
             pushInitial(isStatic, classNode, replacement, arguments);
             replacement.visitMethodInsn(isStatic ? INVOKESTATIC : INVOKESPECIAL, classNode.name, continuation.name, continuation.desc, false);
-            replacement.visitLabel(labelTryEnd);
-            replacement.visitInsn(ARETURN);
-            replacement.visitLabel(labelCatch);
-            replacement.visitFrame(F_SAME1, 0, null, 1, new Object[] { THROWABLE_NAME });
-            replacement.visitMethodInsn(INVOKESTATIC, ASYNC_UTIL_NAME, REJECTED_METHOD_NAME, REJECTED_METHOD_DESC, false);
+            switch (retType) {
+                case ASYNC_NAME:
+                    // convert CompletionStage to Async
+                    replacement.visitMethodInsn(INVOKESTATIC, ASYNC_NAME, ASYNC_FROM_NAME, ASYNC_FROM_DESC, true);
+                    break;
+                case COMP_STAGE_NAME:
+                    // nothing to do, already a completion stage
+                    break;
+                case COMP_FUTURE_NAME:
+                    // call toCompletableFuture();
+                    replacement.visitMethodInsn(INVOKEINTERFACE, COMP_STAGE_NAME, COMP_STAGE_TO_COMPLETABLE_FUTURE_NAME, COMP_STAGE_TO_COMPLETABLE_FUTURE_DESC, true);
+                    break;
+                default:
+                    // call static fromCompletionStage() method on return type
+                    replacement.visitMethodInsn(INVOKESTATIC, retType, STATIC_FROM_COMPLETION_STAGE_NAME, "(L" + COMP_STAGE_NAME + ";)L" + retType + ";", false);
+            }
             replacement.visitInsn(ARETURN);
             replacement.visitEnd();
             
-            // adding the continuation method
-            continuation.accept(classNode);
+            // replace the method
+            classNode.methods.remove(original);
+            replacement.accept(classNode);
+            return true;
+            
         } else {
-            replacement.visitCode();
-            final Label labelTryStart = new Label();
-            replacement.visitLabel(labelTryStart);
-            // transform the original code to the async method
-            // we are do not need the continuation method when there are no await calls
-            final TransformMethodVisitor visitor = new TransformMethodVisitor(replacement,
-                replacement,
-                classNode,
-                original,
-                lambdaDesc,
-                arguments,
-                null,
-                entryPoint,
-                switchEntries);
-            original.accept(visitor);
-            
-            final Label labelCatch = new Label();
-            replacement.visitTryCatchBlock(labelTryStart, labelCatch, labelCatch, THROWABLE_NAME); // register last to not override existing try..catch blocks registered
-            replacement.visitLabel(labelCatch);
-            replacement.visitFrame(F_FULL, 0, new Object[0], 1, new Object[] { THROWABLE_NAME });
-            replacement.visitMethodInsn(INVOKESTATIC, ASYNC_UTIL_NAME, REJECTED_METHOD_NAME, "(L" + THROWABLE_NAME + ";)L" + ASYNC_NAME + ";", false);
-            replacement.visitInsn(ARETURN);
-            replacement.visitEnd();
+            return false;
         }
-        
-        // replace the method
-        classNode.methods.remove(original);
-        replacement.accept(classNode);
-        return true;
     }
     
     private Argument mapLocalToLambdaArgument(final boolean isStatic,
@@ -1048,13 +1033,13 @@ final class AsyncTransformer {
         
         // turns into:
         
-        // code: if (!AsyncHelper.isDone(async)) {
+        // code: if (!CompletionStageUtil.isDone(async)) {
         // code: saveStack to new locals
         // code: push lambda parameters (locals and stack)
-        // code: return AsyncUtil.doneCompose(async, async -> continuation$method(arguments, state, async));
+        // code: return CompletionStageUtil.doneCompose(async, async -> continuation$method(arguments, state, async));
         // code: }
         // code: isDoneLabel:
-        // code: AsyncHelper.get(async); -> causes exception to be thrown
+        // code: CompletionStageUtil.get(async); -> causes exception to be thrown
         // (only for awaitResult, restore async on stack)
         
         // and this is added to the switch
@@ -1067,7 +1052,7 @@ final class AsyncTransformer {
         // stack: { ... async }
         mv.visitInsn(DUP);
         // stack: { ... async async }
-        mv.visitMethodInsn(INVOKESTATIC, ASYNC_UTIL_NAME, "isDone", "(L" + ASYNC_NAME + ";)Z", false);
+        mv.visitMethodInsn(INVOKESTATIC, COMP_STAGE_UTIL_NAME, COMP_STAGE_UTIL_IS_DONE_NAME, COMP_STAGE_UTIL_IS_DONE_DESC, false);
         // stack: { ... async is_done_result }
         // code: jump if true (non 0) to isDoneLabel:
         mv.visitJumpInsn(IFNE, awaitSwitchEntry.isDoneLabel);
@@ -1089,7 +1074,7 @@ final class AsyncTransformer {
             // stack: { async }
         }
         
-        // code: return async.doneCompose(async -> _func([arguments-2, state], async));
+        // code: return CompletionStageUtil.doneCompose(async -> _func([arguments-2, state], async));
         // where [arguments-2, state] are bound to the lambda
         
         pushArguments(isStatic, classNode, mv, awaitSwitchEntry, lambdaArguments, lineNumber);
@@ -1102,10 +1087,10 @@ final class AsyncTransformer {
             LAMBDAMETAFACTORY_HANDLE,
             Type.getType("(L" + OBJECT_NAME + ";)L" + OBJECT_NAME + ";"),
             handle,
-            Type.getType("(L" + ASYNC_NAME + ";)L" + ASYNC_NAME + ";"));
+            Type.getType("(L" + COMP_STAGE_NAME + ";)L" + COMP_STAGE_NAME + ";"));
         
         // stack: { async lambda_function_ref }
-        mv.visitMethodInsn(INVOKESTATIC, ASYNC_UTIL_NAME, DONE_COMPOSE_METHOD_NAME, DONE_COMPOSE_METHOD_DESC, false);
+        mv.visitMethodInsn(INVOKESTATIC, COMP_STAGE_UTIL_NAME, COMP_STAGE_UTIL_DONE_COMPOSE_NAME, COMP_STAGE_UTIL_DONE_COMPOSE_DESC, false);
         
         // stack: { composed_async }
         
@@ -1148,7 +1133,7 @@ final class AsyncTransformer {
         }
         
         // {  ... async? async }
-        mv.visitMethodInsn(INVOKESTATIC, ASYNC_UTIL_NAME, GET_METHOD_NAME, GET_METHOD_DESC, false);
+        mv.visitMethodInsn(INVOKESTATIC, COMP_STAGE_UTIL_NAME, COMP_STAGE_UTIL_GET_NAME, COMP_STAGE_UTIL_GET_DESC, false);
         // {  ... async? result } or throw exception.
         // For first iteration, replacement method catches exception and rejects the async
         // For continuations, an exception rejects the composed async
@@ -1188,6 +1173,11 @@ final class AsyncTransformer {
         }
         stack = nStack == stack.length ? stack : Arrays.copyOf(stack, nStack);
         locals = nLocals == locals.length ? locals : Arrays.copyOf(locals, maxLocal);
+        
+        // replace the last type on the stack with CompletionStage,
+        // since we can have any implementation of this interface here
+        stack[nStack - 1] = toFrameType(COMP_STAGE_TYPE);
+        
         mv.visitFrame(F_FULL, maxLocal, locals, nStack, stack);
     }
     
@@ -1278,7 +1268,7 @@ final class AsyncTransformer {
             }
         }
         method.visitInsn(ICONST_0); // initial state
-        method.visitInsn(ACONST_NULL); // null promise
+        method.visitInsn(ACONST_NULL); // null stage
         // stack: { ... lambdaArguments}
     }
     

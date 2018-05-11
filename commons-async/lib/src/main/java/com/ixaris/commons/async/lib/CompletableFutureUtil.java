@@ -1,6 +1,7 @@
 package com.ixaris.commons.async.lib;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import com.ixaris.commons.misc.lib.function.CallableThrows;
 import com.ixaris.commons.misc.lib.function.RunnableThrows;
@@ -51,6 +52,37 @@ public class CompletableFutureUtil {
         }
     }
     
+    /**
+     * Relay the result of a completion stage to a completable future
+     *
+     * @param future the future to be completed with the result / exception of the given stage
+     * @param callable the callable from which to obtain the stage from which to complete
+     */
+    public static <T> void completeFrom(final CompletableFuture<T> future,
+                                        final CallableThrows<? extends CompletionStage<T>, ?> callable) {
+        try {
+            completeFrom(future, callable.call());
+        } catch (final Throwable t) { // NOSONAR future handling
+            future.completeExceptionally(AsyncTrace.join(t));
+        }
+    }
+    
+    /**
+     * Relay the result of a completion stage to a completable future
+     *
+     * @param future the future to be completed with the result / exception of the given stage
+     * @param stage the stage to complete from
+     */
+    public static <T> void completeFrom(final CompletableFuture<T> future, final CompletionStage<T> stage) {
+        stage.whenComplete((r, t) -> complete(future, r, t));
+    }
+    
+    /**
+     * Reject a future, joining the trace
+     *
+     * @param future
+     * @param t
+     */
     public static void reject(final CompletableFuture<?> future, final Throwable t) {
         future.completeExceptionally(AsyncTrace.join(t));
     }

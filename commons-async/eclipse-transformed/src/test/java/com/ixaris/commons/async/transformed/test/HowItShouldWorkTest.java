@@ -26,9 +26,9 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -39,70 +39,56 @@ import org.junit.Test;
 
 import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.async.lib.CompletionStageUtil;
+import com.ixaris.commons.async.lib.annotation.AsyncTransformed;
 
 public class HowItShouldWorkTest {
+    
     private static class WhatWillBeWritten {
         
         public Async<Object> doSomething(CompletionStage<String> blocker) {
-            String res = await(async(blocker));
+            String res = await(blocker);
             return result(":" + res);
         }
         
         public Async<Object> doSomethingElse(CompletionStage<String> blocker) {
-            return async(blocker).map(res -> ":" + res);
-        }
-        
-    }
-    
-    private static class HowItShouldBehave {
-        
-        public CompletionStage<Object> doSomething(CompletionStage<String> blocker) {
-            return blocker.thenApply(res -> ":" + res);
-        }
-        
-        public CompletionStage<Object> doSomethingElse(CompletionStage<String> blocker) {
-            return blocker.thenApply(res -> ":" + res);
+            return Async.from(blocker).map(res -> ":" + res);
         }
         
     }
     
     private static class HowItShouldBeInstrumented {
         
-        public Async<Object> doSomething(CompletionStage<String> blocker) {
-            throw Async.noTransformation();
-        }
-        
-        public CompletionStage<Object> async$doSomething(CompletionStage<String> blocker) {
+        @AsyncTransformed
+        public Async<Object> doSomething(final CompletionStage<String> blocker) {
             try {
-                return continuation$async$doSomething(blocker, 0, null);
-            } catch (Throwable t) {
-                return CompletionStageUtil.rejected(t);
+                return Async.from(continuation$doSomething(blocker, 0, null));
+            } catch (final Throwable t) {
+                return Async.rejected(t);
             }
         }
         
-        public CompletionStage<Object> continuation$async$doSomething(CompletionStage<String> blocker, int async$state, CompletionStage<?> async$promise) throws Throwable {
+        @AsyncTransformed
+        public CompletionStage<Object> continuation$doSomething(final CompletionStage<String> blocker, final int async$state, CompletionStage<?> async$async) throws Throwable {
             switch (async$state) {
                 case 0:
-                    if (!CompletionStageUtil.isDone(blocker)) {
-                        return CompletionStageUtil.doneCompose(blocker, f -> continuation$async$doSomething(blocker, 1, f));
+                    async$async = blocker;
+                    if (!CompletionStageUtil.isDone(async$async)) {
+                        return CompletionStageUtil.doneCompose(async$async, f -> continuation$doSomething(blocker, 1, f));
                     }
                 case 1:
-                    String res = CompletionStageUtil.get(blocker);
-                    return CompletionStageUtil.fulfilled(":" + res);
+                    String res = (String) CompletionStageUtil.get(async$async);
+                    return result(":" + res);
                 default:
                     throw new IllegalArgumentException();
             }
         }
         
-        public Async<Object> doSomethingElse(CompletionStage<String> blocker) {
-            throw Async.noTransformation();
-        }
-        
-        public CompletionStage<Object> async$doSomethingElse(CompletionStage<String> blocker) {
+        @AsyncTransformed
+        public Async<Object> doSomethingElse(final CompletionStage<String> blocker) {
             try {
-                return CompletionStageUtil.map(blocker, res -> ":" + res);
-            } catch (Throwable t) {
-                return CompletionStageUtil.rejected(t);
+                return Async.from(blocker).map(res -> ":" + res);
+            } catch (final Throwable t) {
+                return Async.rejected(t);
             }
         }
         
@@ -111,34 +97,34 @@ public class HowItShouldWorkTest {
     @Test
     public void testMockInstrumentation() throws InterruptedException {
         CompletableFuture<String> blocker = new CompletableFuture<>();
-        final CompletionStage<Object> res = new HowItShouldBeInstrumented().async$doSomething(blocker);
+        final CompletionStage<Object> res = new HowItShouldBeInstrumented().doSomething(blocker);
         assertFalse(blocker.isDone());
         assertFalse(CompletionStageUtil.isDone(res));
         blocker.complete("x");
-        assertEquals(":x", CompletionStageUtil.block(res));
+        assertEquals(":x", block(res));
         
         CompletableFuture<String> blocker2 = new CompletableFuture<>();
-        final CompletionStage<Object> res2 = new HowItShouldBeInstrumented().async$doSomethingElse(blocker2);
+        final CompletionStage<Object> res2 = new HowItShouldBeInstrumented().doSomethingElse(blocker2);
         assertFalse(blocker2.isDone());
         assertFalse(CompletionStageUtil.isDone(res2));
         blocker2.complete("x");
-        assertEquals(":x", CompletionStageUtil.block(res2));
+        assertEquals(":x", block(res2));
     }
     
     @Test
     public void testHowItShouldBehave() throws InterruptedException {
         CompletableFuture<String> blocker = new CompletableFuture<>();
-        final CompletionStage<Object> res = new HowItShouldBehave().doSomething(blocker);
+        final CompletionStage<Object> res = new WhatWillBeWritten().doSomething(blocker);
         assertFalse(blocker.isDone());
         assertFalse(CompletionStageUtil.isDone(res));
         blocker.complete("x");
-        assertEquals(":x", CompletionStageUtil.block(res));
+        assertEquals(":x", block(res));
         
         CompletableFuture<String> blocker2 = new CompletableFuture<>();
-        final CompletionStage<Object> res2 = new HowItShouldBehave().doSomethingElse(blocker2);
+        final CompletionStage<Object> res2 = new WhatWillBeWritten().doSomethingElse(blocker2);
         assertFalse(blocker2.isDone());
         assertFalse(CompletionStageUtil.isDone(res2));
         blocker2.complete("x");
-        assertEquals(":x", CompletionStageUtil.block(res2));
+        assertEquals(":x", block(res2));
     }
 }

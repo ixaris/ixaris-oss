@@ -26,11 +26,10 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.awaitResult;
-import static com.ixaris.commons.async.lib.Async.block;
+import static com.ixaris.commons.async.lib.Async.awaitExceptions;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.CompletableFuture;
@@ -57,7 +56,8 @@ public class FrameTest extends BaseTest {
         } else {
             n = 1.0;
         }
-        return awaitResult(async(getBlockedFuture(n.intValue())));
+        int i = await(getBlockedFuture(n.intValue()));
+        return result(i);
     }
     
     @Test
@@ -78,26 +78,26 @@ public class FrameTest extends BaseTest {
         switch (n.intValue()) {
             case 1:
                 n = i;
-                await(async(t));
+                await(t);
                 n = f;
                 break;
             case 2:
                 n = f;
-                await(async(t));
+                await(t);
                 n = d;
                 break;
             case 3:
                 n = d;
-                await(async(t));
+                await(t);
                 n = l;
                 break;
             case 4:
                 n = l;
-                await(async(t));
+                await(t);
                 n = i;
                 break;
         }
-        return awaitResult(async(getBlockedFuture(n.intValue())));
+        return awaitExceptions(getBlockedFuture(n.intValue()));
     }
     
     @Test
@@ -119,8 +119,8 @@ public class FrameTest extends BaseTest {
         // this fails if the Transform frame analysis can't get
         // the common superclass for Float and Integer
         // the best solution is to reuse the information from the original frames.
-        multiparamFunction(n, await(async(t)));
-        return async(t);
+        multiparamFunction(n, await(t));
+        return Async.from(t);
     }
     
     void multiparamFunction(Number o1, Object o2) {
@@ -138,8 +138,8 @@ public class FrameTest extends BaseTest {
     private Async<Integer> constructorCall(final CompletableFuture<Integer> t) {
         // the inline if inside the constructor forces a frame node creation.
         new SingleParamConstructor(t.isDone() ? t : "");
-        await(async(t));
-        return async(t);
+        await(t);
+        return Async.from(t);
     }
     
     private static class SingleParamConstructor {
@@ -157,10 +157,10 @@ public class FrameTest extends BaseTest {
     }
     
     private Async<Integer> uninitializedThis(final CompletionStage<Integer> t) {
-        new SingleParamConstructor(await(async(t)));
+        new SingleParamConstructor(await(t));
         // final SingleParamConstructor a = new SingleParamConstructor(t.isDone() ? t : "");
-        // await(async(t));
-        return async(t);
+        // await(t);
+        return Async.from(t);
     }
     
     @Test
@@ -172,10 +172,10 @@ public class FrameTest extends BaseTest {
     }
     
     private Async<Integer> uninitializedThisMultipleConstructors(final CompletionStage<Integer> t) {
-        new SingleParamConstructor(await(async(t)));
-        new SingleParamConstructor(await(async(t)));
-        new SingleParamConstructor(await(async(t)));
-        return async(t);
+        new SingleParamConstructor(await(t));
+        new SingleParamConstructor(await(t));
+        new SingleParamConstructor(await(t));
+        return Async.from(t);
     }
     
     @Test
@@ -199,14 +199,14 @@ public class FrameTest extends BaseTest {
         // the best solution is to reuse the information from the original frames.
         
         // the test here is for the uninitialized "this" in the stack
-        new SingleParamConstructor(await(async(t)));
-        new SingleParamConstructor(await(async(t)));
-        new SingleParamConstructor(await(async(t)));
-        new SingleParamConstructor(new SingleParamConstructor(await(async(t))));
-        new SingleParamConstructor(new SingleParamConstructor(await(async(t))));
-        new SingleParamConstructor(new SingleParamConstructor(new SingleParamConstructor(new SingleParamConstructor(await(async(t))))));
-        new MultiParamConstructor(1, new SingleParamConstructor(new SingleParamConstructor(new SingleParamConstructor(new SingleParamConstructor(await(async(t)))))));
-        return async(t);
+        new SingleParamConstructor(await(t));
+        new SingleParamConstructor(await(t));
+        new SingleParamConstructor(await(t));
+        new SingleParamConstructor(new SingleParamConstructor(await(t)));
+        new SingleParamConstructor(new SingleParamConstructor(await(t)));
+        new SingleParamConstructor(new SingleParamConstructor(new SingleParamConstructor(new SingleParamConstructor(await(t)))));
+        new MultiParamConstructor(1, new SingleParamConstructor(new SingleParamConstructor(new SingleParamConstructor(new SingleParamConstructor(await(t))))));
+        return Async.from(t);
     }
     
     private static class MultiParamConstructor {
@@ -226,8 +226,8 @@ public class FrameTest extends BaseTest {
     private Async<Integer> constructorWithExceptions(final CompletionStage<Integer> t) throws Exception {
         // ensure that replacing a constructor that throws exceptions doesn't cause a verification error
         // the exceptions are not copied to the replacement initializer;
-        new ConstructorWithExceptions(1, await(async(t)));
-        return async(t);
+        new ConstructorWithExceptions(1, await(t));
+        return Async.from(t);
     }
     
     private static class ConstructorWithExceptions {
@@ -244,7 +244,7 @@ public class FrameTest extends BaseTest {
                 if (a == 1) {
                     x = 2;
                 }
-                await(async(getBlockedFuture()));
+                await(getBlockedFuture());
                 x = 3;
                 return result(3);
             }

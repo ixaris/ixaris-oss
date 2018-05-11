@@ -1,8 +1,8 @@
 package com.ixaris.commons.async.transformed;
 
 import static com.ixaris.commons.async.lib.Async.allSame;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.AsyncExecutor.scheduleSync;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.LinkedList;

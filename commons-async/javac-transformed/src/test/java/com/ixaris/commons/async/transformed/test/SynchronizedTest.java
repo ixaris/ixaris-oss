@@ -26,10 +26,9 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -54,7 +53,7 @@ public class SynchronizedTest extends BaseTest {
                     x = 1;
                     mutex.notify();
                 }
-                await(async(getBlockedFuture()));
+                await(getBlockedFuture());
                 return result(x + a);
             }
         }
@@ -72,7 +71,7 @@ public class SynchronizedTest extends BaseTest {
                 synchronized (mutex) {
                     mutex.notify();
                     x = 1;
-                    await(async(getBlockedFuture()));
+                    await(getBlockedFuture());
                     mutex.notify();
                 }
                 return result(x + a);
@@ -95,7 +94,7 @@ public class SynchronizedTest extends BaseTest {
                         x = 1;
                         mutex1.notify();
                         mutex2.notify();
-                        await(async(getBlockedFuture()));
+                        await(getBlockedFuture());
                         mutex1.notify();
                         mutex2.notify();
                     }
@@ -118,7 +117,7 @@ public class SynchronizedTest extends BaseTest {
                 synchronized (this) {
                     x = 1;
                     this.notify();
-                    await(async(getBlockedFuture()));
+                    await(getBlockedFuture());
                     this.notify();
                 }
                 return result(x + a);
@@ -137,7 +136,7 @@ public class SynchronizedTest extends BaseTest {
             synchronized Async<Integer> doIt(int a) {
                 x = 1;
                 this.notify();
-                await(async(getBlockedFuture()));
+                await(getBlockedFuture());
                 this.notify();
                 return result(x);
             }
@@ -162,13 +161,13 @@ public class SynchronizedTest extends BaseTest {
             synchronized Async<Integer> doIt(int a) {
                 x = 1;
                 this.notify();
-                await(async(getBlockedFuture()));
+                await(getBlockedFuture());
                 synchronized (this) {
-                    await(async(getBlockedFuture()));
+                    await(getBlockedFuture());
                     this.notify();
                 }
                 this.notify();
-                await(async(getBlockedFuture()));
+                await(getBlockedFuture());
                 this.notify();
                 return result(x);
             }
@@ -195,7 +194,7 @@ public class SynchronizedTest extends BaseTest {
     static class StaticSynchronizedMethod_Experiment {
         static synchronized Async<Integer> doIt(CompletableFuture<?> blocker, int a) {
             StaticSynchronizedMethod_Experiment.class.notify();
-            await(async(blocker));
+            await(blocker);
             StaticSynchronizedMethod_Experiment.class.notify();
             return result(a);
         }
@@ -210,22 +209,22 @@ public class SynchronizedTest extends BaseTest {
                 String mutex3 = "c";
                 x = 1;
                 this.notify();
-                await(async(getBlockedFuture()));
+                await(getBlockedFuture());
                 this.notify();
                 synchronized (mutex1) {
-                    await(async(getBlockedFuture()));
+                    await(getBlockedFuture());
                     this.notify();
                     mutex1.notify();
                 }
                 synchronized (mutex2) {
-                    await(async(getBlockedFuture()));
+                    await(getBlockedFuture());
                     this.notify();
                     mutex2.notify();
                 }
                 synchronized (mutex1) {
                     synchronized (mutex2) {
                         synchronized (mutex3) {
-                            await(async(getBlockedFuture()));
+                            await(getBlockedFuture());
                             this.notify();
                             mutex1.notify();
                             mutex2.notify();
@@ -234,7 +233,7 @@ public class SynchronizedTest extends BaseTest {
                     }
                 }
                 this.notify();
-                await(async(getBlockedFuture()));
+                await(getBlockedFuture());
                 this.notify();
                 return result(x);
             }

@@ -1,8 +1,8 @@
 package com.ixaris.commons.async.lib;
 
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;

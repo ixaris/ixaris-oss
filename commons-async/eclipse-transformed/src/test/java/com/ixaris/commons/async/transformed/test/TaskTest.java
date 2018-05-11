@@ -26,10 +26,9 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.CompletableFuture;
@@ -44,7 +43,7 @@ public class TaskTest extends BaseTest {
     public static class TaskSomethingAsync {
         
         public Async<Object> doSomething(CompletionStage<String> blocker) {
-            String res = await(async(blocker));
+            String res = await(blocker);
             return result(":" + res);
         }
         
@@ -54,7 +53,7 @@ public class TaskTest extends BaseTest {
         
         public Async<Object> doSomething(CompletionStage<String> blocker) {
             int local = 7;
-            String res = ":" + Math.max(local, await(async(blocker)).length());
+            String res = ":" + Math.max(local, await(blocker).length());
             return result(res);
         }
         
@@ -64,7 +63,7 @@ public class TaskTest extends BaseTest {
         
         public Async<Object> doSomething(CompletionStage<String> blocker) {
             try {
-                String res = await(async(blocker));
+                String res = await(blocker);
                 return result(":" + res);
             } catch (RuntimeException ex) {
                 return result(":" + ex.getMessage());

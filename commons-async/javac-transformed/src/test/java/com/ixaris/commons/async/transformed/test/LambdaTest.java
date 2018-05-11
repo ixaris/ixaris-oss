@@ -26,17 +26,14 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
 
 import org.junit.Test;
 
-import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.async.lib.CompletionStageUtil;
 
 public class LambdaTest extends BaseTest {
@@ -44,7 +41,7 @@ public class LambdaTest extends BaseTest {
     @Test
     public void testThenCompose() throws InterruptedException {
         CompletionStage<Integer> task = getBlockedFuture(10)
-            .thenCompose((Function<Integer, Async<Integer>>) x -> result(x + await(async(getBlockedFuture(20)))));
+            .thenCompose(x -> result(x + await(getBlockedFuture(20))));
         completeFutures();
         assertEquals((Integer) 30, CompletionStageUtil.block(task));
     }
@@ -52,11 +49,11 @@ public class LambdaTest extends BaseTest {
     @Test
     public void testLongLambda() throws InterruptedException {
         CompletionStage<Integer> task = getBlockedFuture(5)
-            .thenCompose((Function<Integer, Async<Integer>>) x -> {
-                await(async(getBlockedFuture()));
-                await(async(getBlockedFuture()));
-                await(async(getBlockedFuture()));
-                await(async(getBlockedFuture()));
+            .thenCompose(x -> {
+                await(getBlockedFuture());
+                await(getBlockedFuture());
+                await(getBlockedFuture());
+                await(getBlockedFuture());
                 return result(11);
             });
         completeFutures();

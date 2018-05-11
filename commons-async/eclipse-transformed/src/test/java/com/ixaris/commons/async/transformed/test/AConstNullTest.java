@@ -26,10 +26,9 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertNull;
 
 import java.util.concurrent.CompletionStage;
@@ -49,10 +48,10 @@ public class AConstNullTest extends BaseTest {
     
     public static class NullInit {
         
-        public static Async<Void> doIt(CompletionStage<Void> CompletionStage) {
+        public static Async<Void> doIt(CompletionStage<Void> stage) {
             String x = null;
             try {
-                await(async(CompletionStage));
+                await(stage);
                 return result();
             } catch (Exception ex) {
                 return result();
@@ -70,11 +69,11 @@ public class AConstNullTest extends BaseTest {
     
     public static class NullInit2 {
         
-        public static Async<Void> doIt(CompletionStage<Void> CompletionStage) {
+        public static Async<Void> doIt(CompletionStage<Void> stage) {
             String x = null;
             String y = x;
             try {
-                await(async(CompletionStage));
+                await(stage);
                 return result();
             } catch (Exception ex) {
                 return result();
@@ -92,9 +91,9 @@ public class AConstNullTest extends BaseTest {
     
     public static class NullInit3 {
         
-        public static Async<Void> doIt(CompletionStage<String> CompletionStage) {
+        public static Async<Void> doIt(CompletionStage<String> stage) {
             String x = null;
-            call0(x, await(async(CompletionStage)));
+            call0(x, await(stage));
             return result();
         }
         
@@ -111,9 +110,9 @@ public class AConstNullTest extends BaseTest {
     
     public static class NullInit4 {
         
-        public static Async<Void> doIt(CompletionStage<String> CompletionStage) {
+        public static Async<Void> doIt(CompletionStage<String> stage) {
             String x = null;
-            call0(await(async(CompletionStage)), x);
+            call0(await(stage), x);
             return result();
         }
         
@@ -129,8 +128,8 @@ public class AConstNullTest extends BaseTest {
     
     public static class NullInTheStack {
         
-        public static Async<Void> doIt(CompletionStage<Void> CompletionStage) {
-            call2(null, await(async(CompletionStage)));
+        public static Async<Void> doIt(CompletionStage<Void> stage) {
+            call2(null, await(stage));
             return result();
         }
         
@@ -148,8 +147,8 @@ public class AConstNullTest extends BaseTest {
     
     public static class NullInTheStack2 {
         
-        public static Async<Void> doIt(CompletionStage<Void> CompletionStage) {
-            call2(null, await(async(CompletionStage)));
+        public static Async<Void> doIt(CompletionStage<Void> stage) {
+            call2(null, await(stage));
             return result();
         }
         

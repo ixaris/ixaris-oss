@@ -1,12 +1,10 @@
 package com.ixaris.commons.async.lib;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
@@ -87,12 +85,22 @@ public final class AsyncExecutor {
         return executor != null ? executor : DEFAULT;
     }
     
+    /**
+     * Execute a synchronous task in the same executor as the current thread and return a future that is fulfilled from
+     * the executed task's result
+     *
+     * @param callable
+     * @param <T>
+     * @param <E>
+     * @return
+     * @throws E
+     */
     public static <T, E extends Exception> Async<T> execSync(final CallableThrows<T, E> callable) throws E {
         return execSync(get(), callable);
     }
     
     /**
-     * Execute a task in an executor and return a future that is fulfilled from the executed task's result
+     * Execute a synchronous task in an executor and return a future that is fulfilled from the executed task's result
      *
      * @param executor
      * @param callable
@@ -102,17 +110,27 @@ public final class AsyncExecutor {
      * @throws E
      */
     public static <T, E extends Exception> Async<T> execSync(final Executor executor, final CallableThrows<T, E> callable) throws E {
-        final CompletableFuture<T> future = new CompletableFuture<>();
+        final FutureAsync<T> future = new FutureAsync<>();
         executor.execute(AsyncTrace.wrap(AsyncLocal.wrap(() -> CompletableFutureUtil.complete(future, callable))));
-        return async(future);
+        return future;
     }
     
+    /**
+     * Execute an asynchronous task in the same executor as the current thread and return a future that is fulfilled from
+     * the executed task's result
+     *
+     * @param callable
+     * @param <T>
+     * @param <E>
+     * @return
+     * @throws E
+     */
     public static <T, E extends Exception> Async<T> exec(final CallableThrows<Async<T>, E> callable) throws E {
         return exec(get(), callable);
     }
     
     /**
-     * Execute a task in an executor and return a future that is fulfilled from the executed task's result
+     * Execute an asynchronous task in an executor and return a future that is fulfilled from the executed task's result
      *
      * @param executor
      * @param callable
@@ -206,31 +224,34 @@ public final class AsyncExecutor {
      * the given executor. Note that if the thread is already associated with the given executor, the future is
      * completed on the same thread.
      *
-     * @param callable
+     * @param stage
      * @param <T>
-     * @param <E>
      * @return
-     * @throws E
      */
-    public static <T, E extends Exception> Async<T> relay(final CallableThrows<Async<T>, E> callable) throws E {
-        return relay(get(), callable);
+    public static <T> Async<T> relay(final CompletionStage<T> stage) {
+        return relay(get(), stage);
     }
     
     /**
      * Relay execution back to the given executor. same semantics as relay(callable)
      *
      * @param executor
-     * @param callable
+     * @param stage
      * @param <T>
-     * @param <E>
      * @return
-     * @throws E
      */
-    public static <T, E extends Exception> Async<T> relay(final Executor executor, final CallableThrows<Async<T>, E> callable) throws E {
+    public static <T> Async<T> relay(final Executor executor, final CompletionStage<T> stage) {
         final FutureAsync<T> future = new FutureAsync<>();
-        callable.call().whenComplete((r, t) -> {
+        stage.whenComplete((r, t) -> {
             if (get() != executor) { // NOSONAR check reference
-                executor.execute(AsyncTrace.wrap(AsyncLocal.wrap(() -> CompletableFutureUtil.complete(future, r, t))));
+                final Throwable tt = AsyncTrace.join(CompletionStageUtil.extractCause(t));
+                executor.execute(AsyncTrace.wrap(AsyncLocal.wrap(() -> {
+                    if (t != null) {
+                        future.completeExceptionally(tt);
+                    } else {
+                        future.complete(r);
+                    }
+                })));
             } else {
                 CompletableFutureUtil.complete(future, r, t);
             }

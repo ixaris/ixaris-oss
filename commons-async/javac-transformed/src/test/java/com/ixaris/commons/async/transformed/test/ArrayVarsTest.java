@@ -26,10 +26,9 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -182,7 +181,7 @@ public class ArrayVarsTest extends BaseTest {
         class Experiment {
             
             Async<Object> doIt(Object[] params) {
-                await(async(getBlockedFuture()));
+                await(getBlockedFuture());
                 return result(params[0]);
             }
             
@@ -200,7 +199,7 @@ public class ArrayVarsTest extends BaseTest {
             
             Async<Object> doIt(Object[] params) {
                 Object arr[][] = new Object[][] { params };
-                await(async(getBlockedFuture()));
+                await(getBlockedFuture());
                 return result(arr[0][0]);
             }
             
@@ -220,10 +219,10 @@ public class ArrayVarsTest extends BaseTest {
                 Object arr[][];
                 if (params != null) {
                     arr = new Object[][] { params };
-                    await(async(getBlockedFuture()));
+                    await(getBlockedFuture());
                 } else {
                     arr = new Object[][] { params, null };
-                    await(async(getBlockedFuture()));
+                    await(getBlockedFuture());
                 }
                 return result(arr[0][0]);
             }
@@ -247,7 +246,7 @@ public class ArrayVarsTest extends BaseTest {
                 }
                 // this forces a stack frame map to be created
                 else {
-                    await(async(getBlockedFuture()));
+                    await(getBlockedFuture());
                 }
                 return result(arr[0][0]);
             }

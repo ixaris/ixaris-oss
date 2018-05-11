@@ -14,6 +14,11 @@ public class ThreadLocalHelper {
     
     public static final class Builder {
         
+        @SuppressWarnings("unchecked")
+        private static <T> void setValue(final ThreadLocal<T> threadLocal, final Object value) {
+            threadLocal.set((T) value);
+        }
+        
         private final Map<ThreadLocal<?>, Object> map = new HashMap<>();
         
         private Builder() {}
@@ -85,11 +90,6 @@ public class ThreadLocalHelper {
             task.run();
             return null;
         });
-    }
-    
-    @SuppressWarnings("unchecked")
-    private static <T> void setValue(final ThreadLocal<T> threadLocal, final Object value) {
-        threadLocal.set((T) value);
     }
     
     private ThreadLocalHelper() {}

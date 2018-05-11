@@ -26,10 +26,9 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.CompletableFuture;
@@ -43,7 +42,7 @@ public class JoinTest extends BaseTest {
     public static class OtherJoinCalls {
         public Async<Object> doSomething(CompletableFuture<String> blocker) {
             int local = 7;
-            String res = ":" + Math.max(local, await(async(blocker)).length()) + ":" + join() + ":" + join(2, 3);
+            String res = ":" + Math.max(local, await(blocker).length()) + ":" + join() + ":" + join(2, 3);
             return result(res);
         }
         

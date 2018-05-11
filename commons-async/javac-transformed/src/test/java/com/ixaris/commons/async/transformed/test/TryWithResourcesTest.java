@@ -26,10 +26,9 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -63,7 +62,7 @@ public class TryWithResourcesTest extends BaseTest {
     
     private Async<Integer> doTestTryWithResources() {
         try (CloseableResource cr = new CloseableResource()) {
-            await(async(getBlockedFuture()));
+            await(getBlockedFuture());
             if (cr.isClosed()) {
                 throw new RuntimeException("Closed early");
             }

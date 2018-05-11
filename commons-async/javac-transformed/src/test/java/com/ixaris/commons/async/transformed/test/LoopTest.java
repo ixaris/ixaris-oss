@@ -26,10 +26,9 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -52,7 +51,7 @@ public class LoopTest extends BaseTest {
         final Async<Object> task = asyncFrom(() -> {
             final StringBuilder sb = new StringBuilder();
             for (int i = 0; i < count; i++) {
-                sb.append(":").append(await(async(getBlockedFuture(i))));
+                sb.append(":").append(await(getBlockedFuture(i)));
             }
             return result(sb.toString());
         });
@@ -69,7 +68,7 @@ public class LoopTest extends BaseTest {
             String str = "";
             int i = 0;
             while (i < count) {
-                str += ":" + await(async(getBlockedFuture(i)));
+                str += ":" + await(getBlockedFuture(i));
                 i++;
             }
             return result(str);
@@ -87,7 +86,7 @@ public class LoopTest extends BaseTest {
             String str = "";
             int i = 0;
             do {
-                str += ":" + await(async(getBlockedFuture(i)));
+                str += ":" + await(getBlockedFuture(i));
                 i++;
             } while (i < count);
             return result(str);
@@ -106,7 +105,7 @@ public class LoopTest extends BaseTest {
         final Async<Object> task = asyncFrom(() -> {
             String str = "";
             for (final CompletableFuture<?> f : blockedFuts) {
-                str += ":" + await(async(f));
+                str += ":" + await(f);
             }
             return result(str);
         });

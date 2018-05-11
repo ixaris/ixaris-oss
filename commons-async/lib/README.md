@@ -7,9 +7,31 @@ This library provides a number of utilities for asynchronous execution of code
 Using Async, code can be written in a seemingly synchronous fashion. Such code is then transformed
 to equivalent asynchronous code by the transformer. See [`ix-commons-async-transformer`](../transformer/README.md).
 
-Asynchronous methods should return `Async<>` and use `Async.await()` to compose asynchronous results.
-In addition, concurrent asynchronous results can be composed in a single result using overloaded
-methods `Async.all()` and `Async.allSame()`. Below are some examples:
+Asynchronous methods should return an implementation of `CompletionStage`. Either return `Async` or annotate the 
+method with `@Async` and return an implementation of `CompletionStage` that interoperates with `CompletableFuture`
+(i.e. implements the `toCompletableFuture()` method by returning an instance of `CompletableFuture`, not throwing
+`UnsupportedOperationException`). When using an implementation of `CompletionStage` other than `Async` or
+`ComplettableFuture`, the implementing class has to implement a static methods for use by transformed code,
+`<T> Impl<T> fromCompletionStage(CompletionStage<T> stage)`, which obtains an instance from a completion stage:
+
+```java
+public static final class FutureSubclass<T> extends CompletableFuture<T> {
+    
+    public static <T> FutureSubclass<T> fromCompletionStage(final CompletionStage<T> stage) {
+        final FutureSubclass<T> f = new FutureSubclass<>();
+        CompletableFutureUtil.completeFrom(f, stage);
+        return f;
+    }
+    
+    ...
+    
+}
+```
+
+Use `Async.await()` to compose asynchronous results. In addition, concurrent 
+asynchronous results can be composed in a single result using overloaded methods `Async.all()` and `Async.allSame()`. 
+Below are some examples:
+
 
 ```java
 public Async<A> asyncOperationA() throws AException {
@@ -29,8 +51,8 @@ public Async<Void> compoundOperation() {
         // using all() to compose concurrent asynchronous task results into 1 result
         final Tuple2<A, B> asyncTuple = await(all(asyncOperationA(), asyncOperationB()));
         
-        // using awaitResult() to be able to handle CException otherwise it is not really thrown
-        return awaitResult(asyncOperationC(asyncTuple.get1(), asyncTuple.get2())); 
+        // using awaitExceptions() to be able to handle CException otherwise it is not really thrown
+        return awaitExceptions(asyncOperationC(asyncTuple.get1(), asyncTuple.get2())); 
     } catch (final AException | BException e) {
         throw new IllegalStateException(e);
     } catch (final CException e) {
@@ -40,25 +62,21 @@ public Async<Void> compoundOperation() {
 ```
 
 Since this async/await functionality is not a language feature there are some restrictions. Ideally, the 
-IDE / compiler would stop incorrect use. The primary point of confusion is exception handling. An `Async<>` 
-returning method may throw exceptions (even checked ones) but these exceptions are actually thrown when 
-`Async.await()` is called. 
+IDE / compiler would stop incorrect use. The primary point of confusion is exception handling. An async 
+method may throw exceptions (even checked ones) but these exceptions are actually thrown when by the
+surrounding `Async.await()` call. 
 
-- `Async<>` types are not allowed as parameters, use `CompletionStage<>` instead and use `Async.async()` to 
-convert between these 
-- Methods that do not return `Async<>` are not allowed to call `Async.await()`. If you really need to wait for 
-the result in such methods, then use `Async.block()`. For methods that return void, return `Async<Void>` instead
-- If both methods `op()` and `async$op()` are declared in a class, they will not be transformed, as it is assumed
-that either transformation was already done, or a handcoded asynchronous implementation was provided. In the 
-latter case, the correct way to implement `op()` is to `throw Async.noTransformation()`
+- Non-async methods (do not return `Async<>` or are not annotated with `@Async`) are not allowed to call 
+`Async.await()` and `Async.awaitExceptions()`. The only way to wait for the result in such methods is
+`Async.block()`. Async methods that don't return a result should return `Async<Void>` instead of `void`
 - Monitors obtained in synchronized blocks are released before `Async.await()` and reacquired after. Other locks 
 should be managed explicitly. In particular, acquiring a lock before `Async.await()` and releasing after means that
-the lock is held until the future is resolved. Locking is discouraged in favor of partitioning and queues, e.g.
-using `AsyncQueue`.   
-- Exceptions declared by `op()` are actually thrown by `Async.await()` so try..catch blocks will only work around 
-`Async.await()`. This also applies when converting to `CompletionStage<>` by using `Async.async(op())`, where the 
-exceptions declared by `op()` will never be thrown, but the compiler will still require you to handle such checked
-exception (such declared exceptions could be the cause of rejection). 
+the lock is held until the future is resolved. Consider also that the code after `Async.await()` may, and probably
+will, execute in a different thread, so locks that require the same thread to release will not work properly
+(e.g. `ReentrantReadWriteLock`). Locking in async methods is generally discouraged in favor of non-blocking
+approached like partitioning and queues, e.g. using `AsyncQueue`.   
+- Exceptions declared by async methods are actually thrown by `Async.await()` and `Async.awaitExceptions()` so 
+try..catch blocks will only work around these two methods.  
 
 As such, The so the following two cases are **WRONG**:
 
@@ -92,7 +110,7 @@ try {
 }
 
 try {
-   return awaitResult(op());
+   return awaitExceptions(op());
 } catch (final SomeException e) {
    throw new SomeOtherException(e);
 }
@@ -100,14 +118,15 @@ try {
 
 ### Testing with Async
 
-Since test methods need to return void, one cannot `await()` during a test. It is recommended to use `Async.block()`
-to block waiting for results. For assertions, it is recommended to convert `Async<>` to `CompletionStage<>` using
-`Async.async()` and use `CompletionStageAssert` in [`ix-commons-async-test`](../test/README.md).
+Since test methods need to return void, one cannot `await()` inside a test method. It is recommended to use 
+`CompletionStageUtil.block()` to block waiting for results. For assertions, it is recommended to use 
+`CompletionStageAssert` in [`ix-commons-async-test`](../test/README.md).
 
 ## Async Locals
 
-Async locals work similar to thread locals but across an async process. The following is an example of setting
-and retrieving the value of an `AsyncLocal`:
+Async locals provide contextual values to the asynchronous process without passing as explicit parameters. They
+represent an asynchronous version of thread locals. The following is an example of setting and retrieving the value 
+of an `AsyncLocal`:
 
 ```java
 ...
@@ -156,7 +175,7 @@ Asynchronous processes are notoriously hard to debug because the stack traces do
 whole process, but only the last synchronous leg. To mitigate this, the AsyncTrace class
 attaches the stack of the process forking an asynchronous task to the task itself such that on
 exception, the task can attach the trace as it's cause. Traces for exceptions throws from
-`Async<>` returning methods are automatically joined. Use as follows:
+transformed asynchronous methods are automatically joined. Use as follows:
 
 ```java
 final CompletableFuture<?> future = new CompletableFuture<>();
@@ -265,6 +284,8 @@ ioExecutor.execute(() -> {
 
 // Or simplified as:
 result = Async.await(AsyncExecutor.relay(() -> AsyncExecutor.exec(ioExecutor, () -> { ... })));
+// and wih static imports:
+result = await(relay(() -> exec(ioExecutor, () -> { ... })));
 // which relays the future from the given executor back to the executor associated with the
 // original thread
 ```

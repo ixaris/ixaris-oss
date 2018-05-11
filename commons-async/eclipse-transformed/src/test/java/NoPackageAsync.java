@@ -1,4 +1,3 @@
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
 
@@ -13,7 +12,7 @@ public class NoPackageAsync {
     }
     
     public Async<Object> noPackageMethod(CompletableFuture<String> blocker, int var) {
-        return result(concat(var, 10_000_000_000L, 1.5f, 3.5d, await(async(blocker)), true));
+        return result(concat(var, 10_000_000_000L, 1.5f, 3.5d, await(blocker), true));
     }
     
 }

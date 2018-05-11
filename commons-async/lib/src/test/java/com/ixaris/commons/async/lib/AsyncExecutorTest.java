@@ -1,12 +1,12 @@
 package com.ixaris.commons.async.lib;
 
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
 import static com.ixaris.commons.async.lib.AsyncExecutor.exec;
 import static com.ixaris.commons.async.lib.AsyncExecutor.execSync;
 import static com.ixaris.commons.async.lib.AsyncExecutor.relay;
 import static com.ixaris.commons.async.lib.AsyncExecutor.yield;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -38,7 +38,7 @@ public class AsyncExecutorTest {
         // start on ex1
         Assertions.assertThat(AsyncExecutor.get()).isEqualTo(ex1);
         
-        final Async<Void> relay = relay(() -> execSync(ex2, () -> {
+        final Async<Void> relay = relay(execSync(ex2, () -> {
             // go to ex2
             Thread.sleep(100L);
             Assertions.assertThat(AsyncExecutor.get()).isEqualTo(ex2);

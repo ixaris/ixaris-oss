@@ -26,10 +26,9 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -52,7 +51,7 @@ public class ExceptionTest extends BaseTest {
     
     private Async<Integer> doTryCatch() {
         try {
-            if (await(async(getBlockedFuture(10))) == 10) {
+            if (await(getBlockedFuture(10)) == 10) {
                 throw new IllegalArgumentException(String.valueOf(10));
             }
             
@@ -71,7 +70,7 @@ public class ExceptionTest extends BaseTest {
     
     private Async<Integer> doTestFinally() {
         try {
-            if (await(async(getBlockedFuture(10))) == 10) {
+            if (await(getBlockedFuture(10)) == 10) {
                 throw new IllegalArgumentException(String.valueOf(10));
             }
             
@@ -82,20 +81,20 @@ public class ExceptionTest extends BaseTest {
     
     @Test
     public void testTryCatch2() {
-        final Async<Void> res = doTryCatch2();
+        final Async<Integer> res = doTryCatch2();
         completeFutures();
         assertTrue(CompletionStageUtil.isDone(res));
     }
     
-    private Async<Void> doTryCatch2() {
+    private Async<Integer> doTryCatch2() {
         int c = 1;
         try {
-            await(async(getBlockedFuture()));
+            await(getBlockedFuture());
         } catch (Exception ex) {
             // once this was causing a verification error, now fixed
             c = c + 1;
         }
-        return result();
+        return result(c);
     }
     
     @Test
@@ -108,16 +107,16 @@ public class ExceptionTest extends BaseTest {
     private Async<String> doTryCatch3() {
         int c = 1;
         try {
-            await(async(getBlockedFuture()));
-            await(async(getBlockedFuture()));
-            await(async(getBlockedFuture()));
-            await(async(getBlockedFuture()));
-            await(async(CompletionStageUtil.rejected(new Exception("fail"))));
+            await(getBlockedFuture());
+            await(getBlockedFuture());
+            await(getBlockedFuture());
+            await(getBlockedFuture());
+            await(Async.rejected(new Exception("fail")));
         } catch (Exception ex) {
-            await(async(getBlockedFuture()));
-            await(async(getBlockedFuture()));
-            await(async(getBlockedFuture()));
-            await(async(getBlockedFuture()));
+            await(getBlockedFuture());
+            await(getBlockedFuture());
+            await(getBlockedFuture());
+            await(getBlockedFuture());
             return result(ex.getMessage());
         }
         return result("done");
@@ -133,17 +132,17 @@ public class ExceptionTest extends BaseTest {
     private Async<String> doTryCatch4() {
         int c = 1;
         try {
-            await(async(getBlockedFuture()));
-            await(async(getBlockedFuture()));
-            if (await(async(getBlockedFuture())) == null) {
+            await(getBlockedFuture());
+            await(getBlockedFuture());
+            if (await(getBlockedFuture()) == null) {
                 throw new Exception("fail");
             }
-            await(async(getBlockedFuture()));
+            await(getBlockedFuture());
         } catch (Exception ex) {
-            await(async(getBlockedFuture()));
-            await(async(getBlockedFuture()));
-            await(async(getBlockedFuture()));
-            await(async(getBlockedFuture()));
+            await(getBlockedFuture());
+            await(getBlockedFuture());
+            await(getBlockedFuture());
+            await(getBlockedFuture());
             return result(ex.getMessage());
         }
         return result("done");
@@ -172,10 +171,10 @@ public class ExceptionTest extends BaseTest {
     
     public Async<?> doIt(CompletionStage<?> t) {
         try {
-            await(async(t));
+            await(t);
         } catch (Exception ex) {
-            await(async(t));
+            await(t);
         }
-        return async(t);
+        return Async.from(t);
     }
 }

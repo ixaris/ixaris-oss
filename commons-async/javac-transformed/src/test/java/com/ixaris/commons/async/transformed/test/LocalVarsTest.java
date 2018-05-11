@@ -26,14 +26,12 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.junit.Test;
 
@@ -49,7 +47,7 @@ public class LocalVarsTest extends BaseTest {
                 {
                     String a = "a1";
                 }
-                await(async(getBlockedFuture()));
+                await(getBlockedFuture());
                 {
                     String a = "a2";
                 }
@@ -68,7 +66,7 @@ public class LocalVarsTest extends BaseTest {
                     String b = "b1";
                     int c = 1;
                 }
-                await(async(getBlockedFuture()));
+                await(getBlockedFuture());
                 {
                     String a = "a2";
                     String b = "b2";

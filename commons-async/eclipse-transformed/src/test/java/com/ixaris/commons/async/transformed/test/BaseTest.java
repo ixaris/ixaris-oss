@@ -30,16 +30,16 @@ import static com.ixaris.commons.misc.lib.object.Tuple.tuple;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import com.ixaris.commons.async.lib.Async;
+import com.ixaris.commons.async.lib.Async.FutureAsync;
 import com.ixaris.commons.misc.lib.object.Tuple2;
 
 public class BaseTest {
     
     // pairs of completable futures and the future completions.
-    private Queue<Tuple2<CompletableFuture<?>, Object>> blockedFutures = new LinkedList<>();
+    private Queue<Tuple2<FutureAsync<?>, Object>> blockedFutures = new LinkedList<>();
     
     // just calls a function
     <T> Async<T> asyncFrom(final Supplier<Async<T>> supplier) {
@@ -50,13 +50,13 @@ public class BaseTest {
      * Creates and an uncompleted future and adds it the the queue for later completion.
      * To help with the tests
      */
-    public <T> CompletableFuture<T> getBlockedFuture(final T value) {
-        final CompletableFuture<T> future = new CompletableFuture<>();
+    public <T> FutureAsync<T> getBlockedFuture(final T value) {
+        final FutureAsync<T> future = new FutureAsync<>();
         blockedFutures.add(tuple(future, value));
         return future;
     }
     
-    public <T> CompletableFuture<T> getBlockedFuture() {
+    public <T> FutureAsync<T> getBlockedFuture() {
         return getBlockedFuture(null);
     }
     
@@ -65,7 +65,7 @@ public class BaseTest {
      */
     public void completeFutures() {
         while (blockedFutures.size() > 0) {
-            final Tuple2<CompletableFuture<?>, Object> pair = blockedFutures.poll();
+            final Tuple2<FutureAsync<?>, Object> pair = blockedFutures.poll();
             if (pair != null) {
                 complete(pair.get1(), pair.get2());
             }
@@ -73,7 +73,7 @@ public class BaseTest {
     }
     
     @SuppressWarnings("unchecked")
-    private <T> void complete(final CompletableFuture<T> future, Object o) {
+    private <T> void complete(final FutureAsync<T> future, Object o) {
         future.complete((T) o);
     }
     

@@ -26,10 +26,9 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertNull;
 
 import java.util.concurrent.CompletionStage;
@@ -53,7 +52,7 @@ public class NullThenBasicValueTest extends BaseTest {
             String nullString = null; // this variable must be a string and initialized to null
             int basicInt = 0; // this variable must be numeric and initialized to anything
             
-            await(async(task));
+            await(task);
             return result();
         }
         

@@ -4,9 +4,11 @@ import static com.ixaris.commons.async.lib.Async.all;
 import static com.ixaris.commons.async.lib.Async.allSame;
 import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.awaitResult;
+import static com.ixaris.commons.async.lib.Async.awaitExceptions;
+import static com.ixaris.commons.async.lib.Async.from;
 import static com.ixaris.commons.async.lib.Async.result;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 
 import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.async.lib.AsyncExecutor;
+import com.ixaris.commons.async.lib.CompletionStageUtil;
 import com.ixaris.commons.misc.lib.function.CallableThrows;
 import com.ixaris.commons.misc.lib.object.Tuple4;
 
@@ -77,7 +80,7 @@ public class TransformCornerCases {
     // tests using a lambda that returns Async
     public Async<Long> usingLambdaWithBody() {
         final List<Async<Integer>> stages = Arrays.stream(new Integer[] { 1, 2 })
-            .map(i -> async(lambdaWithBodyHelper(i)))
+            .map(i -> from(lambdaWithBodyHelper(i)))
             .collect(Collectors.toList());
         return allSame(stages).map(ok -> ok.stream().reduce(0, (a, b) -> a + b)).map(a -> (long) a);
     }
@@ -118,7 +121,7 @@ public class TransformCornerCases {
         try {
             final Async<Integer> op2 = operation2(0);
             final TestHolder x = new TestHolder(await(op2));
-            final Tuple4<Integer, Long, Long, Long> c = await(all(operation2(0), usingLambdaWithBody(), usingMethodReference(), async(futureOperation())));
+            final Tuple4<Integer, Long, Long, Long> c = await(all(operation2(0), usingLambdaWithBody(), usingMethodReference(), futureOperation()));
             long result = x.val + (c.get1() * 2 + c.get2() + c.get3() + c.get4());
             System.out.println(this + "1: " + result);
             
@@ -159,7 +162,7 @@ public class TransformCornerCases {
     
     public Async<Integer> awaitingResult(final int i) {
         try {
-            return awaitResult(operation2(i));
+            return awaitExceptions(operation2(i));
         } catch (final Exception1 e) {
             return result(-1);
         }
@@ -231,6 +234,24 @@ public class TransformCornerCases {
     
     public static Async<Void> staticThrowException() {
         throw new IllegalStateException();
+    }
+    
+    public void asyncIgnoringException() throws InterruptedException {
+        final CompletionStage<Void> cs = from(this::withExceptionInSignature);
+        CompletionStageUtil.block(cs);
+    }
+    
+    public Async<Void> withExceptionInSignature() throws IOException {
+        return result();
+    }
+    
+    public static void staticAsyncIgnoringException() throws InterruptedException {
+        final CompletionStage<Void> cs = from(TransformCornerCases::staticWithExceptionInSignature);
+        CompletionStageUtil.block(cs);
+    }
+    
+    public static Async<Void> staticWithExceptionInSignature() throws IOException {
+        return result();
     }
     
     public static Async<Void> infiniteLoop() {

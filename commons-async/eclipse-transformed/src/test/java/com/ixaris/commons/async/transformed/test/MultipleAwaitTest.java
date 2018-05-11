@@ -26,10 +26,9 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -52,15 +51,15 @@ public class MultipleAwaitTest extends BaseTest {
         }
         
         public Async<String> doSomething(CompletionStage<String> blocker1, CompletionStage<String> blocker2) {
-            String res1 = await(async(blocker1));
-            String res2 = await(async(blocker2));
+            String res1 = await(blocker1);
+            String res2 = await(blocker2);
             return result(res1 + ":" + res2);
         }
         
         private Async<String> blocker() {
             final CompletableFuture<String> blocker = new CompletableFuture<>();
             blockers.add(blocker);
-            return async(blocker);
+            return Async.from(blocker);
         }
         
         public void completeBlockers() {

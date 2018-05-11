@@ -26,10 +26,9 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.CompletableFuture;
@@ -45,7 +44,7 @@ public class StaticTest extends BaseTest {
         }
         
         public static Async<Object> staticMethod(CompletableFuture<String> blocker, int var) {
-            return result(concat(var, 10_000_000_000L, 1.5f, 3.5d, await(async(blocker)), true));
+            return result(concat(var, 10_000_000_000L, 1.5f, 3.5d, await(blocker), true));
         }
     }
     

@@ -26,10 +26,9 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -52,7 +51,7 @@ public class FunctionCallTest extends BaseTest {
         private Async<String> blocker() {
             final CompletableFuture<String> blocker = new CompletableFuture<>();
             blockers.add(blocker);
-            return async(blocker);
+            return Async.from(blocker);
         }
         
         public void completeBlockers() {

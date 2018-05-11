@@ -1,5 +1,8 @@
 package com.ixaris.commons.async.lib;
 
+import static com.ixaris.commons.async.lib.CompletableFutureUtil.complete;
+import static com.ixaris.commons.async.lib.CompletableFutureUtil.completeFrom;
+import static com.ixaris.commons.async.lib.CompletableFutureUtil.reject;
 import static com.ixaris.commons.misc.lib.object.Tuple.tuple;
 
 import java.util.concurrent.CompletableFuture;
@@ -246,19 +249,7 @@ public final class CompletionStageQueue {
                                                        final CallableThrows<? extends CompletionStage<T>, E> execCallable,
                                                        final DoneCallback doneCallback) {
         // preserve current thread's async local and trace
-        final Runnable runnable = AsyncTrace.wrap(AsyncLocal.wrap(() -> {
-            try {
-                execCallable.call().whenComplete((rr, tt) -> {
-                    if (tt == null) {
-                        stage.complete(rr);
-                    } else {
-                        stage.completeExceptionally(tt);
-                    }
-                });
-            } catch (Throwable tt) { // NOSONAR future handling
-                stage.completeExceptionally(AsyncTrace.join(tt));
-            }
-        }));
+        final Runnable runnable = AsyncTrace.wrap(AsyncLocal.wrap(() -> completeFrom(stage, execCallable)));
         
         final Executor executor = AsyncExecutor.get();
         if (prevStage == null) {

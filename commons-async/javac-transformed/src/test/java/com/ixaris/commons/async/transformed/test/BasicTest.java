@@ -26,10 +26,9 @@
 
 package com.ixaris.commons.async.transformed.test;
 
-import static com.ixaris.commons.async.lib.Async.async;
 import static com.ixaris.commons.async.lib.Async.await;
-import static com.ixaris.commons.async.lib.Async.block;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.CompletableFuture;
@@ -43,7 +42,7 @@ public class BasicTest extends BaseTest {
     public static class SomethingAsync {
         
         public Async<Object> doSomething(CompletableFuture<String> blocker) {
-            String res = await(async(blocker));
+            String res = await(blocker);
             return result(":" + res);
         }
         
@@ -53,7 +52,7 @@ public class BasicTest extends BaseTest {
         
         public Async<Object> doSomething(CompletableFuture<String> blocker) {
             String op = "1";
-            String res = "[" + await(async(blocker)) + "]";
+            String res = "[" + await(blocker) + "]";
             op = op + "2";
             return result(":" + op + res);
         }
@@ -64,7 +63,7 @@ public class BasicTest extends BaseTest {
         
         public Async<Object> doSomething(CompletableFuture<String> blocker) {
             int local = 7;
-            String res = ":" + Math.max(local, await(async(blocker)).length());
+            String res = ":" + Math.max(local, await(blocker).length());
             return result(res);
         }
         
@@ -74,7 +73,7 @@ public class BasicTest extends BaseTest {
         
         public Async<Object> doSomething(CompletableFuture<String> blocker) {
             try {
-                String res = await(async(blocker));
+                String res = await(blocker);
                 return result(":" + res);
             } catch (Exception ex) {
                 return result(":" + ex.getMessage());

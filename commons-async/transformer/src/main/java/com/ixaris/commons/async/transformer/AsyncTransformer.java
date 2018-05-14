@@ -1390,7 +1390,8 @@ final class AsyncTransformer {
     
     private String extractMethodSignature(final MethodNode original) {
         final StringBuilder sig = new StringBuilder(original.name).append('(');
-        if (original.signature.charAt(1) == ')') {
+        final String signature = original.signature != null ? original.signature : original.desc;
+        if (signature.charAt(1) == ')') {
             sig.append(')');
         } else {
             boolean done = false;
@@ -1403,7 +1404,7 @@ final class AsyncTransformer {
                 }
                 
                 type = true;
-                switch (original.signature.charAt(i)) {
+                switch (signature.charAt(i)) {
                     case 'Z':
                         sig.append("boolean");
                         break;
@@ -1430,8 +1431,10 @@ final class AsyncTransformer {
                         break;
                     case 'L':
                         type = false;
-                        final int end = Math.min(original.signature.indexOf(';', i), original.signature.indexOf('<', i));
-                        sig.append(original.signature.substring(i + 1, end).replace('/', '.').replace('$', '.'));
+                        final int semiIndex = signature.indexOf(';', i);
+                        final int angleIndex = signature.indexOf('<', i);
+                        final int end = angleIndex > -1 ? Math.min(semiIndex, angleIndex) : semiIndex;
+                        sig.append(signature.substring(i + 1, end).replace('/', '.').replace('$', '.'));
                         i = end - 1;
                         break;
                     case ';':
@@ -1459,7 +1462,7 @@ final class AsyncTransformer {
                     type = false;
                 }
                 
-                if (original.signature.charAt(++i) == ')') {
+                if (signature.charAt(++i) == ')') {
                     sig.append(')');
                     done = true;
                 }

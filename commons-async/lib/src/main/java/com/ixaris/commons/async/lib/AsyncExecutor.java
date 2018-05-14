@@ -233,6 +233,14 @@ public final class AsyncExecutor {
     }
     
     /**
+     * Use {@link #relay(CompletionStage)}
+     */
+    @Deprecated
+    public static <T, E extends Exception> Async<T> relay(final CallableThrows<Async<T>, E> callable) throws E {
+        return relay(get(), callable.call());
+    }
+    
+    /**
      * Relay execution back to the given executor. same semantics as relay(callable)
      *
      * @param executor
@@ -257,6 +265,15 @@ public final class AsyncExecutor {
             }
         });
         return future;
+    }
+    
+    /**
+     * Use {@link #relay(Executor, CompletionStage)}
+     */
+    @Deprecated
+    public static <T, E extends Exception> Async<T> relay(final Executor executor,
+                                                          final CallableThrows<Async<T>, E> callable) throws E {
+        return relay(executor, callable.call());
     }
     
     /**

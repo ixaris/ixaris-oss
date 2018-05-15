@@ -11,7 +11,7 @@ Asynchronous methods should return an implementation of `CompletionStage`. Eithe
 method with `@Async` and return an implementation of `CompletionStage` that interoperates with `CompletableFuture`
 (i.e. implements the `toCompletableFuture()` method by returning an instance of `CompletableFuture`, not throwing
 `UnsupportedOperationException`). When using an implementation of `CompletionStage` other than `Async` or
-`ComplettableFuture`, the implementing class has to implement a static methods for use by transformed code,
+`CompletableFuture`, the implementing class has to implement a static method for use by transformed code,
 `<T> Impl<T> fromCompletionStage(CompletionStage<T> stage)`, which obtains an instance from a completion stage:
 
 ```java
@@ -62,40 +62,42 @@ public Async<Void> compoundOperation() {
 ```
 
 Since this async/await functionality is not a language feature there are some restrictions. Ideally, the 
-IDE / compiler would stop incorrect use. The primary point of confusion is exception handling. An async 
-method may throw exceptions (even checked ones) but these exceptions are actually thrown when by the
-surrounding `Async.await()` call. 
+IDE / compiler would stop incorrect use. The primary point of confusion is exception handling (see 3rd point).
 
 - Non-async methods (do not return `Async<>` or are not annotated with `@Async`) are not allowed to call 
 `Async.await()` and `Async.awaitExceptions()`. The only way to wait for the result in such methods is
 `Async.block()`. Async methods that don't return a result should return `Async<Void>` instead of `void`
-- Monitors obtained in synchronized blocks are released before `Async.await()` and reacquired after. Other locks 
-should be managed explicitly. In particular, acquiring a lock before `Async.await()` and releasing after means that
-the lock is held until the future is resolved. Consider also that the code after `Async.await()` may, and probably
-will, execute in a different thread, so locks that require the same thread to release will not work properly
-(e.g. `ReentrantReadWriteLock`). Locking in async methods is generally discouraged in favor of non-blocking
-approached like partitioning and queues, e.g. using `AsyncQueue`.   
-- Exceptions declared by async methods are actually thrown by `Async.await()` and `Async.awaitExceptions()` so 
-try..catch blocks will only work around these two methods.  
+- Monitors obtained in synchronized blocks are released before `Async.await()` and reacquired after. Other locks
+should be managed explicitly. In particular, acquiring a lock before `Async.await()` and releasing after means 
+that the lock is held until the awaited future is resolved. Consider also that the code after `Async.await()` 
+may, and probably will, execute in a different thread, so locks that require the same thread to release will not 
+work properly (e.g. `ReentrantReadWriteLock`). Locking in async methods is generally discouraged in favor of 
+non-blocking approaches like partitioning and queues, e.g. using `AsyncQueue`.   
+-  An async method may throw exceptions (even checked ones, which it would need to declare) but these exceptions 
+may either be thrown by the method itself or the surrounding `Async.await()` or `Async.awaitExceptions()` call. 
+In particular, an exception thrown from an async method will be thrown by the method if the method does not await 
+or awaits futures that are already resolved, otherwise a thrown exception will cause the returned future to be 
+rejected. As such, due to this non-determinism, it is recommended that async methods are either awaited immediately 
+or their result propagated. Finally, to obtain a future that is rejected in case the method does throw an exception,
+use `Async.from(() -> op())` which catches any thrown exception and rejects the returned future.  
 
-As such, The so the following two cases are **WRONG**:
+The so the following two cases are **NON DETERMINISTIC**:
 
 ```java
 try {
    Async<Void> a = op();
 } catch (final SomeException e) {
    // it seems as though the exception will be caught and handled
-   // but this exception will not really be thrown by op() unless await() is used
+   // but this exception may not really be thrown by op() unless await() is used
    ...
 }
-await(a); // exception is really thrown here
+await(a); // exception may be thrown here
 
 try {
-   return op(); // should return Async.awaitResult(op());
-                // the await() causes the exception to be handled in this try..catch block
+   return op(); 
 } catch (final SomeException e) {
-   // it seems as though the exception will be caught and translated but it will not
-   // but this exception will not really be thrown by op() unless await() is used
+   // it seems as though the exception will be caught and translated
+   // but this exception may not really be thrown by op() unless awaitExceptions() is used
    throw new SomeOtherException(e);
 }
 ```
@@ -120,11 +122,11 @@ try {
 
 Since test methods need to return void, one cannot `await()` inside a test method. It is recommended to use 
 `CompletionStageUtil.block()` to block waiting for results. For assertions, it is recommended to use 
-`CompletionStageAssert` in [`ix-commons-async-test`](../test/README.md).
+`CompletionStageAssert` in [`ix-commons-async-test`](../test/README.md), which makes use of the `assertj` library.
 
 ## Async Locals
 
-Async locals provide contextual values to the asynchronous process without passing as explicit parameters. They
+Async locals provide contextual values to the asynchronous process without passing explicit parameters. They
 represent an asynchronous version of thread locals. The following is an example of setting and retrieving the value 
 of an `AsyncLocal`:
 
@@ -167,7 +169,7 @@ executor.execute(() -> AsyncLocal.exec(snapshot, () -> {
 ### Stacking
 
 Async Local value can be stackable. If stackable, values are pushed to a stack and popped 
-afterwards, otherwise, an error is thrown if a value is already set.
+afterwards. Otherwise, an error is thrown if a value is already set.
 
 ## Async Trace
 
@@ -283,9 +285,9 @@ ioExecutor.execute(() -> {
 });
 
 // Or simplified as:
-result = Async.await(AsyncExecutor.relay(() -> AsyncExecutor.exec(ioExecutor, () -> { ... })));
+result = Async.await(AsyncExecutor.relay(AsyncExecutor.exec(ioExecutor, () -> { ... })));
 // and wih static imports:
-result = await(relay(() -> exec(ioExecutor, () -> { ... })));
+result = await(relay(exec(ioExecutor, () -> { ... })));
 // which relays the future from the given executor back to the executor associated with the
 // original thread
 ```

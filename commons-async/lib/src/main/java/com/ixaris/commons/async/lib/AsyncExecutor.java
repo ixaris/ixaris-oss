@@ -86,7 +86,7 @@ public final class AsyncExecutor {
     }
     
     /**
-     * Execute a synchronous task in the same executor as the current thread and return a future that is fulfilled from
+     * Execute a synchronous task (the callable) in the same executor as the current thread and return a future that is fulfilled from
      * the executed task's result
      *
      * @param callable
@@ -100,7 +100,7 @@ public final class AsyncExecutor {
     }
     
     /**
-     * Execute a synchronous task in an executor and return a future that is fulfilled from the executed task's result
+     * Execute a synchronous task (the callable) in an executor and return a future that is fulfilled from the executed task's result
      *
      * @param executor
      * @param callable
@@ -218,11 +218,8 @@ public final class AsyncExecutor {
     }
     
     /**
-     * Relay execution back to the executor service associated with this thread (defaulting to common pool). This is
-     * achieved by completing a future on this executor from the future obtained through the callable. The callable
-     * will be called immediately, and the returned future will be completed from the future returned on a thread in
-     * the given executor. Note that if the thread is already associated with the given executor, the future is
-     * completed on the same thread.
+     * Relay execution back to the executor associated with the current thread (defaulting to common pool). This is
+     * achieved by completing a future on the executor from the given future.
      *
      * @param stage
      * @param <T>
@@ -241,7 +238,7 @@ public final class AsyncExecutor {
     }
     
     /**
-     * Relay execution back to the given executor. same semantics as relay(callable)
+     * Relay execution back to the given executor. same semantics as {@link #relay(CompletionStage)}
      *
      * @param executor
      * @param stage

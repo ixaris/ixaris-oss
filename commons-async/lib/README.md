@@ -4,7 +4,7 @@ This library provides a number of utilities for asynchronous execution of code
 
 ## Async
 
-Using Async, code can be written in a seemingly synchronous fashion. Such code is then transformed
+Using this library, Java code can be written in a seemingly synchronous fashion, and then transformed
 to equivalent asynchronous code by the transformer. See [`ix-commons-async-transformer`](../transformer/README.md).
 
 Asynchronous methods should return an implementation of `CompletionStage`. Either return `Async` or annotate the 
@@ -81,7 +81,7 @@ rejected. As such, due to this non-determinism, it is recommended that async met
 or their result propagated. Finally, to obtain a future that is rejected in case the method does throw an exception,
 use `Async.from(() -> op())` which catches any thrown exception and rejects the returned future.  
 
-The so the following two cases are **NON DETERMINISTIC**:
+The following two cases are **NON DETERMINISTIC**:
 
 ```java
 try {

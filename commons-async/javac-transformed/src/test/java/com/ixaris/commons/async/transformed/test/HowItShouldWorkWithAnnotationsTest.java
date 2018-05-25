@@ -48,8 +48,7 @@ public class HowItShouldWorkWithAnnotationsTest {
         
         @Async
         public CompletionStage<Object> doSomething(final CompletionStage<String> blocker) {
-            String res = await(blocker);
-            return result(":" + res);
+            return result(":" + await(blocker));
         }
         
         @Async
@@ -63,15 +62,11 @@ public class HowItShouldWorkWithAnnotationsTest {
         
         @AsyncTransformed
         public CompletionStage<Object> doSomething(final CompletionStage<String> blocker) {
-            try {
-                return continuation$doSomething(blocker, 0, null);
-            } catch (final Throwable t) {
-                return CompletionStageUtil.rejected(t);
-            }
+            return continuation$doSomething(blocker, 0, null);
         }
         
         @AsyncTransformed
-        public CompletionStage<Object> continuation$doSomething(final CompletionStage<String> blocker, final int async$state, CompletionStage<?> async$async) throws Throwable {
+        public CompletionStage<Object> continuation$doSomething(final CompletionStage<String> blocker, final int async$state, CompletionStage<?> async$async) {
             switch (async$state) {
                 case 0:
                     async$async = blocker;
@@ -79,8 +74,7 @@ public class HowItShouldWorkWithAnnotationsTest {
                         return CompletionStageUtil.doneCompose(async$async, f -> continuation$doSomething(blocker, 1, f));
                     }
                 case 1:
-                    String res = (String) CompletionStageUtil.get(async$async);
-                    return result(":" + res);
+                    return result(":" + CompletionStageUtil.get(async$async));
                 default:
                     throw new IllegalArgumentException();
             }
@@ -88,11 +82,7 @@ public class HowItShouldWorkWithAnnotationsTest {
         
         @AsyncTransformed
         public CompletionStage<Object> doSomethingElse(final CompletionStage<String> blocker) {
-            try {
-                return blocker.thenApply(convert(res -> ":" + res));
-            } catch (final Throwable t) {
-                return CompletionStageUtil.rejected(t);
-            }
+            return blocker.thenApply(convert(res -> ":" + res));
         }
         
     }

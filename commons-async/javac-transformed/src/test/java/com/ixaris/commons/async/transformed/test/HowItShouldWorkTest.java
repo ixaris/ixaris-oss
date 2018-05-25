@@ -45,12 +45,11 @@ public class HowItShouldWorkTest {
     
     private static class WhatWillBeWritten {
         
-        public Async<Object> doSomething(CompletionStage<String> blocker) {
-            String res = await(blocker);
-            return result(":" + res);
+        public Async<Object> doSomething(final CompletionStage<String> blocker) {
+            return result(":" + await(blocker));
         }
         
-        public Async<Object> doSomethingElse(CompletionStage<String> blocker) {
+        public Async<Object> doSomethingElse(final CompletionStage<String> blocker) {
             return Async.from(blocker).map(res -> ":" + res);
         }
         
@@ -60,15 +59,11 @@ public class HowItShouldWorkTest {
         
         @AsyncTransformed
         public Async<Object> doSomething(final CompletionStage<String> blocker) {
-            try {
-                return Async.from(continuation$doSomething(blocker, 0, null));
-            } catch (final Throwable t) {
-                return Async.rejected(t);
-            }
+            return Async.from(continuation$doSomething(blocker, 0, null));
         }
         
         @AsyncTransformed
-        public CompletionStage<Object> continuation$doSomething(final CompletionStage<String> blocker, final int async$state, CompletionStage<?> async$async) throws Throwable {
+        public CompletionStage<Object> continuation$doSomething(final CompletionStage<String> blocker, final int async$state, CompletionStage<?> async$async) {
             switch (async$state) {
                 case 0:
                     async$async = Async.from(blocker);
@@ -76,8 +71,7 @@ public class HowItShouldWorkTest {
                         return CompletionStageUtil.doneCompose(async$async, f -> continuation$doSomething(blocker, 1, f));
                     }
                 case 1:
-                    String res = (String) CompletionStageUtil.get(async$async);
-                    return result(":" + res);
+                    return result(":" + CompletionStageUtil.get(async$async));
                 default:
                     throw new IllegalArgumentException();
             }
@@ -85,11 +79,7 @@ public class HowItShouldWorkTest {
         
         @AsyncTransformed
         public Async<Object> doSomethingElse(final CompletionStage<String> blocker) {
-            try {
-                return Async.from(blocker).map(res -> ":" + res);
-            } catch (final Throwable t) {
-                return Async.rejected(t);
-            }
+            return Async.from(blocker).map(res -> ":" + res);
         }
         
     }

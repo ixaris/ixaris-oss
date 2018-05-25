@@ -664,7 +664,7 @@ final class AsyncTransformer {
                 continuationName + (countUses == null ? "" : "$" + countUses),
                 Type.getMethodDescriptor(COMP_STAGE_TYPE, typeArguments),
                 null,
-                new String[] { THROWABLE_NAME });
+                null);
             continuation.visitAnnotation("L" + ASYNC_TRANSFORMED_ANNOTATION_NAME + ";", true);
             
             replacement.visitCode();

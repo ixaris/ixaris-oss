@@ -109,7 +109,7 @@ public final class CompletionStageQueue {
     }
     
     public static final class LongMap extends AbstractLazyReadWriteLockedLongMap<CompletionStageQueue, CompletableFuture<?>, CompletableFuture<?>> {
-
+        
         /**
          * Queue execution of the given callable. The callable is executed once all previous tasks are completed.
          *

@@ -1,8 +1,6 @@
 package com.ixaris.commons.async.lib;
 
-import static com.ixaris.commons.async.lib.CompletableFutureUtil.complete;
 import static com.ixaris.commons.async.lib.CompletableFutureUtil.completeFrom;
-import static com.ixaris.commons.async.lib.CompletableFutureUtil.reject;
 import static com.ixaris.commons.misc.lib.object.Tuple.tuple;
 
 import java.util.concurrent.CompletableFuture;
@@ -36,13 +34,12 @@ public final class CompletionStageQueue {
     public static final class StringMap extends AbstractLazyReadWriteLockedMap<String, CompletionStageQueue, CompletableFuture<?>, CompletableFuture<?>> {
         
         /**
-         * Queue execution of the given callable. The callable is executed once all previous promises are completed. Use this when
-         * the callable returns a result that is converted to a promise by the queue
+         * Queue execution of the given callable. The callable is executed once all previous tasks are completed.
          *
          * @param id       the shared resource id
-         * @param callable callable that returns a result, to be converted to a promise
+         * @param callable callable that returns a result
          * @param <T>      the type returned by the callable and the type of the promise
-         * @return a promise with result of the same type returned by the callable
+         * @return a stage with result of the same type returned by the callable
          */
         public <T, E extends Exception> CompletionStage<T> exec(final String id, final CallableThrows<? extends CompletionStage<T>, E> callable) {
             final CompletableFuture<T> stage = new CompletableFuture<>();
@@ -50,23 +47,45 @@ public final class CompletionStageQueue {
             return stage;
         }
         
-        public <T, E extends Exception> void exec(final String id, final CompletableFuture<T> stage, final CallableThrows<? extends CompletionStage<T>, E> callable) {
-            final Tuple2<CompletionStageQueue, CompletableFuture<?>> queue = getOrCreate(id, stage);
-            queue.get1().internalExec(queue.get2(), stage, callable, () -> {
+        /**
+         * Queue execution of the given callable. The callable is executed once all previous tasks are completed.
+         *
+         * @param id       the shared resource id
+         * @param future   the future to complete with the result of the queued task
+         * @param callable callable that returns a result
+         * @param <T>      the type returned by the callable and the type of the promise
+         */
+        public <T, E extends Exception> void exec(final String id, final CompletableFuture<T> future, final CallableThrows<? extends CompletionStage<T>, E> callable) {
+            final Tuple2<CompletionStageQueue, CompletableFuture<?>> queue = getOrCreate(id, future);
+            queue.get1().internalExec(queue.get2(), future, callable, () -> {
                 if (queue.get1().lastStage.get() == null) {
                     tryRemove(id);
                 }
             });
         }
         
+        /**
+         * Queue execution of the given runnable. The callable is executed once all previous tasks are completed.
+         *
+         * @param id       the shared resource id
+         * @param runnable runnable task
+         * @return a stage with void result
+         */
         public <E extends Exception> CompletionStage<Void> exec(final String id, final RunnableThrows<E> runnable) {
             final CompletableFuture<Void> stage = new CompletableFuture<>();
             exec(id, stage, runnable);
             return stage;
         }
         
-        public <E extends Exception> void exec(final String id, final CompletableFuture<Void> stage, final RunnableThrows<E> runnable) {
-            exec(id, stage, () -> {
+        /**
+         * Queue execution of the given callable. The callable is executed once all previous tasks are completed.
+         *
+         * @param id       the shared resource id
+         * @param future   the future to complete with the result of the queued task
+         * @param runnable runnable task
+         */
+        public <E extends Exception> void exec(final String id, final CompletableFuture<Void> future, final RunnableThrows<E> runnable) {
+            exec(id, future, () -> {
                 runnable.run();
                 return CompletableFuture.completedFuture(null);
             });
@@ -90,15 +109,14 @@ public final class CompletionStageQueue {
     }
     
     public static final class LongMap extends AbstractLazyReadWriteLockedLongMap<CompletionStageQueue, CompletableFuture<?>, CompletableFuture<?>> {
-        
+
         /**
-         * Queue execution of the given callable. The callable is executed once all previous promises are completed. Use this when
-         * the callable returns a result that is converted to a promise by the queue
+         * Queue execution of the given callable. The callable is executed once all previous tasks are completed.
          *
          * @param id       the shared resource id
-         * @param callable callable that returns a result, to be converted to a promise
+         * @param callable callable that returns a result
          * @param <T>      the type returned by the callable and the type of the promise
-         * @return a promise with result of the same type returned by the callable
+         * @return a stage with result of the same type returned by the callable
          */
         public <T, E extends Exception> CompletionStage<T> exec(final long id, final CallableThrows<? extends CompletionStage<T>, E> callable) {
             final CompletableFuture<T> stage = new CompletableFuture<>();
@@ -106,23 +124,45 @@ public final class CompletionStageQueue {
             return stage;
         }
         
-        public <T, E extends Exception> void exec(final long id, final CompletableFuture<T> stage, final CallableThrows<? extends CompletionStage<T>, E> callable) {
-            final Tuple2<CompletionStageQueue, CompletableFuture<?>> queue = getOrCreate(id, stage);
-            queue.get1().internalExec(queue.get2(), stage, callable, () -> {
+        /**
+         * Queue execution of the given callable. The callable is executed once all previous tasks are completed.
+         *
+         * @param id       the shared resource id
+         * @param future   the future to complete with the result of the queued task
+         * @param callable callable that returns a result
+         * @param <T>      the type returned by the callable and the type of the promise
+         */
+        public <T, E extends Exception> void exec(final long id, final CompletableFuture<T> future, final CallableThrows<? extends CompletionStage<T>, E> callable) {
+            final Tuple2<CompletionStageQueue, CompletableFuture<?>> queue = getOrCreate(id, future);
+            queue.get1().internalExec(queue.get2(), future, callable, () -> {
                 if (queue.get1().lastStage.get() == null) {
                     tryRemove(id);
                 }
             });
         }
         
+        /**
+         * Queue execution of the given runnable. The callable is executed once all previous tasks are completed.
+         *
+         * @param id       the shared resource id
+         * @param runnable runnable task
+         * @return a stage with void result
+         */
         public <E extends Exception> CompletionStage<Void> exec(final long id, final RunnableThrows<E> runnable) {
             final CompletableFuture<Void> stage = new CompletableFuture<>();
             exec(id, stage, runnable);
             return stage;
         }
         
-        public <E extends Exception> void exec(final long id, final CompletableFuture<Void> stage, final RunnableThrows<E> runnable) {
-            exec(id, stage, () -> {
+        /**
+         * Queue execution of the given callable. The callable is executed once all previous tasks are completed.
+         *
+         * @param id       the shared resource id
+         * @param future   the future to complete with the result of the queued task
+         * @param runnable runnable task
+         */
+        public <E extends Exception> void exec(final long id, final CompletableFuture<Void> future, final RunnableThrows<E> runnable) {
+            exec(id, future, () -> {
                 runnable.run();
                 return CompletableFuture.completedFuture(null);
             });

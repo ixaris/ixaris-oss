@@ -39,7 +39,6 @@ import org.junit.Test;
 
 import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.async.lib.CompletionStageUtil;
-import com.ixaris.commons.async.lib.annotation.AsyncTransformed;
 
 public class HowItShouldWorkTest {
     
@@ -57,12 +56,10 @@ public class HowItShouldWorkTest {
     
     private static class HowItShouldBeInstrumented {
         
-        @AsyncTransformed
         public Async<Object> doSomething(final CompletionStage<String> blocker) {
             return Async.from(continuation$doSomething(blocker, 0, null));
         }
         
-        @AsyncTransformed
         public CompletionStage<Object> continuation$doSomething(final CompletionStage<String> blocker, final int async$state, CompletionStage<?> async$async) {
             switch (async$state) {
                 case 0:
@@ -77,7 +74,6 @@ public class HowItShouldWorkTest {
             }
         }
         
-        @AsyncTransformed
         public Async<Object> doSomethingElse(final CompletionStage<String> blocker) {
             return Async.from(blocker).map(res -> ":" + res);
         }

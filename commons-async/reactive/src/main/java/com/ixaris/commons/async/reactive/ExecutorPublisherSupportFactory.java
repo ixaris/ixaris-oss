@@ -1,9 +1,8 @@
 package com.ixaris.commons.async.reactive;
 
-import java.util.TimerTask;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -12,7 +11,10 @@ import org.reactivestreams.Subscriber;
 
 import com.ixaris.commons.async.lib.AsyncExecutor;
 import com.ixaris.commons.async.lib.executor.AsyncExecutorServiceWrapper;
+import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper;
 import com.ixaris.commons.async.lib.executor.AsyncScheduledExecutorServiceWrapper;
+import com.ixaris.commons.async.lib.scheduler.ScheduledExecutorServiceWrapper;
+import com.ixaris.commons.async.lib.scheduler.ScheduledExecutorWrapper;
 import com.ixaris.commons.async.lib.scheduler.Scheduler;
 import com.ixaris.commons.async.lib.thread.NamedThreadFactory;
 import com.ixaris.commons.misc.lib.object.Wrapper;
@@ -23,15 +25,14 @@ import com.ixaris.commons.misc.lib.object.Wrapper;
 public final class ExecutorPublisherSupportFactory implements PublisherSupportFactory, SchedulingSupport, AutoCloseable {
     
     public static ExecutorPublisherSupportFactory common() {
-        return new ExecutorPublisherSupportFactory(ForkJoinPool.commonPool(), Scheduler.commonScheduler());
+        return new ExecutorPublisherSupportFactory(AsyncExecutor.DEFAULT);
     }
     
     private static ScheduledExecutorService createScheduledExecutorService(int size) {
         return Executors.newScheduledThreadPool(size, new NamedThreadFactory("ExecutorPublisherSupportFactory-"));
     }
     
-    private final ExecutorService executor;
-    private final Scheduler scheduler;
+    private final ScheduledExecutorService executor;
     
     public ExecutorPublisherSupportFactory(final int size) {
         this(createScheduledExecutorService(size));
@@ -44,7 +45,6 @@ public final class ExecutorPublisherSupportFactory implements PublisherSupportFa
         
         this.executor = Wrapper.isWrappedBy(executor, AsyncScheduledExecutorServiceWrapper.class)
             ? executor : new AsyncScheduledExecutorServiceWrapper<>(executor);
-        this.scheduler = null;
     }
     
     public ExecutorPublisherSupportFactory(final ExecutorService executor, final Scheduler scheduler) {
@@ -52,12 +52,29 @@ public final class ExecutorPublisherSupportFactory implements PublisherSupportFa
             throw new IllegalArgumentException("executor is null");
         }
         if (scheduler == null) {
-            throw new IllegalArgumentException("scheduler is null");
+            throw new IllegalArgumentException("executor is null");
         }
         
-        this.executor = Wrapper.isWrappedBy(executor, AsyncExecutorServiceWrapper.class)
-            ? executor : new AsyncExecutorServiceWrapper<>(executor);
-        this.scheduler = scheduler;
+        if (Wrapper.isWrappedBy(executor, AsyncExecutorServiceWrapper.class)) {
+            this.executor = new ScheduledExecutorServiceWrapper<>(executor, scheduler);
+        } else {
+            this.executor = new AsyncScheduledExecutorServiceWrapper<>(new ScheduledExecutorServiceWrapper<>(executor, scheduler));
+        }
+    }
+    
+    public ExecutorPublisherSupportFactory(final Executor executor, final Scheduler scheduler) {
+        if (executor == null) {
+            throw new IllegalArgumentException("executor is null");
+        }
+        if (scheduler == null) {
+            throw new IllegalArgumentException("executor is null");
+        }
+        
+        if (Wrapper.isWrappedBy(executor, AsyncExecutorWrapper.class)) {
+            this.executor = new ScheduledExecutorWrapper<>(executor, scheduler);
+        } else {
+            this.executor = new AsyncScheduledExecutorServiceWrapper<>(new ScheduledExecutorWrapper<>(executor, scheduler));
+        }
     }
     
     @Override
@@ -66,22 +83,13 @@ public final class ExecutorPublisherSupportFactory implements PublisherSupportFa
     }
     
     @Override
-    public ScheduledTask schedule(final Runnable runnable, final long delay, final TimeUnit unit) {
-        if (scheduler != null) {
-            final TimerTask task = scheduler.schedule(() -> executor.execute(runnable), delay, unit);
-            return task::cancel;
-        } else {
-            final ScheduledFuture<?> schedule = ((ScheduledExecutorService) executor).schedule(runnable, delay, unit);
-            return () -> schedule.cancel(false);
-        }
+    public ScheduledFuture<?> schedule(final Runnable runnable, final long delay, final TimeUnit unit) {
+        return executor.schedule(runnable, delay, unit);
     }
     
     @Override
     public void close() {
         executor.shutdown();
-        if (scheduler != null) {
-            scheduler.shutdown();
-        }
     }
     
     private final class ExecutorPublisherSupport<T> extends AbstractSingleSubscriberPublisherSupport<T> {

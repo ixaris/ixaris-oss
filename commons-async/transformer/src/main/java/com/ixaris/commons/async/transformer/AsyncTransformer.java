@@ -123,7 +123,6 @@ final class AsyncTransformer {
     }
     
     private static final String OBJECT_NAME = "java/lang/Object";
-    private static final String THROWABLE_NAME = "java/lang/Throwable";
     private static final String FUNCTION_THROWS_NAME = "com/ixaris/commons/misc/lib/function/FunctionThrows";
     
     private static final String COMP_FUTURE_NAME = "java/util/concurrent/CompletableFuture";
@@ -141,7 +140,6 @@ final class AsyncTransformer {
     private static final String ASYNC_AWAIT_RESULT_METHOD_NAME = "awaitResult";
     private static final String ASYNC_AWAIT_EXCEPTIONS_METHOD_NAME = "awaitExceptions";
     
-    private static final String ASYNC_TRANSFORMED_ANNOTATION_NAME = "com/ixaris/commons/async/lib/annotation/AsyncTransformed";
     private static final String ASYNC_ANNOTATION_NAME = "com/ixaris/commons/async/lib/annotation/Async";
     
     private static final String COMP_STAGE_UTIL_NAME = "com/ixaris/commons/async/lib/CompletionStageUtil";
@@ -278,9 +276,8 @@ final class AsyncTransformer {
             // - synthetic methods (typically lambda bodies) we err on the lenient side and transform all lambdas that
             // use await(), even if they don't return an implementation of CompletionStage
             if (retType.equals(ASYNC_TYPE) || hasAnnotation(original, ASYNC_ANNOTATION_NAME) || (synthetic && retType.getSort() == Type.OBJECT)) {
-                if (!hasAnnotation(original, ASYNC_TRANSFORMED_ANNOTATION_NAME)) {
-                    changed |= transformAsyncMethod(classNode, original, nameUseCount, retType.getInternalName());
-                }
+                // transformation is idempotent, since it removed all usages of await() and does not change the method if await() is not used
+                changed |= transformAsyncMethod(classNode, original, nameUseCount, retType.getInternalName());
             } else {
                 checkSyncMethod(classNode, original);
             }
@@ -463,20 +460,10 @@ final class AsyncTransformer {
             return false;
         }
         
-        final boolean isStatic = Modifier.isStatic(original.access);
-        
-        final MethodNode replacement = new MethodNode(original.access,
-            original.name,
-            original.desc,
-            original.signature,
-            original.exceptions.toArray(new String[0]));
-        replacement.visitAnnotation("L" + ASYNC_TRANSFORMED_ANNOTATION_NAME + ";", true);
-        
-        final List<AwaitSwitchEntry> switchEntries = new ArrayList<>();
-        final List<Argument> arguments = new ArrayList<>();
-        final List<Label> switchLabels = new ArrayList<>();
         final Analyzer<BasicValue> analyzer = new FrameAnalyzer();
         final Frame<BasicValue>[] frames = analyzer.analyze(classNode.name, original);
+        final List<AwaitSwitchEntry> switchEntries = new ArrayList<>();
+        final List<Label> switchLabels = new ArrayList<>();
         
         final AwaitSwitchEntry entryPoint;
         final boolean entryPointLabelFromOriginal;
@@ -519,6 +506,14 @@ final class AsyncTransformer {
                 }
             }
         }
+        
+        if (switchEntries.isEmpty()) {
+            return false;
+        }
+        
+        final boolean isStatic = Modifier.isStatic(original.access);
+        
+        final List<Argument> arguments = new ArrayList<>();
         
         // compute variable mapping
         // map stack->new locals
@@ -654,118 +649,118 @@ final class AsyncTransformer {
         // Where the jvm is unsure of the actual type of a local var
         // when inside the exception handler because the var has changed.
         
-        if (!switchEntries.isEmpty()) {
-            final String continuationName = "continuation$" + replacement.name;
-            final Integer countUses = nameUseCount.get(continuationName);
-            nameUseCount.put(continuationName, countUses == null ? 1 : countUses + 1);
-            
-            final MethodNode continuation = new MethodNode(
-                ACC_SYNTHETIC | ACC_PRIVATE | (original.access & ~ACC_PUBLIC & ~ACC_PROTECTED),
-                continuationName + (countUses == null ? "" : "$" + countUses),
-                Type.getMethodDescriptor(COMP_STAGE_TYPE, typeArguments),
-                null,
-                null);
-            continuation.visitAnnotation("L" + ASYNC_TRANSFORMED_ANNOTATION_NAME + ";", true);
-            
-            replacement.visitCode();
-            continuation.visitCode();
-            
-            // get index for switch
-            continuation.visitVarInsn(ILOAD, stateArgument.iArgumentLocal);
-            
-            final Label defaultLabel = new Label();
-            continuation.visitTableSwitchInsn(0, switchLabels.size() - 1, defaultLabel, switchLabels.toArray(new Label[0]));
-            
-            // original entry point
-            continuation.visitLabel(entryPoint.resumeLabel);
-            if (entryPointLabelFromOriginal) {
-                // remove this instruction as we already added the label
+        final MethodNode replacement = new MethodNode(original.access,
+            original.name,
+            original.desc,
+            original.signature,
+            original.exceptions.toArray(new String[0]));
+        
+        final String continuationName = "continuation$" + replacement.name;
+        final Integer countUses = nameUseCount.get(continuationName);
+        nameUseCount.put(continuationName, countUses == null ? 1 : countUses + 1);
+        
+        final MethodNode continuation = new MethodNode(
+            ACC_SYNTHETIC | ACC_PRIVATE | (original.access & ~ACC_PUBLIC & ~ACC_PROTECTED),
+            continuationName + (countUses == null ? "" : "$" + countUses),
+            Type.getMethodDescriptor(COMP_STAGE_TYPE, typeArguments),
+            null,
+            null);
+        
+        replacement.visitCode();
+        continuation.visitCode();
+        
+        // get index for switch
+        continuation.visitVarInsn(ILOAD, stateArgument.iArgumentLocal);
+        
+        final Label defaultLabel = new Label();
+        continuation.visitTableSwitchInsn(0, switchLabels.size() - 1, defaultLabel, switchLabels.toArray(new Label[0]));
+        
+        // original entry point
+        continuation.visitLabel(entryPoint.resumeLabel);
+        if (entryPointLabelFromOriginal) {
+            // remove this instruction as we already added the label
+            original.instructions.remove(original.instructions.getFirst());
+            if (original.instructions.getFirst() instanceof LineNumberNode) {
+                // if we are reusing the entry point label from the original method,
+                // also add the line number and remove it from the method
+                final LineNumberNode lineNumberNode = (LineNumberNode) original.instructions.getFirst();
+                continuation.visitLineNumber(lineNumberNode.line, entryPoint.resumeLabel);
                 original.instructions.remove(original.instructions.getFirst());
-                if (original.instructions.getFirst() instanceof LineNumberNode) {
-                    // if we are reusing the entry point label from the original method,
-                    // also add the line number and remove it from the method
-                    final LineNumberNode lineNumberNode = (LineNumberNode) original.instructions.getFirst();
-                    continuation.visitLineNumber(lineNumberNode.line, entryPoint.resumeLabel);
-                    original.instructions.remove(original.instructions.getFirst());
-                }
-                if (!(original.instructions.getFirst() instanceof FrameNode)) {
-                    // we add a full frame if there isn't one corresponding to the reused label
-                    // otherwise use the frame from the original method
-                    continuation.visitFrame(F_FULL, defaultFrame.length, defaultFrame, 0, new Object[0]);
-                }
-            } else {
+            }
+            if (!(original.instructions.getFirst() instanceof FrameNode)) {
+                // we add a full frame if there isn't one corresponding to the reused label
+                // otherwise use the frame from the original method
                 continuation.visitFrame(F_FULL, defaultFrame.length, defaultFrame, 0, new Object[0]);
             }
-            
-            // transform the original code to the continuation method
-            // (this will use the switch labels to allow jumping right after the await calls on future completion)
-            original.accept(new TransformMethodVisitor(continuation,
-                replacement,
-                classNode,
-                original,
-                lambdaDesc,
-                arguments,
-                new Handle(isStatic ? H_INVOKESTATIC : H_INVOKESPECIAL, classNode.name, continuation.name, continuation.desc), //, false),
-                entryPoint,
-                switchEntries));
-            
-            // add switch entries for the continuation state machine
-            for (final AwaitSwitchEntry se : switchEntries) {
-                // code: resumeLabel:
-                continuation.visitLabel(se.resumeLabel);
-                continuation.visitFrame(F_FULL, defaultFrame.length, defaultFrame, 0, new Object[0]);
-                
-                // code: restoreStack;
-                // code: restoreLocals;
-                restoreStackAndLocals(isStatic, classNode, original, continuation, se, arguments);
-                continuation.visitJumpInsn(GOTO, se.isDoneLabel);
-            }
-            
-            // last switch case
-            continuation.visitLabel(defaultLabel);
-            continuation.visitFrame(F_FULL, defaultFrame.length, defaultFrame, 0, new Object[0]);
-            continuation.visitTypeInsn(NEW, "java/lang/IllegalArgumentException");
-            continuation.visitInsn(DUP);
-            continuation.visitMethodInsn(INVOKESPECIAL, "java/lang/IllegalArgumentException", "<init>", "()V", false);
-            continuation.visitInsn(ATHROW);
-            continuation.visitEnd();
-            // continuation.maxStack = Math.max(16, continuation.maxStack + 16);
-            // continuation.maxLocals = Math.max(16, continuation.maxLocals + 16);
-            // adding the continuation method
-            continuation.accept(classNode);
-            
-            // the async method delegates to the continuation, catching any exceptions
-            // any exceptions thrown by the continuation method following await calls are
-            // handled by the enclosing completion stages
-            pushInitial(isStatic, classNode, replacement, arguments);
-            replacement.visitMethodInsn(isStatic ? INVOKESTATIC : INVOKESPECIAL, classNode.name, continuation.name, continuation.desc, false);
-            switch (retType) {
-                case ASYNC_NAME:
-                    // convert CompletionStage to Async
-                    replacement.visitMethodInsn(INVOKESTATIC, ASYNC_NAME, ASYNC_FROM_NAME, ASYNC_FROM_DESC, true);
-                    break;
-                case COMP_STAGE_NAME:
-                    // nothing to do, already a completion stage
-                    break;
-                case COMP_FUTURE_NAME:
-                    // call toCompletableFuture();
-                    replacement.visitMethodInsn(INVOKEINTERFACE, COMP_STAGE_NAME, COMP_STAGE_TO_COMPLETABLE_FUTURE_NAME, COMP_STAGE_TO_COMPLETABLE_FUTURE_DESC, true);
-                    break;
-                default:
-                    // call static fromCompletionStage() method on return type
-                    replacement.visitMethodInsn(INVOKESTATIC, retType, STATIC_FROM_COMPLETION_STAGE_NAME, "(L" + COMP_STAGE_NAME + ";)L" + retType + ";", false);
-            }
-            replacement.visitInsn(ARETURN);
-            replacement.visitEnd();
-            
-            // replace the method
-            classNode.methods.remove(original);
-            replacement.accept(classNode);
-            return true;
-            
         } else {
-            return false;
+            continuation.visitFrame(F_FULL, defaultFrame.length, defaultFrame, 0, new Object[0]);
         }
+        
+        // transform the original code to the continuation method
+        // (this will use the switch labels to allow jumping right after the await calls on future completion)
+        original.accept(new TransformMethodVisitor(continuation,
+            replacement,
+            classNode,
+            original,
+            lambdaDesc,
+            arguments,
+            new Handle(isStatic ? H_INVOKESTATIC : H_INVOKESPECIAL, classNode.name, continuation.name, continuation.desc), //, false),
+            entryPoint,
+            switchEntries));
+        
+        // add switch entries for the continuation state machine
+        for (final AwaitSwitchEntry se : switchEntries) {
+            // code: resumeLabel:
+            continuation.visitLabel(se.resumeLabel);
+            continuation.visitFrame(F_FULL, defaultFrame.length, defaultFrame, 0, new Object[0]);
+            
+            // code: restoreStack;
+            // code: restoreLocals;
+            restoreStackAndLocals(isStatic, classNode, original, continuation, se, arguments);
+            continuation.visitJumpInsn(GOTO, se.isDoneLabel);
+        }
+        
+        // last switch case
+        continuation.visitLabel(defaultLabel);
+        continuation.visitFrame(F_FULL, defaultFrame.length, defaultFrame, 0, new Object[0]);
+        continuation.visitTypeInsn(NEW, "java/lang/IllegalArgumentException");
+        continuation.visitInsn(DUP);
+        continuation.visitMethodInsn(INVOKESPECIAL, "java/lang/IllegalArgumentException", "<init>", "()V", false);
+        continuation.visitInsn(ATHROW);
+        continuation.visitEnd();
+        // continuation.maxStack = Math.max(16, continuation.maxStack + 16);
+        // continuation.maxLocals = Math.max(16, continuation.maxLocals + 16);
+        // adding the continuation method
+        continuation.accept(classNode);
+        
+        // the async method delegates to the continuation, catching any exceptions
+        // any exceptions thrown by the continuation method following await calls are
+        // handled by the enclosing completion stages
+        pushInitial(isStatic, classNode, replacement, arguments);
+        replacement.visitMethodInsn(isStatic ? INVOKESTATIC : INVOKESPECIAL, classNode.name, continuation.name, continuation.desc, false);
+        switch (retType) {
+            case ASYNC_NAME:
+                // convert CompletionStage to Async
+                replacement.visitMethodInsn(INVOKESTATIC, ASYNC_NAME, ASYNC_FROM_NAME, ASYNC_FROM_DESC, true);
+                break;
+            case COMP_STAGE_NAME:
+                // nothing to do, already a completion stage
+                break;
+            case COMP_FUTURE_NAME:
+                // call toCompletableFuture();
+                replacement.visitMethodInsn(INVOKEINTERFACE, COMP_STAGE_NAME, COMP_STAGE_TO_COMPLETABLE_FUTURE_NAME, COMP_STAGE_TO_COMPLETABLE_FUTURE_DESC, true);
+                break;
+            default:
+                // call static fromCompletionStage() method on return type
+                replacement.visitMethodInsn(INVOKESTATIC, retType, STATIC_FROM_COMPLETION_STAGE_NAME, "(L" + COMP_STAGE_NAME + ";)L" + retType + ";", false);
+        }
+        replacement.visitInsn(ARETURN);
+        replacement.visitEnd();
+        
+        // replace the method
+        classNode.methods.remove(original);
+        replacement.accept(classNode);
+        return true;
     }
     
     private Argument mapLocalToLambdaArgument(final boolean isStatic,

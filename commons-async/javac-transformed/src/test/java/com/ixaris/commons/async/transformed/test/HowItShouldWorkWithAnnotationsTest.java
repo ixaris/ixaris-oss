@@ -40,7 +40,6 @@ import org.junit.Test;
 
 import com.ixaris.commons.async.lib.CompletionStageUtil;
 import com.ixaris.commons.async.lib.annotation.Async;
-import com.ixaris.commons.async.lib.annotation.AsyncTransformed;
 
 public class HowItShouldWorkWithAnnotationsTest {
     
@@ -60,12 +59,10 @@ public class HowItShouldWorkWithAnnotationsTest {
     
     private static class HowItShouldBeInstrumented {
         
-        @AsyncTransformed
         public CompletionStage<Object> doSomething(final CompletionStage<String> blocker) {
             return continuation$doSomething(blocker, 0, null);
         }
         
-        @AsyncTransformed
         public CompletionStage<Object> continuation$doSomething(final CompletionStage<String> blocker, final int async$state, CompletionStage<?> async$async) {
             switch (async$state) {
                 case 0:
@@ -80,7 +77,6 @@ public class HowItShouldWorkWithAnnotationsTest {
             }
         }
         
-        @AsyncTransformed
         public CompletionStage<Object> doSomethingElse(final CompletionStage<String> blocker) {
             return blocker.thenApply(convert(res -> ":" + res));
         }

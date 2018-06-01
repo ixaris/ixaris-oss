@@ -1,6 +1,5 @@
 package com.ixaris.commons.async.lib;
 
-import com.ixaris.commons.async.lib.Async.FutureAsync;
 import com.ixaris.commons.misc.lib.function.CallableThrows;
 import com.ixaris.commons.misc.lib.function.RunnableThrows;
 

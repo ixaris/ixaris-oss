@@ -33,7 +33,7 @@ import java.util.Queue;
 import java.util.function.Supplier;
 
 import com.ixaris.commons.async.lib.Async;
-import com.ixaris.commons.async.lib.Async.FutureAsync;
+import com.ixaris.commons.async.lib.FutureAsync;
 import com.ixaris.commons.misc.lib.object.Tuple2;
 
 public class BaseTest {

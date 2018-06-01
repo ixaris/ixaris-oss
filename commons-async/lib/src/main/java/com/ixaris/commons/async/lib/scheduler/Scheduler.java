@@ -2,8 +2,12 @@ package com.ixaris.commons.async.lib.scheduler;
 
 import java.util.Date;
 import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import com.ixaris.commons.misc.lib.function.CallableThrows;
 
 /**
  * Scheduler api similar to ScheduledExecutorService, for the sake of consistency
@@ -15,11 +19,11 @@ public interface Scheduler {
     }
     
     static Scheduler newScheduler(final Timer timer) {
-        return new SchedulerTimerAdapter(timer);
+        return new TimerToSchedulerAdapter(timer);
     }
     
     static Scheduler commonScheduler() {
-        return SchedulerTimerAdapter.COMMON;
+        return TimerToSchedulerAdapter.COMMON;
     }
     
     /**
@@ -29,7 +33,11 @@ public interface Scheduler {
      * @param delay the time to delay execution
      * @param unit the time unit of the initialDelay and period parameters
      */
-    TimerTask schedule(Runnable runnable, long delay, TimeUnit unit);
+    ScheduledFuture<?> schedule(Runnable runnable, long delay, TimeUnit unit);
+    
+    <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit);
+    
+    <V> ScheduledFuture<V> schedule(CallableThrows<CompletionStage<V>, ?> callable, long delay, TimeUnit unit);
     
     /**
      * Schedules the specified task for execution at the specified time.  If
@@ -39,7 +47,7 @@ public interface Scheduler {
      * @param time time at which task is to be executed.
      * @return the scheduled task which can be used to cancel the schedule
      */
-    TimerTask schedule(final Runnable runnable, final Date time);
+    ScheduledFuture<?> schedule(final Runnable runnable, final Date time);
     
     /**
      * @param runnable the task to execute
@@ -48,7 +56,7 @@ public interface Scheduler {
      * @param unit the time unit of the initialDelay and period parameters
      * @return the scheduled task which can be used to cancel the schedule
      */
-    TimerTask scheduleAtFixedRate(final Runnable runnable, final long initialDelay, final long period, final TimeUnit unit);
+    ScheduledFuture<?> scheduleAtFixedRate(final Runnable runnable, final long initialDelay, final long period, final TimeUnit unit);
     
     /**
      * @param runnable the task to execute
@@ -57,7 +65,7 @@ public interface Scheduler {
      * @param unit the time unit of the initialDelay and delay parameters
      * @return the scheduled task which can be used to cancel the schedule
      */
-    TimerTask scheduleWithFixedDelay(final Runnable runnable, final long initialDelay, final long delay, final TimeUnit unit);
+    ScheduledFuture<?> scheduleWithFixedDelay(final Runnable runnable, final long initialDelay, final long delay, final TimeUnit unit);
     
     void shutdown();
     

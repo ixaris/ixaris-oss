@@ -1,6 +1,7 @@
 package com.ixaris.commons.async.lib;
 
 import static com.ixaris.commons.async.lib.Async.await;
+import static com.ixaris.commons.async.lib.CompletableFutureUtil.complete;
 import static com.ixaris.commons.async.lib.CompletableFutureUtil.completeFrom;
 
 import java.util.ArrayList;
@@ -15,8 +16,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ixaris.commons.async.lib.Async.FutureAsync;
-import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper;
+import com.ixaris.commons.async.lib.scheduler.ScheduledExecutorServiceWrapper;
 import com.ixaris.commons.async.lib.scheduler.Scheduler;
 import com.ixaris.commons.async.lib.thread.ThreadLocalHelper;
 import com.ixaris.commons.misc.lib.function.CallableThrows;
@@ -39,7 +39,8 @@ import com.ixaris.commons.misc.lib.object.Wrapper;
  */
 public final class AsyncExecutor {
     
-    public static final Executor DEFAULT = new AsyncExecutorWrapper<>(ForkJoinPool.commonPool());
+    public static final ScheduledExecutorService DEFAULT =
+        new ScheduledExecutorServiceWrapper<>(ForkJoinPool.commonPool(), Scheduler.commonScheduler());
     
     private static final ThreadLocal<Executor> ASYNC_CONTEXT = new ThreadLocal<>();
     private static final Logger LOG = LoggerFactory.getLogger(AsyncExecutor.class);
@@ -112,7 +113,7 @@ public final class AsyncExecutor {
      */
     public static <T, E extends Exception> Async<T> execSync(final Executor executor, final CallableThrows<T, E> callable) throws E {
         final FutureAsync<T> future = new FutureAsync<>();
-        executor.execute(AsyncTrace.wrap(AsyncLocal.wrap(() -> CompletableFutureUtil.complete(future, callable))));
+        executor.execute(AsyncTrace.wrap(AsyncLocal.wrap(() -> complete(future, callable))));
         return future;
     }
     
@@ -167,7 +168,7 @@ public final class AsyncExecutor {
                                                                  final TimeUnit timeUnit,
                                                                  final CallableThrows<T, E> callable) throws E {
         final FutureAsync<T> future = new FutureAsync<>();
-        final Runnable wrapped = AsyncTrace.wrap(AsyncLocal.wrap(() -> CompletableFutureUtil.complete(future, callable)));
+        final Runnable wrapped = AsyncTrace.wrap(AsyncLocal.wrap(() -> complete(future, callable)));
         if (executor instanceof ScheduledExecutorService) {
             ((ScheduledExecutorService) executor).schedule(wrapped, delay, timeUnit);
         } else {
@@ -247,7 +248,7 @@ public final class AsyncExecutor {
                     }
                 })));
             } else {
-                CompletableFutureUtil.complete(future, r, t);
+                complete(future, r, t);
             }
         });
         return future;
@@ -263,14 +264,38 @@ public final class AsyncExecutor {
     }
     
     /**
+     * Async processes need to await the sleep, i.e. await(sleep(10, SECONDS))
+     */
+    public static Async<Void> sleep(final long interval, final TimeUnit timeUnit) {
+        return sleep(get(), interval, timeUnit);
+    }
+    
+    public static Async<Void> sleep(final Executor executor, final long interval, final TimeUnit timeUnit) {
+        final FutureAsync<Void> future = new FutureAsync<>();
+        final Runnable wrapped = AsyncTrace.wrap(AsyncLocal.wrap(() -> {
+            future.complete(null);
+        }));
+        if (executor instanceof ScheduledExecutorService) {
+            ((ScheduledExecutorService) executor).schedule(wrapped, interval, timeUnit);
+        } else {
+            Scheduler.commonScheduler().schedule(() -> executor.execute(wrapped), interval, timeUnit);
+        }
+        return future;
+    }
+    
+    /**
      * Used in co-operative multitasking to relinquish control of the computation thread. Used to break lengthy computation
      * which would not otherwise be broken by I/O or other blocking operations.
      *
      * Async processes need to await the yield, i.e. await(yield())
      */
     public static Async<Void> yield() {
+        return yield(get());
+    }
+    
+    public static Async<Void> yield(final Executor executor) {
         final FutureAsync<Void> future = new FutureAsync<>();
-        get().execute(AsyncTrace.wrap(AsyncLocal.wrap(() -> {
+        executor.execute(AsyncTrace.wrap(AsyncLocal.wrap(() -> {
             future.complete(null);
         })));
         return future;

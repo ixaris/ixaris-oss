@@ -61,7 +61,12 @@ public class CompletableFutureUtil {
     public static <T> void completeFrom(final CompletableFuture<T> future,
                                         final CallableThrows<? extends CompletionStage<T>, ?> callable) {
         try {
-            completeFrom(future, callable.call());
+            final CompletionStage<T> stage = callable.call();
+            if (stage != null) {
+                completeFrom(future, stage);
+            } else {
+                future.complete(null);
+            }
         } catch (final Throwable t) { // NOSONAR future handling
             future.completeExceptionally(AsyncTrace.join(t));
         }

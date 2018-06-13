@@ -1,7 +1,7 @@
 package com.ixaris.commons.async.transformed;
 
 import static com.ixaris.commons.async.lib.Async.allSame;
-import static com.ixaris.commons.async.lib.AsyncExecutor.scheduleSync;
+import static com.ixaris.commons.async.lib.AsyncExecutor.schedule;
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -62,10 +62,9 @@ public class CriticalSectionTest {
         final int counter = shared.counter;
         System.out.println(Thread.currentThread().getName() + " start from " + counter);
         // simulate work being done
-        return scheduleSync(10, TimeUnit.MILLISECONDS, () -> {
+        return schedule(10, TimeUnit.MILLISECONDS, () -> {
             System.out.println(Thread.currentThread().getName() + " continue from " + counter);
             shared.counter = counter + 1;
-            return null;
         });
     }
     

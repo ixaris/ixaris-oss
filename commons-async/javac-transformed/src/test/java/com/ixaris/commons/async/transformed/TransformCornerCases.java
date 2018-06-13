@@ -5,6 +5,7 @@ import static com.ixaris.commons.async.lib.Async.allSame;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.awaitExceptions;
 import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.AsyncExecutor.exec;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -14,7 +15,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 import com.ixaris.commons.async.lib.Async;
-import com.ixaris.commons.async.lib.AsyncExecutor;
 import com.ixaris.commons.async.lib.CompletionStageUtil;
 import com.ixaris.commons.misc.lib.function.CallableThrows;
 import com.ixaris.commons.misc.lib.object.Tuple4;
@@ -141,7 +141,7 @@ public class TransformCornerCases {
     }
     
     public static Async<Integer> operation2(final int i) throws Exception1 {
-        return AsyncExecutor.exec(() -> {
+        return exec(() -> {
             System.out.println("OP2 " + i);
             if (i == 3) {
                 throw new Exception1();
@@ -151,11 +151,11 @@ public class TransformCornerCases {
     }
     
     public Async<Long> operation3() {
-        return AsyncExecutor.execSync(() -> 1L);
+        return exec(() -> 1L);
     }
     
     public CompletionStage<Long> futureOperation() {
-        return AsyncExecutor.execSync(() -> 3L);
+        return exec(() -> 3L);
     }
     
     public Async<Integer> awaitingResult(final int i) {
@@ -168,7 +168,7 @@ public class TransformCornerCases {
     
     public Async<Void> lambdaAwait() {
         return processLambda(() -> {
-            final long result = await(AsyncExecutor.execSync(() -> 0L));
+            final long result = await(exec(() -> 0L));
             return result(result);
         });
     }
@@ -179,7 +179,7 @@ public class TransformCornerCases {
     
     public static Async<Void> staticLambdaAwait() {
         return staticProcessLambda(() -> {
-            final long result = await(AsyncExecutor.execSync(() -> 0L));
+            final long result = await(exec(() -> 0L));
             return result(result);
         });
     }
@@ -190,7 +190,7 @@ public class TransformCornerCases {
     
     public Async<Void> genericLambdaAwait() {
         return processGenericLambda(() -> {
-            await(AsyncExecutor.execSync(() -> 0L));
+            await(exec(() -> 0L));
             return result();
         });
     }
@@ -201,7 +201,7 @@ public class TransformCornerCases {
     
     public static Async<Void> staticGenericLambdaAwait() {
         return staticProcessGenericLambda(() -> {
-            await(AsyncExecutor.execSync(() -> 0L));
+            await(exec(() -> 0L));
             return result();
         });
     }

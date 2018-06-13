@@ -184,10 +184,11 @@ public final class AsyncLocal<T> {
     }
     
     public static <E extends Throwable> void exec(final Snapshot snapshot, final RunnableThrows<E> runnable) throws E {
-        exec(snapshot, () -> {
-            runnable.run();
-            return null;
-        });
+        if (runnable == null) {
+            throw new IllegalArgumentException("runnable is null");
+        }
+        
+        executeAndRestoreAsyncLocals(runnable, ASYNC_LOCALS.get(), snapshot.map);
     }
     
     private static <V, E extends Throwable> V executeAndRestoreAsyncLocals(final CallableThrows<V, E> callable,
@@ -199,6 +200,21 @@ public final class AsyncLocal<T> {
             ASYNC_LOCALS.set(newAsyncLocals);
             try {
                 return callable.call();
+            } finally {
+                ASYNC_LOCALS.set(setAsyncLocals);
+            }
+        }
+    }
+    
+    private static <E extends Throwable> void executeAndRestoreAsyncLocals(final RunnableThrows<E> runnable,
+                                                                           final Map<AsyncLocal<?>, Object> setAsyncLocals,
+                                                                           final Map<AsyncLocal<?>, Object> newAsyncLocals) throws E {
+        if (setAsyncLocals == newAsyncLocals) { // NOSONAR explicitly checking reference as these are immutable
+            runnable.run();
+        } else {
+            ASYNC_LOCALS.set(newAsyncLocals);
+            try {
+                runnable.run();
             } finally {
                 ASYNC_LOCALS.set(setAsyncLocals);
             }

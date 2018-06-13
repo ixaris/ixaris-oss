@@ -2,7 +2,6 @@ package com.ixaris.commons.async.lib;
 
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.AsyncExecutor.exec;
-import static com.ixaris.commons.async.lib.AsyncExecutor.execSync;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.concurrent.CompletionStage;
@@ -86,7 +85,7 @@ public class AsyncTraceTest {
     }
     
     private Async<Void> dummy(final Executor ex) {
-        return execSync(ex, () -> null);
+        return exec(ex, () -> null);
     }
     
 }

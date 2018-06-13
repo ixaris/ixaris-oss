@@ -61,7 +61,7 @@ public class BaseTransformerTest extends BaseTest {
         return createClass(superClass, bytes);
     }
     
-    //
+    @SuppressWarnings("unchecked")
     <T> T createClass(final Class<T> superClass, final byte[] bytes) {
         
         // perhaps we should use the source class ClassLoader as parent.

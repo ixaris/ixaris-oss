@@ -29,7 +29,7 @@ import com.ixaris.commons.misc.lib.object.Wrapper;
  * E.g. if a database or network operation is performed, the execution is relayed back once the result is obtained.
  * It is the responsibility of implementors that switch executors to relay execution back and to preserve async trace
  * and async locals across tasks.
- * <p>
+ *
  * <pre>
  * ...
  * final Result result = await(relay(() -&gt; exec(otherExecutor, () -&gt; transaction(tx, persistenceCallable))));
@@ -88,6 +88,34 @@ public final class AsyncExecutor {
     }
     
     /**
+     * Execute a synchronous task (the runnable) in the same executor as the current thread and return a future that is completed
+     * when the task completes
+     *
+     * @param runnable
+     * @param <E>
+     * @return
+     * @throws E
+     */
+    public static <E extends Exception> Async<Void> exec(final RunnableThrows<E> runnable) throws E {
+        return exec(get(), runnable);
+    }
+    
+    /**
+     * Execute a synchronous task (the runnable) in an executor and return a future that is completed when the task completes
+     *
+     * @param executor
+     * @param runnable
+     * @param <E>
+     * @return
+     * @throws E
+     */
+    public static <E extends Exception> Async<Void> exec(final Executor executor, final RunnableThrows<E> runnable) throws E {
+        final FutureAsync<Void> future = new FutureAsync<>();
+        executor.execute(AsyncTrace.wrap(AsyncLocal.wrap(() -> complete(future, runnable))));
+        return future;
+    }
+    
+    /**
      * Execute a synchronous task (the callable) in the same executor as the current thread and return a future that is fulfilled from
      * the executed task's result
      *
@@ -97,8 +125,8 @@ public final class AsyncExecutor {
      * @return
      * @throws E
      */
-    public static <T, E extends Exception> Async<T> execSync(final CallableThrows<T, E> callable) throws E {
-        return execSync(get(), callable);
+    public static <T, E extends Exception> Async<T> exec(final CallableThrows<T, E> callable) throws E {
+        return exec(get(), callable);
     }
     
     /**
@@ -111,7 +139,7 @@ public final class AsyncExecutor {
      * @return
      * @throws E
      */
-    public static <T, E extends Exception> Async<T> execSync(final Executor executor, final CallableThrows<T, E> callable) throws E {
+    public static <T, E extends Exception> Async<T> exec(final Executor executor, final CallableThrows<T, E> callable) throws E {
         final FutureAsync<T> future = new FutureAsync<>();
         executor.execute(AsyncTrace.wrap(AsyncLocal.wrap(() -> complete(future, callable))));
         return future;
@@ -127,7 +155,7 @@ public final class AsyncExecutor {
      * @return
      * @throws E
      */
-    public static <T, E extends Exception> Async<T> exec(final CallableThrows<Async<T>, E> callable) throws E {
+    public static <T, E extends Exception> Async<T> exec(final AsyncCallableThrows<T, E> callable) throws E {
         return exec(get(), callable);
     }
     
@@ -141,16 +169,45 @@ public final class AsyncExecutor {
      * @return
      * @throws E
      */
-    public static <T, E extends Exception> Async<T> exec(final Executor executor, final CallableThrows<Async<T>, E> callable) throws E {
+    public static <T, E extends Exception> Async<T> exec(final Executor executor, final AsyncCallableThrows<T, E> callable) throws E {
         final FutureAsync<T> future = new FutureAsync<>();
         executor.execute(AsyncTrace.wrap(AsyncLocal.wrap(() -> completeFrom(future, callable))));
         return future;
     }
     
-    public static <T, E extends Exception> Async<T> scheduleSync(final long delay,
-                                                                 final TimeUnit timeUnit,
-                                                                 final CallableThrows<T, E> callable) throws E {
-        return scheduleSync(get(), delay, timeUnit, callable);
+    public static <E extends Exception> Async<Void> schedule(final long delay,
+                                                             final TimeUnit timeUnit,
+                                                             final RunnableThrows<E> runnable) throws E {
+        return schedule(get(), delay, timeUnit, runnable);
+    }
+    
+    /**
+     * Schedule a task and return a future that is completed on the given executor when the scheduled task completes
+     *
+     * @param executor
+     * @param runnable
+     * @param <E>
+     * @return
+     * @throws E
+     */
+    public static <E extends Exception> Async<Void> schedule(final Executor executor,
+                                                             final long delay,
+                                                             final TimeUnit timeUnit,
+                                                             final RunnableThrows<E> runnable) throws E {
+        final FutureAsync<Void> future = new FutureAsync<>();
+        final Runnable wrapped = AsyncTrace.wrap(AsyncLocal.wrap(() -> complete(future, runnable)));
+        if (executor instanceof ScheduledExecutorService) {
+            ((ScheduledExecutorService) executor).schedule(wrapped, delay, timeUnit);
+        } else {
+            Scheduler.commonScheduler().schedule(() -> executor.execute(wrapped), delay, timeUnit);
+        }
+        return future;
+    }
+    
+    public static <T, E extends Exception> Async<T> schedule(final long delay,
+                                                             final TimeUnit timeUnit,
+                                                             final CallableThrows<T, E> callable) throws E {
+        return schedule(get(), delay, timeUnit, callable);
     }
     
     /**
@@ -163,10 +220,10 @@ public final class AsyncExecutor {
      * @return
      * @throws E
      */
-    public static <T, E extends Exception> Async<T> scheduleSync(final Executor executor,
-                                                                 final long delay,
-                                                                 final TimeUnit timeUnit,
-                                                                 final CallableThrows<T, E> callable) throws E {
+    public static <T, E extends Exception> Async<T> schedule(final Executor executor,
+                                                             final long delay,
+                                                             final TimeUnit timeUnit,
+                                                             final CallableThrows<T, E> callable) throws E {
         final FutureAsync<T> future = new FutureAsync<>();
         final Runnable wrapped = AsyncTrace.wrap(AsyncLocal.wrap(() -> complete(future, callable)));
         if (executor instanceof ScheduledExecutorService) {
@@ -179,7 +236,7 @@ public final class AsyncExecutor {
     
     public static <T, E extends Exception> Async<T> schedule(final long delay,
                                                              final TimeUnit timeUnit,
-                                                             final CallableThrows<Async<T>, E> callable) throws E {
+                                                             final AsyncCallableThrows<T, E> callable) throws E {
         return schedule(get(), delay, timeUnit, callable);
     }
     
@@ -196,7 +253,7 @@ public final class AsyncExecutor {
     public static <T, E extends Exception> Async<T> schedule(final Executor executor,
                                                              final long delay,
                                                              final TimeUnit timeUnit,
-                                                             final CallableThrows<Async<T>, E> callable) throws E {
+                                                             final AsyncCallableThrows<T, E> callable) throws E {
         final FutureAsync<T> future = new FutureAsync<>();
         final Runnable wrapped = AsyncTrace.wrap(AsyncLocal.wrap(() -> completeFrom(future, callable)));
         if (executor instanceof ScheduledExecutorService) {
@@ -286,7 +343,7 @@ public final class AsyncExecutor {
     /**
      * Used in co-operative multitasking to relinquish control of the computation thread. Used to break lengthy computation
      * which would not otherwise be broken by I/O or other blocking operations.
-     *
+     * <p>
      * Async processes need to await the yield, i.e. await(yield())
      */
     public static Async<Void> yield() {

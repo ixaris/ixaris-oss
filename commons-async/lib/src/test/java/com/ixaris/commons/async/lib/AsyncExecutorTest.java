@@ -3,7 +3,6 @@ package com.ixaris.commons.async.lib;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
 import static com.ixaris.commons.async.lib.AsyncExecutor.exec;
-import static com.ixaris.commons.async.lib.AsyncExecutor.execSync;
 import static com.ixaris.commons.async.lib.AsyncExecutor.relay;
 import static com.ixaris.commons.async.lib.AsyncExecutor.yield;
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
@@ -38,11 +37,50 @@ public class AsyncExecutorTest {
         // start on ex1
         Assertions.assertThat(AsyncExecutor.get()).isEqualTo(ex1);
         
-        final Async<Void> relay = relay(execSync(ex2, () -> {
+        final Async<Void> relay = relay(exec(ex2, () -> {
             // go to ex2
             Thread.sleep(100L);
             Assertions.assertThat(AsyncExecutor.get()).isEqualTo(ex2);
-            return null;
+        }));
+        
+        // still on ex1 (should still be on same thread)
+        Assertions.assertThat(AsyncExecutor.get()).isEqualTo(ex1);
+        Assertions.assertThat(Thread.currentThread()).isEqualTo(startThread);
+        
+        await(relay);
+        
+        // back to ex1 (on another thread, since the await will have caused this part of the
+        // execution to be executed after the relay)
+        Assertions.assertThat(AsyncExecutor.get()).isEqualTo(ex1);
+        Assertions.assertThat(Thread.currentThread()).isNotEqualTo(startThread);
+        
+        return result(null);
+    }
+    
+    @Test
+    public void testRelayAsync() throws InterruptedException {
+        final AtomicInteger threadsCreated = new AtomicInteger();
+        final Executor ex1 = new AsyncExecutorWrapper<>(command -> {
+            threadsCreated.incrementAndGet();
+            new Thread(command).start();
+        });
+        final Executor ex2 = new AsyncExecutorWrapper<>(Executors.newFixedThreadPool(1));
+        
+        block(exec(ex1, () -> relayAsyncProcess(ex1, ex2)));
+        
+        Assertions.assertThat(threadsCreated.get()).isEqualTo(2);
+    }
+    
+    private Async<Void> relayAsyncProcess(final Executor ex1, final Executor ex2) throws InterruptedException {
+        final Thread startThread = Thread.currentThread();
+        // start on ex1
+        Assertions.assertThat(AsyncExecutor.get()).isEqualTo(ex1);
+        
+        final Async<Void> relay = relay(exec(ex2, () -> {
+            // go to ex2
+            Thread.sleep(100L);
+            Assertions.assertThat(AsyncExecutor.get()).isEqualTo(ex2);
+            return exec(() -> null);
         }));
         
         // still on ex1 (should still be on same thread)

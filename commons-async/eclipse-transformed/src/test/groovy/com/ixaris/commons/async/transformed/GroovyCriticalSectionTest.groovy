@@ -1,9 +1,11 @@
 package com.ixaris.commons.async.transformed
 
 import com.ixaris.commons.async.lib.Async
+import com.ixaris.commons.async.lib.AsyncCallableThrows
 import com.ixaris.commons.async.lib.AsyncExecutor
 import com.ixaris.commons.async.lib.AsyncQueue
 import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper
+import com.ixaris.commons.misc.lib.function.RunnableThrows
 import org.junit.Test
 
 import java.util.concurrent.CompletionStage
@@ -30,7 +32,7 @@ class GroovyCriticalSectionTest {
         
         final List<CompletionStage<Void>> r = new LinkedList<>()
         for (int i = 0; i < 5; i++) {
-            r.add(AsyncExecutor.exec(ex, { criticalSection(s) }))
+            r.add(AsyncExecutor.exec(ex, { criticalSection(s) } as AsyncCallableThrows<Void, RuntimeException>))
         }
         block allSame(r)
         
@@ -44,7 +46,7 @@ class GroovyCriticalSectionTest {
         final Executor ex = new AsyncExecutorWrapper<>(Executors.newFixedThreadPool(5))
         final List<Async<Void>> r = new LinkedList<>()
         for (int i = 0; i < 5; i++) {
-            r.add(AsyncExecutor.exec(ex, { criticalSection(q, s) }))
+            r.add(AsyncExecutor.exec(ex, { criticalSection q, s } as AsyncCallableThrows<Void, RuntimeException>))
         }
         block allSame(r)
         
@@ -59,11 +61,10 @@ class GroovyCriticalSectionTest {
         final int counter = shared.counter
         System.out.println(Thread.currentThread().getName() + " start from " + counter)
         // simulate work being done
-        return AsyncExecutor.scheduleSync(10, TimeUnit.MILLISECONDS, {
+        return AsyncExecutor.schedule(10, TimeUnit.MILLISECONDS, {
             System.out.println(Thread.currentThread().getName() + " continue from " + counter)
             shared.counter = counter + 1
-            return (Void)null
-        })
+        } as RunnableThrows<RuntimeException>)
     }
     
 }

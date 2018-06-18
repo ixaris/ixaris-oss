@@ -31,14 +31,14 @@ public class AbstractAsyncConnectionPoolTest {
         // get 4 connections
         final LinkedList<TestConnection> connections = new LinkedList<>();
         for (int i = 0; i < 4; i++) {
-            connPool.getConnection(10L).thenAccept(connections::add);
+            connPool.get(10L).thenAccept(connections::add);
         }
         
         assertEquals(5, connPool.connectionsCreated); // Minimum (5) created
         
         // now we have 7 in pool
         for (int i = 4; i < 7; i++) {
-            connPool.getConnection(10L).thenAccept(connections::add);
+            connPool.get(10L).thenAccept(connections::add);
         }
         
         assertEquals(7, connPool.connectionsCreated);
@@ -54,18 +54,18 @@ public class AbstractAsyncConnectionPoolTest {
         
         // try getting more than 10 connections
         for (int i = 0; i < 10; i++) {
-            connPool.getConnection(10L).thenAccept(connections::add);
+            connPool.get(10L).thenAccept(connections::add);
         }
         
         try {
-            block(connPool.getConnection(10L));
+            block(connPool.get(10L));
             fail("Should throw ExecutionException caused by ConnectionAcquisitionException");
         } catch (final ConnectionAcquisitionException e) {
             // expected
         }
         
         // try to get a connection and release before timeout, should not fail
-        final CompletionStage<TestConnection> p2 = connPool.getConnection(1000L);
+        final CompletionStage<TestConnection> p2 = connPool.get(1000L);
         connections.removeLast().close();
         p2.toCompletableFuture().join();
         
@@ -91,7 +91,7 @@ public class AbstractAsyncConnectionPoolTest {
         
         final List<TestConnection> connections = new ArrayList<>(10);
         for (int i = 0; i < 10; i++) {
-            connPool.getConnection(10L).thenAccept(connections::add);
+            connPool.get(10L).thenAccept(connections::add);
         }
         connections.forEach(AsyncPooledConnection::close);
         
@@ -102,7 +102,7 @@ public class AbstractAsyncConnectionPoolTest {
         assertTrue((connPool.connectionsServiced - servicedSoFar >= 30) && (connPool.connectionsServiced - servicedSoFar <= 40));
         
         for (int i = 0; i < 2; i++) {
-            connPool.getConnection(10L).thenAccept(connections::add);
+            connPool.get(10L).thenAccept(connections::add);
         }
         
         servicedSoFar = connPool.connectionsServiced;
@@ -122,7 +122,7 @@ public class AbstractAsyncConnectionPoolTest {
         
         final List<TestConnection> connections = new ArrayList<>(10);
         for (int i = 0; i < 10; i++) {
-            connPool.getConnection(10L).thenAccept(connections::add);
+            connPool.get(10L).thenAccept(connections::add);
         }
         connections.forEach(TestConnection::close);
         connections.clear();
@@ -130,7 +130,7 @@ public class AbstractAsyncConnectionPoolTest {
         final long start = System.currentTimeMillis();
         for (int j = 0; j < 1000; j++) {
             for (int i = 0; i < 10; i++) {
-                connPool.getConnection(10L).thenAccept(connections::add);
+                connPool.get(10L).thenAccept(connections::add);
             }
             connections.forEach(TestConnection::close);
             connections.clear();
@@ -152,7 +152,7 @@ public class AbstractAsyncConnectionPoolTest {
         // get 3 connections
         final List<TestConnection> connections = new LinkedList<>();
         for (int i = 0; i < 3; i++) {
-            connPool.getConnection(10L).thenAccept(connections::add);
+            connPool.get(10L).thenAccept(connections::add);
         }
         assertEquals(5, connPool.connectionsCreated); // Minimum (5) created
         
@@ -177,7 +177,7 @@ public class AbstractAsyncConnectionPoolTest {
         
         // get 3 connections
         for (int i = 0; i < 3; i++) {
-            connPool.getConnection(10L);
+            connPool.get(10L);
         }
         assertEquals(5, connPool.connectionsCreated); // Minimum (5) created
         

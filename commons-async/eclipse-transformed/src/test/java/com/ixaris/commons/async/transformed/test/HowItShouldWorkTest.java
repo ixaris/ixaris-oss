@@ -63,7 +63,7 @@ public class HowItShouldWorkTest {
         public CompletionStage<Object> continuation$doSomething(final CompletionStage<String> blocker, final int async$state, CompletionStage<?> async$async) {
             switch (async$state) {
                 case 0:
-                    async$async = Async.from(blocker);
+                    async$async = blocker;
                     if (!CompletionStageUtil.isDone(async$async)) {
                         return CompletionStageUtil.doneCompose(async$async, f -> continuation$doSomething(blocker, 1, f));
                     }

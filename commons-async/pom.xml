@@ -11,10 +11,11 @@
     <packaging>pom</packaging>
     <modules>
         <module>eclipse-transformed</module>
+        <module>example</module>
         <module>javac-transformed</module>
         <module>lib</module>
+        <module>pool</module>
         <module>reactive</module>
         <module>test</module>
-        <module>transformer</module>
     </modules>
 </project>

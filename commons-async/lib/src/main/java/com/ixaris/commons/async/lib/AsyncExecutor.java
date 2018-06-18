@@ -155,7 +155,7 @@ public final class AsyncExecutor {
      * @return
      * @throws E
      */
-    public static <T, E extends Exception> Async<T> exec(final AsyncCallableThrows<T, E> callable) throws E {
+    public static <T, E extends Exception> Async<T> exec(final CompletionStageCallableThrows<T, E> callable) throws E {
         return exec(get(), callable);
     }
     
@@ -169,7 +169,7 @@ public final class AsyncExecutor {
      * @return
      * @throws E
      */
-    public static <T, E extends Exception> Async<T> exec(final Executor executor, final AsyncCallableThrows<T, E> callable) throws E {
+    public static <T, E extends Exception> Async<T> exec(final Executor executor, final CompletionStageCallableThrows<T, E> callable) throws E {
         final FutureAsync<T> future = new FutureAsync<>();
         executor.execute(AsyncTrace.wrap(AsyncLocal.wrap(() -> completeFrom(future, callable))));
         return future;
@@ -236,7 +236,7 @@ public final class AsyncExecutor {
     
     public static <T, E extends Exception> Async<T> schedule(final long delay,
                                                              final TimeUnit timeUnit,
-                                                             final AsyncCallableThrows<T, E> callable) throws E {
+                                                             final CompletionStageCallableThrows<T, E> callable) throws E {
         return schedule(get(), delay, timeUnit, callable);
     }
     
@@ -253,7 +253,7 @@ public final class AsyncExecutor {
     public static <T, E extends Exception> Async<T> schedule(final Executor executor,
                                                              final long delay,
                                                              final TimeUnit timeUnit,
-                                                             final AsyncCallableThrows<T, E> callable) throws E {
+                                                             final CompletionStageCallableThrows<T, E> callable) throws E {
         final FutureAsync<T> future = new FutureAsync<>();
         final Runnable wrapped = AsyncTrace.wrap(AsyncLocal.wrap(() -> completeFrom(future, callable)));
         if (executor instanceof ScheduledExecutorService) {

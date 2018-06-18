@@ -1,7 +1,7 @@
 package com.ixaris.commons.async.transformed
 
 import com.ixaris.commons.async.lib.Async
-import com.ixaris.commons.async.lib.AsyncCallableThrows
+import com.ixaris.commons.async.lib.CompletionStageCallableThrows
 import com.ixaris.commons.async.lib.AsyncExecutor
 import com.ixaris.commons.async.lib.AsyncQueue
 import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper
@@ -32,7 +32,7 @@ class GroovyCriticalSectionTest {
         
         final List<CompletionStage<Void>> r = new LinkedList<>()
         for (int i = 0; i < 5; i++) {
-            r.add(AsyncExecutor.exec(ex, { criticalSection(s) } as AsyncCallableThrows<Void, RuntimeException>))
+            r.add(AsyncExecutor.exec(ex, { criticalSection(s) } as CompletionStageCallableThrows<Void, RuntimeException>))
         }
         block allSame(r)
         
@@ -46,7 +46,7 @@ class GroovyCriticalSectionTest {
         final Executor ex = new AsyncExecutorWrapper<>(Executors.newFixedThreadPool(5))
         final List<Async<Void>> r = new LinkedList<>()
         for (int i = 0; i < 5; i++) {
-            r.add(AsyncExecutor.exec(ex, { criticalSection q, s } as AsyncCallableThrows<Void, RuntimeException>))
+            r.add(AsyncExecutor.exec(ex, { criticalSection q, s } as CompletionStageCallableThrows<Void, RuntimeException>))
         }
         block allSame(r)
         

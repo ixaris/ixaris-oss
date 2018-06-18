@@ -358,7 +358,7 @@ final class AsyncTransformer {
         
     }
     
-    private static class TransformMethodVisitor extends MethodVisitor {
+    private static class TransformAsyncMethodVisitor extends MethodVisitor {
         
         private final MethodNode methodToAnnotate;
         private final ClassNode classNode;
@@ -372,15 +372,15 @@ final class AsyncTransformer {
         private int lastLine;
         private AwaitSwitchEntry awaitSwitchEntry;
         
-        private TransformMethodVisitor(final MethodNode method,
-                                       final MethodNode methodToAnnotate,
-                                       final ClassNode classNode,
-                                       final MethodNode original,
-                                       final String lambdaDesc,
-                                       final List<Argument> arguments,
-                                       final Handle handle,
-                                       final AwaitSwitchEntry entryPoint,
-                                       final List<AwaitSwitchEntry> switchEntries) {
+        private TransformAsyncMethodVisitor(final MethodNode method,
+                                            final MethodNode methodToAnnotate,
+                                            final ClassNode classNode,
+                                            final MethodNode original,
+                                            final String lambdaDesc,
+                                            final List<Argument> arguments,
+                                            final Handle handle,
+                                            final AwaitSwitchEntry entryPoint,
+                                            final List<AwaitSwitchEntry> switchEntries) {
             super(ASM5, method);
             this.methodToAnnotate = methodToAnnotate;
             this.classNode = classNode;
@@ -698,7 +698,7 @@ final class AsyncTransformer {
         
         // transform the original code to the continuation method
         // (this will use the switch labels to allow jumping right after the await calls on future completion)
-        original.accept(new TransformMethodVisitor(continuation,
+        original.accept(new TransformAsyncMethodVisitor(continuation,
             replacement,
             classNode,
             original,

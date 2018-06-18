@@ -82,12 +82,12 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
     /**
      * Create a new pooled connection
      */
-    public abstract Async<T> createPooledConnection();
+    protected abstract Async<T> createPooledConnection();
     
     /**
      * Create a new connection
      */
-    public abstract C wrapConnection(T pooledConn);
+    protected abstract C wrapConnection(T pooledConn);
     
     /**
      * Service the connection (called periodically) e.g. for Keep Alive and check whether the connection is still useable
@@ -95,7 +95,7 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
      * @param pooledConn the connection to service
      * @return promise fulfilled when the connection is services
      */
-    public abstract Async<T> serviceConnection(T pooledConn);
+    protected abstract Async<T> serviceConnection(T pooledConn);
     
     /**
      * Concrete Connection Pools (subclasses) can place initialisation code, executed before start()
@@ -180,7 +180,6 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
         }
     }
     
-    @Override
     public final boolean isActive() {
         return state.get() == ACTIVE;
     }
@@ -190,7 +189,7 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
      * @return a promise fulfilled when a connection is available
      */
     @Override
-    public final Async<C> getConnection(final long timeout) {
+    public final Async<C> get(final long timeout) {
         if (!isActive()) {
             throw new IllegalStateException("Pool is inactive");
         }
@@ -297,7 +296,7 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
     }
     
     private void checkWaiting() {
-        if (!waiting.isEmpty() && !available.isEmpty()) {
+        if (!available.isEmpty() && !waiting.isEmpty()) {
             ConnectionInfo<T> ci;
             while ((ci = available.poll()) != null) {
                 boolean used = false;

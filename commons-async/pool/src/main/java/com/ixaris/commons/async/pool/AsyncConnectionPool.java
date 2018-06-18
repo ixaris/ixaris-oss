@@ -9,8 +9,13 @@ public interface AsyncConnectionPool<T> {
      * 
      * @param timeout 0 to wait forever
      */
-    Async<T> getConnection(long timeout);
+    Async<T> get(long timeout);
     
-    boolean isActive();
+    /**
+     * Default is equivalent to get(0)
+     */
+    default Async<T> get() {
+        return get(0);
+    }
     
 }

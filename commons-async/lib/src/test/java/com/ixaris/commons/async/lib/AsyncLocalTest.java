@@ -1,14 +1,24 @@
 package com.ixaris.commons.async.lib;
 
-import static org.assertj.core.api.Assertions.*;
+import static com.ixaris.commons.async.lib.Async.await;
+import static com.ixaris.commons.async.lib.Async.result;
+import static com.ixaris.commons.async.lib.AsyncExecutor.exec;
+import static com.ixaris.commons.async.lib.AsyncExecutor.sleep;
+import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import org.junit.Test;
 
-// TODO test with thread
+import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper;
+
 public class AsyncLocalTest {
     
     private static final AsyncLocal<String> VAL1 = new AsyncLocal<>();
@@ -117,6 +127,31 @@ public class AsyncLocalTest {
         });
         assertThat(VAL1.get()).isNull();
         assertThat(VAL2.get()).isNull();
+    }
+    
+    @Test
+    public void testCompletionStage() throws Exception {
+        final Executor ex = new AsyncExecutorWrapper<>(Executors.newFixedThreadPool(1));
+        
+        block(VAL1.exec("TEST", () -> {
+            assertThat(VAL1.get()).isEqualTo("TEST");
+            
+            await(VAL2.exec("1", () -> {
+                assertThat(VAL2.get()).isEqualTo("1");
+                await(exec(ex, () -> VAL2.exec("2", () -> {
+                    assertThat(VAL1.get()).isEqualTo("TEST");
+                    assertThat(VAL2.get()).isEqualTo("2");
+                    await(sleep(10L, MILLISECONDS));
+                    return result();
+                })));
+                assertThat(VAL2.get()).isEqualTo("1");
+                return result();
+            }));
+            
+            assertThat(VAL1.get()).isEqualTo("TEST");
+            assertThat(VAL2.get()).isNull();
+            return result();
+        }));
     }
     
 }

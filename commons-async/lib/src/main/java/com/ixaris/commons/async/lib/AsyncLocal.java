@@ -1,5 +1,8 @@
 package com.ixaris.commons.async.lib;
 
+import static com.ixaris.commons.async.lib.Async.awaitExceptions;
+import static com.ixaris.commons.async.lib.Async.from;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -7,6 +10,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -66,31 +70,43 @@ public final class AsyncLocal<T> {
             return this;
         }
         
-        public <V, E extends Throwable> V exec(final CallableThrows<V, E> task) throws E {
+        public <V, E extends Exception> Async<V> exec(final CompletionStageCallableThrows<V, E> task) throws E {
             if (task == null) {
                 throw new IllegalArgumentException("task is null");
             }
             
-            final Map<AsyncLocal<?>, Object> asyncLocals = ASYNC_LOCALS.get();
-            Map<AsyncLocal<?>, Object> newAsyncLocals = asyncLocals;
+            final Map<AsyncLocal<?>, Object> prevAsyncLocals = ASYNC_LOCALS.get();
+            Map<AsyncLocal<?>, Object> asyncLocals = prevAsyncLocals;
             for (final Entry<AsyncLocal<?>, Object> entry : map.entrySet()) {
-                newAsyncLocals = applyValue(newAsyncLocals, entry.getKey(), entry.getValue());
+                asyncLocals = entry.getKey().applyValue(entry.getValue(), asyncLocals, prevAsyncLocals);
             }
-            return executeAndRestoreAsyncLocals(task, asyncLocals, newAsyncLocals);
+            return executeAndRestoreAsyncLocals(task, asyncLocals, prevAsyncLocals);
         }
         
-        public <E extends Throwable> void exec(final RunnableThrows<E> task) throws E {
-            exec(() -> {
-                task.run();
-                return null;
-            });
+        public <V, E extends Exception> V exec(final CallableThrows<V, E> task) throws E {
+            if (task == null) {
+                throw new IllegalArgumentException("task is null");
+            }
+            
+            final Map<AsyncLocal<?>, Object> prevAsyncLocals = ASYNC_LOCALS.get();
+            Map<AsyncLocal<?>, Object> asyncLocals = prevAsyncLocals;
+            for (final Entry<AsyncLocal<?>, Object> entry : map.entrySet()) {
+                asyncLocals = entry.getKey().applyValue(entry.getValue(), asyncLocals, prevAsyncLocals);
+            }
+            return executeAndRestoreAsyncLocals(task, asyncLocals, prevAsyncLocals);
         }
         
-        @SuppressWarnings("unchecked")
-        private static <T> Map<AsyncLocal<?>, Object> applyValue(final Map<AsyncLocal<?>, Object> newAsyncLocals,
-                                                                 final AsyncLocal<T> asyncLocal,
-                                                                 final Object value) {
-            return asyncLocal.applyValue((T) value, newAsyncLocals);
+        public <E extends Exception> void exec(final RunnableThrows<E> task) throws E {
+            if (task == null) {
+                throw new IllegalArgumentException("task is null");
+            }
+            
+            final Map<AsyncLocal<?>, Object> prevAsyncLocals = ASYNC_LOCALS.get();
+            Map<AsyncLocal<?>, Object> asyncLocals = prevAsyncLocals;
+            for (final Entry<AsyncLocal<?>, Object> entry : map.entrySet()) {
+                asyncLocals = entry.getKey().applyValue(entry.getValue(), asyncLocals, prevAsyncLocals);
+            }
+            executeAndRestoreAsyncLocals(task, asyncLocals, prevAsyncLocals);
         }
         
     }
@@ -137,32 +153,37 @@ public final class AsyncLocal<T> {
         return i -> exec(snapshot, () -> function.apply(i));
     }
     
+    public static <T, U> BiConsumer<T, U> wrap(final BiConsumer<T, U> biConsumer) {
+        final Snapshot snapshot = AsyncLocal.snapshot();
+        return (t, u) -> exec(snapshot, () -> biConsumer.accept(t, u));
+    }
+    
     public static <I1, I2, V> BiFunction<I1, I2, V> wrapThrows(final BiFunction<I1, I2, V> biFunction) {
         final Snapshot snapshot = AsyncLocal.snapshot();
         return (i1, i2) -> exec(snapshot, () -> biFunction.apply(i1, i2));
     }
     
-    public static <V, E extends Throwable> CallableThrows<V, E> wrapThrows(final CallableThrows<V, E> callable) {
+    public static <V, E extends Exception> CallableThrows<V, E> wrapThrows(final CallableThrows<V, E> callable) {
         final Snapshot snapshot = AsyncLocal.snapshot();
         return () -> exec(snapshot, callable);
     }
     
-    public static <E extends Throwable> RunnableThrows<E> wrapThrows(final RunnableThrows<E> runnable) {
+    public static <E extends Exception> RunnableThrows<E> wrapThrows(final RunnableThrows<E> runnable) {
         final Snapshot snapshot = AsyncLocal.snapshot();
         return () -> exec(snapshot, runnable);
     }
     
-    public static <V, E extends Throwable> ConsumerThrows<V, E> wrapThrows(final ConsumerThrows<V, E> consumer) {
+    public static <V, E extends Exception> ConsumerThrows<V, E> wrapThrows(final ConsumerThrows<V, E> consumer) {
         final Snapshot snapshot = AsyncLocal.snapshot();
         return v -> exec(snapshot, () -> consumer.accept(v));
     }
     
-    public static <I, V, E extends Throwable> FunctionThrows<I, V, E> wrapThrows(final FunctionThrows<I, V, E> function) {
+    public static <I, V, E extends Exception> FunctionThrows<I, V, E> wrapThrows(final FunctionThrows<I, V, E> function) {
         final Snapshot snapshot = AsyncLocal.snapshot();
         return i -> exec(snapshot, () -> function.apply(i));
     }
     
-    public static <I1, I2, V, E extends Throwable> BiFunctionThrows<I1, I2, V, E> wrapThrows(final BiFunctionThrows<I1, I2, V, E> biFunction) {
+    public static <I1, I2, V, E extends Exception> BiFunctionThrows<I1, I2, V, E> wrapThrows(final BiFunctionThrows<I1, I2, V, E> biFunction) {
         final Snapshot snapshot = AsyncLocal.snapshot();
         return (i1, i2) -> exec(snapshot, () -> biFunction.apply(i1, i2));
     }
@@ -175,48 +196,83 @@ public final class AsyncLocal<T> {
         return new Snapshot();
     }
     
-    public static <V, E extends Throwable> V exec(final Snapshot snapshot, final CallableThrows<V, E> callable) throws E {
+    public static <V, E extends Exception> Async<V> exec(final Snapshot snapshot, final CompletionStageCallableThrows<V, E> callable) throws E {
         if (callable == null) {
             throw new IllegalArgumentException("callable is null");
         }
         
-        return executeAndRestoreAsyncLocals(callable, ASYNC_LOCALS.get(), snapshot.map);
+        return executeAndRestoreAsyncLocals(callable, snapshot.map, ASYNC_LOCALS.get());
     }
     
-    public static <E extends Throwable> void exec(final Snapshot snapshot, final RunnableThrows<E> runnable) throws E {
+    public static <V, E extends Exception> V exec(final Snapshot snapshot, final CallableThrows<V, E> callable) throws E {
+        if (callable == null) {
+            throw new IllegalArgumentException("callable is null");
+        }
+        
+        return executeAndRestoreAsyncLocals(callable, snapshot.map, ASYNC_LOCALS.get());
+    }
+    
+    public static <E extends Exception> void exec(final Snapshot snapshot, final RunnableThrows<E> runnable) throws E {
         if (runnable == null) {
             throw new IllegalArgumentException("runnable is null");
         }
         
-        executeAndRestoreAsyncLocals(runnable, ASYNC_LOCALS.get(), snapshot.map);
+        executeAndRestoreAsyncLocals(runnable, snapshot.map, ASYNC_LOCALS.get());
     }
     
-    private static <V, E extends Throwable> V executeAndRestoreAsyncLocals(final CallableThrows<V, E> callable,
-                                                                           final Map<AsyncLocal<?>, Object> setAsyncLocals,
-                                                                           final Map<AsyncLocal<?>, Object> newAsyncLocals) throws E {
-        if (setAsyncLocals == newAsyncLocals) { // NOSONAR explicitly checking reference as these are immutable
-            return callable.call();
+    private static <V, E extends Exception> Async<V> executeAndRestoreAsyncLocals(final CompletionStageCallableThrows<V, E> callable,
+                                                                                  final Map<AsyncLocal<?>, Object> asyncLocals,
+                                                                                  final Map<AsyncLocal<?>, Object> prevAsyncLocals) throws E {
+        if (asyncLocals == prevAsyncLocals) { // NOSONAR explicitly checking reference as these are immutable
+            return from(callable.call());
         } else {
-            ASYNC_LOCALS.set(newAsyncLocals);
+            ASYNC_LOCALS.set(asyncLocals);
+            final Async<V> async;
             try {
-                return callable.call();
+                async = from(callable.call());
             } finally {
-                ASYNC_LOCALS.set(setAsyncLocals);
+                // restore on current thread
+                ASYNC_LOCALS.set(prevAsyncLocals);
+            }
+            if (async != null) {
+                try {
+                    return awaitExceptions(async);
+                } finally {
+                    // restore on resuming thread DO NOT MERGE WITH ABOVE try..catch
+                    ASYNC_LOCALS.set(prevAsyncLocals);
+                }
+            } else {
+                return null;
             }
         }
     }
     
-    private static <E extends Throwable> void executeAndRestoreAsyncLocals(final RunnableThrows<E> runnable,
-                                                                           final Map<AsyncLocal<?>, Object> setAsyncLocals,
-                                                                           final Map<AsyncLocal<?>, Object> newAsyncLocals) throws E {
-        if (setAsyncLocals == newAsyncLocals) { // NOSONAR explicitly checking reference as these are immutable
+    private static <V, E extends Exception> V executeAndRestoreAsyncLocals(final CallableThrows<V, E> callable,
+                                                                           final Map<AsyncLocal<?>, Object> asyncLocals,
+                                                                           final Map<AsyncLocal<?>, Object> prevAsyncLocals) throws E {
+        if (asyncLocals == prevAsyncLocals) { // NOSONAR explicitly checking reference as these are immutable
+            return callable.call();
+        } else {
+            ASYNC_LOCALS.set(asyncLocals);
+            try {
+                return callable.call();
+            } finally {
+                ASYNC_LOCALS.set(prevAsyncLocals);
+            }
+        }
+    }
+    
+    private static <E extends Exception> void executeAndRestoreAsyncLocals(final RunnableThrows<E> runnable,
+                                                                           final Map<AsyncLocal<?>, Object> asyncLocals,
+                                                                           final Map<AsyncLocal<?>, Object> prevAsyncLocals) throws E {
+        if (asyncLocals == prevAsyncLocals) { // NOSONAR explicitly checking reference as these are immutable
             runnable.run();
         } else {
-            ASYNC_LOCALS.set(newAsyncLocals);
+            ASYNC_LOCALS.set(asyncLocals);
             try {
                 runnable.run();
             } finally {
-                ASYNC_LOCALS.set(setAsyncLocals);
+                ASYNC_LOCALS.set(prevAsyncLocals);
             }
         }
     }
@@ -264,7 +320,7 @@ public final class AsyncLocal<T> {
         return (T) o;
     }
     
-    public <V, E extends Throwable> V exec(final T value, final CallableThrows<V, E> task) throws E {
+    public <V, E extends Exception> Async<V> exec(final T value, final CompletionStageCallableThrows<V, E> task) throws E {
         if (value == null) {
             throw new IllegalArgumentException("value is null");
         }
@@ -272,28 +328,48 @@ public final class AsyncLocal<T> {
             throw new IllegalArgumentException("task is null");
         }
         
-        final Map<AsyncLocal<?>, Object> asyncLocals = ASYNC_LOCALS.get();
-        final Map<AsyncLocal<?>, Object> newAsyncLocals = applyValue(value, asyncLocals);
-        return executeAndRestoreAsyncLocals(task, asyncLocals, newAsyncLocals);
+        final Map<AsyncLocal<?>, Object> prevAsyncLocals = ASYNC_LOCALS.get();
+        final Map<AsyncLocal<?>, Object> asyncLocals = applyValue(value, prevAsyncLocals, prevAsyncLocals);
+        return executeAndRestoreAsyncLocals(task, asyncLocals, prevAsyncLocals);
     }
     
-    public <E extends Throwable> void exec(final T value, final RunnableThrows<E> task) throws E {
-        exec(value, () -> {
-            task.run();
-            return null;
-        });
+    public <V, E extends Exception> V exec(final T value, final CallableThrows<V, E> task) throws E {
+        if (value == null) {
+            throw new IllegalArgumentException("value is null");
+        }
+        if (task == null) {
+            throw new IllegalArgumentException("task is null");
+        }
+        
+        final Map<AsyncLocal<?>, Object> prevAsyncLocals = ASYNC_LOCALS.get();
+        final Map<AsyncLocal<?>, Object> asyncLocals = applyValue(value, prevAsyncLocals, prevAsyncLocals);
+        return executeAndRestoreAsyncLocals(task, asyncLocals, prevAsyncLocals);
+    }
+    
+    public <E extends Exception> void exec(final T value, final RunnableThrows<E> task) throws E {
+        if (value == null) {
+            throw new IllegalArgumentException("value is null");
+        }
+        if (task == null) {
+            throw new IllegalArgumentException("task is null");
+        }
+        
+        final Map<AsyncLocal<?>, Object> prevAsyncLocals = ASYNC_LOCALS.get();
+        final Map<AsyncLocal<?>, Object> asyncLocals = applyValue(value, prevAsyncLocals, prevAsyncLocals);
+        executeAndRestoreAsyncLocals(task, asyncLocals, prevAsyncLocals);
     }
     
     /**
      * @return the async local map of values, which is the same instance if there is no change
      */
     @SuppressWarnings("unchecked")
-    private <E extends Throwable> Map<AsyncLocal<?>, Object> applyValue(final T value,
-                                                                        final Map<AsyncLocal<?>, Object> asyncLocals) throws E {
+    private Map<AsyncLocal<?>, Object> applyValue(final Object value,
+                                                  final Map<AsyncLocal<?>, Object> asyncLocals,
+                                                  final Map<AsyncLocal<?>, Object> prevAsyncLocals) {
         final Object currentObject = asyncLocals.get(this);
         if (currentObject == null) {
             // for non-stackable values, single value is placed without wrapping in a stack
-            return copyAndPut(asyncLocals, this, value);
+            return copyAndPut(asyncLocals, prevAsyncLocals, this, value);
             
         } else if (!stackable) {
             if (currentObject.equals(value)) {
@@ -310,29 +386,38 @@ public final class AsyncLocal<T> {
             } else {
                 final T current = (T) currentObject;
                 if (validator != null) {
-                    validator.validate(value, current);
+                    validator.validate((T) value, current);
                 }
                 // second value causes stack to be created
-                return copyAndPut(asyncLocals, this, new Stack<>(current, value));
+                return copyAndPut(asyncLocals, prevAsyncLocals, this, new Stack<>(current, value));
             }
             
         } else {
             final Stack<T> stack = (Stack<T>) currentObject;
-            final T current = stack.peek();
+            final T current = stack.peek(); // current can never be null
             if (current.equals(value)) {
                 // same value, so just run
                 return asyncLocals;
             } else {
                 if (validator != null) {
-                    validator.validate(value, current);
+                    validator.validate((T) value, current);
                 }
-                return copyAndPut(asyncLocals, this, Stack.copyAndPush(stack, value));
+                return copyAndPut(asyncLocals, prevAsyncLocals, this, Stack.copyAndPush(stack, (T) value));
             }
         }
     }
     
-    private Map<AsyncLocal<?>, Object> copyAndPut(final Map<AsyncLocal<?>, Object> asyncLocal, final AsyncLocal<T> key, final Object value) {
-        final Map<AsyncLocal<?>, Object> copy = new HashMap<>(asyncLocal); // NOSONAR map is immutable once returned
+    private Map<AsyncLocal<?>, Object> copyAndPut(final Map<AsyncLocal<?>, Object> asyncLocals,
+                                                  final Map<AsyncLocal<?>, Object> prevAsyncLocals,
+                                                  final AsyncLocal<T> key,
+                                                  final Object value) {
+        
+        final Map<AsyncLocal<?>, Object> copy;
+        if (asyncLocals == prevAsyncLocals) { // NOSONAR explicitly checking reference as these are immutable
+            copy = new HashMap<>(prevAsyncLocals); // NOSONAR map is immutable once returned
+        } else {
+            copy = asyncLocals;
+        }
         copy.put(key, value);
         return copy;
     }

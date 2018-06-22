@@ -272,6 +272,45 @@ public final class AsyncExecutor {
      * @param <T>
      * @return
      */
+    public static <T> Async<T> relayWithContext(final CompletionStage<T> stage) {
+        return relayWithContext(get(), stage);
+    }
+    
+    /**
+     * Relay execution back to the given executor. same semantics as {@link #relay(CompletionStage)}
+     *
+     * @param executor
+     * @param stage
+     * @param <T>
+     * @return
+     */
+    public static <T> Async<T> relayWithContext(final Executor executor, final CompletionStage<T> stage) {
+        final FutureAsync<T> future = new FutureAsync<>();
+        stage.whenComplete(AsyncTrace.wrap(AsyncLocal.wrap((r, t) -> {
+            if (ASYNC_CONTEXT.get() != executor) { // NOSONAR check reference
+                final Throwable tt = AsyncTrace.join(CompletionStageUtil.extractCause(t));
+                executor.execute(AsyncTrace.wrap(AsyncLocal.wrap(() -> {
+                    if (t != null) {
+                        future.completeExceptionally(tt);
+                    } else {
+                        future.complete(r);
+                    }
+                })));
+            } else {
+                complete(future, r, t);
+            }
+        })));
+        return future;
+    }
+    
+    /**
+     * Relay execution back to the executor associated with the current thread (defaulting to common pool). This is
+     * achieved by completing a future on the executor from the given future.
+     *
+     * @param stage
+     * @param <T>
+     * @return
+     */
     public static <T> Async<T> relay(final CompletionStage<T> stage) {
         return relay(get(), stage);
     }

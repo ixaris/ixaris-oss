@@ -139,8 +139,10 @@ public interface Async<T> extends CompletionStage<T> {
     static <T> Async<T> from(final CompletionStage<T> stage) {
         if (stage instanceof Async) {
             return (Async<T>) stage;
-        } else {
+        } else if (stage != null) {
             return new DelegatingAsync<>(stage);
+        } else {
+            return null;
         }
     }
     

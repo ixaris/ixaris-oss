@@ -1,4 +1,6 @@
-# 1.5.0
+# 1.6.0
+
+# 1.5.0 (2018-06-22)
 
 ## New Features
 * Async: Unified exec() and schedule() overloaded methods (and renamed execSync to exec and scheduleSync to schedule)

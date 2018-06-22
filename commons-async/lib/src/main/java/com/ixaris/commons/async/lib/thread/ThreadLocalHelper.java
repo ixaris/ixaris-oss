@@ -14,6 +14,22 @@ public class ThreadLocalHelper {
     
     public static final class Builder {
         
+        private static Map<ThreadLocal<?>, Object> setAndExtractPrev(Map<ThreadLocal<?>, Object> map) {
+            final Map<ThreadLocal<?>, Object> prev = new HashMap<>();
+            for (final Entry<ThreadLocal<?>, Object> entry : map.entrySet()) {
+                final ThreadLocal<?> threadLocal = entry.getKey();
+                prev.put(threadLocal, threadLocal.get());
+                setValue(threadLocal, entry.getValue());
+            }
+            return prev;
+        }
+        
+        private static void restorePrev(Map<ThreadLocal<?>, Object> prev) {
+            for (final Entry<ThreadLocal<?>, Object> entry : prev.entrySet()) {
+                setValue(entry.getKey(), entry.getValue());
+            }
+        }
+        
         @SuppressWarnings("unchecked")
         private static <T> void setValue(final ThreadLocal<T> threadLocal, final Object value) {
             threadLocal.set((T) value);
@@ -32,32 +48,30 @@ public class ThreadLocalHelper {
             return this;
         }
         
-        public <V, E extends Throwable> V exec(final CallableThrows<V, E> task) throws E {
+        public <V, E extends Exception> V exec(final CallableThrows<V, E> task) throws E {
             if (task == null) {
                 throw new IllegalArgumentException("task is null");
             }
             
+            final Map<ThreadLocal<?>, Object> prev = setAndExtractPrev(map);
             try {
-                for (final Entry<ThreadLocal<?>, Object> entry : map.entrySet()) {
-                    final ThreadLocal<?> threadLocal = entry.getKey();
-                    if (threadLocal.get() != null) {
-                        throw new IllegalStateException(threadLocal + " already set to [" + threadLocal.get() + "]");
-                    }
-                    setValue(threadLocal, entry.getValue());
-                }
                 return task.call();
             } finally {
-                for (final ThreadLocal<?> threadLocal : map.keySet()) {
-                    threadLocal.remove();
-                }
+                restorePrev(prev);
             }
         }
         
-        public <E extends Throwable> void exec(final RunnableThrows<E> task) throws E {
-            exec(() -> {
+        public <E extends Exception> void exec(final RunnableThrows<E> task) throws E {
+            if (task == null) {
+                throw new IllegalArgumentException("task is null");
+            }
+            
+            final Map<ThreadLocal<?>, Object> prev = setAndExtractPrev(map);
+            try {
                 task.run();
-                return null;
-            });
+            } finally {
+                restorePrev(prev);
+            }
         }
         
     }
@@ -66,7 +80,7 @@ public class ThreadLocalHelper {
         return new Builder().with(threadLocal, value);
     }
     
-    public static <T, V, E extends Throwable> V exec(final ThreadLocal<T> threadLocal, final T value, final CallableThrows<V, E> task) throws E {
+    public static <T, V, E extends Exception> V exec(final ThreadLocal<T> threadLocal, final T value, final CallableThrows<V, E> task) throws E {
         if (threadLocal == null) {
             throw new IllegalArgumentException("threadLocal is null");
         }
@@ -74,22 +88,30 @@ public class ThreadLocalHelper {
             throw new IllegalArgumentException("task is null");
         }
         
-        if (threadLocal.get() != null) {
-            throw new IllegalStateException(threadLocal + " already set to [" + threadLocal.get() + "] while setting to [" + value + "]");
-        }
+        final T prev = threadLocal.get();
         threadLocal.set(value);
         try {
             return task.call();
         } finally {
-            threadLocal.remove();
+            threadLocal.set(prev);
         }
     }
     
-    public static <T, E extends Throwable> void exec(final ThreadLocal<T> threadLocal, final T value, final RunnableThrows<E> task) throws E {
-        exec(threadLocal, value, () -> {
+    public static <T, E extends Exception> void exec(final ThreadLocal<T> threadLocal, final T value, final RunnableThrows<E> task) throws E {
+        if (threadLocal == null) {
+            throw new IllegalArgumentException("threadLocal is null");
+        }
+        if (task == null) {
+            throw new IllegalArgumentException("task is null");
+        }
+        
+        final T prev = threadLocal.get();
+        threadLocal.set(value);
+        try {
             task.run();
-            return null;
-        });
+        } finally {
+            threadLocal.set(prev);
+        }
     }
     
     private ThreadLocalHelper() {}

@@ -2,7 +2,7 @@ package com.ixaris.commons.async.lib;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.Callable;
-import java.util.function.BiFunction;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -16,7 +16,7 @@ import com.ixaris.commons.misc.lib.function.RunnableThrows;
 /**
  * Maintains stack trace of separate parts of an asynchronous process
  */
-public final class AsyncTrace extends Throwable {
+public final class AsyncTrace extends RuntimeException {
     
     public static final String ASYNC_TRACE_SKIP_PROPERTY = "async.trace.skip";
     
@@ -43,32 +43,32 @@ public final class AsyncTrace extends Throwable {
         return i -> exec(trace, () -> function.apply(i));
     }
     
-    public static <I1, I2, V> BiFunction<I1, I2, V> wrapThrows(final BiFunction<I1, I2, V> biFunction) {
+    public static <T, U> BiConsumer<T, U> wrap(final BiConsumer<T, U> biConsumer) {
         final AsyncTrace trace = get();
-        return (i1, i2) -> exec(trace, () -> biFunction.apply(i1, i2));
+        return (t, u) -> exec(trace, () -> biConsumer.accept(t, u));
     }
     
-    public static <V, E extends Throwable> CallableThrows<V, E> wrapThrows(final CallableThrows<V, E> callable) {
+    public static <V, E extends Exception> CallableThrows<V, E> wrapThrows(final CallableThrows<V, E> callable) {
         final AsyncTrace trace = get();
         return () -> exec(trace, callable);
     }
     
-    public static <E extends Throwable> RunnableThrows<E> wrapThrows(final RunnableThrows<E> runnable) {
+    public static <E extends Exception> RunnableThrows<E> wrapThrows(final RunnableThrows<E> runnable) {
         final AsyncTrace trace = get();
         return () -> exec(trace, runnable);
     }
     
-    public static <V, E extends Throwable> ConsumerThrows<V, E> wrapThrows(final ConsumerThrows<V, E> consumer) {
+    public static <V, E extends Exception> ConsumerThrows<V, E> wrapThrows(final ConsumerThrows<V, E> consumer) {
         final AsyncTrace trace = get();
         return v -> exec(trace, () -> consumer.accept(v));
     }
     
-    public static <I, V, E extends Throwable> FunctionThrows<I, V, E> wrapThrows(final FunctionThrows<I, V, E> function) {
+    public static <I, V, E extends Exception> FunctionThrows<I, V, E> wrapThrows(final FunctionThrows<I, V, E> function) {
         final AsyncTrace trace = get();
         return i -> exec(trace, () -> function.apply(i));
     }
     
-    public static <I1, I2, V, E extends Throwable> BiFunctionThrows<I1, I2, V, E> wrapThrows(final BiFunctionThrows<I1, I2, V, E> biFunction) {
+    public static <I1, I2, V, E extends Exception> BiFunctionThrows<I1, I2, V, E> wrapThrows(final BiFunctionThrows<I1, I2, V, E> biFunction) {
         final AsyncTrace trace = get();
         return (i1, i2) -> exec(trace, () -> biFunction.apply(i1, i2));
     }
@@ -82,11 +82,11 @@ public final class AsyncTrace extends Throwable {
         }
     }
     
-    public static <E extends Throwable> void exec(final AsyncTrace trace, final RunnableThrows<E> task) throws E {
+    public static <E extends Exception> void exec(final AsyncTrace trace, final RunnableThrows<E> task) throws E {
         ThreadLocalHelper.exec(TRACE, trace, task);
     }
     
-    public static <V, E extends Throwable> V exec(final AsyncTrace trace, final CallableThrows<V, E> task) throws E {
+    public static <V, E extends Exception> V exec(final AsyncTrace trace, final CallableThrows<V, E> task) throws E {
         return ThreadLocalHelper.exec(TRACE, trace, task);
     }
     

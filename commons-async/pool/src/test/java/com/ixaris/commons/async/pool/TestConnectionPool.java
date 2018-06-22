@@ -18,9 +18,9 @@ public class TestConnectionPool extends AbstractAsyncConnectionPool<TestPooledCo
     
     static final class TestConnection extends AsyncPooledConnection<TestPooledConnection, TestConnection> {
         
-        TestConnection(final TestConnectionPool pool, final TestPooledConnection pooledConnection) {
+        TestConnection(final TestConnectionPool pool, final ConnectionInfo<TestPooledConnection> conn) {
             
-            super(pool, pooledConnection);
+            super(pool, conn);
         }
         
     }
@@ -41,8 +41,8 @@ public class TestConnectionPool extends AbstractAsyncConnectionPool<TestPooledCo
     }
     
     @Override
-    public TestConnection wrapConnection(final TestPooledConnection pooledConn) {
-        return new TestConnection(this, pooledConn);
+    public TestConnection wrapConnection(final ConnectionInfo<TestPooledConnection> conn) {
+        return new TestConnection(this, conn);
     }
     
     @Override

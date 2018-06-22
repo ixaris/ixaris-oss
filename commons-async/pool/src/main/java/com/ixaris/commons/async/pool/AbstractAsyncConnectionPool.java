@@ -10,7 +10,6 @@ import static com.ixaris.commons.async.lib.AsyncExecutor.schedule;
 import static com.ixaris.commons.async.lib.CompletableFutureUtil.completeFrom;
 import static com.ixaris.commons.async.lib.CompletableFutureUtil.reject;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +32,21 @@ import com.ixaris.commons.async.lib.FutureAsync;
  */
 public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnection<T, C>> implements AsyncConnectionPool<C> {
     
+    public static final class ConnectionInfo<T> {
+        
+        final T connection;
+        private long lastAction;
+        private long lastUse;
+        
+        private ConnectionInfo(final T connection, final long timestamp) {
+            
+            this.connection = connection;
+            this.lastAction = timestamp;
+            this.lastUse = timestamp;
+        }
+        
+    }
+    
     private static final int INITIALISED = 0;
     private static final int ACTIVE = 1;
     private static final int STOPPED = 2;
@@ -40,7 +54,6 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
     private final AtomicInteger state = new AtomicInteger(INITIALISED);
     private final AtomicInteger count = new AtomicInteger(0); // count the number of object in the pool
     
-    private ConcurrentHashMap<T, ConnectionInfo<T>> inUse;
     private ConcurrentLinkedQueue<ConnectionInfo<T>> available;
     private ConcurrentLinkedQueue<AtomicReference<FutureAsync<C>>> waiting;
     
@@ -87,7 +100,7 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
     /**
      * Create a new connection
      */
-    protected abstract C wrapConnection(T pooledConn);
+    protected abstract C wrapConnection(ConnectionInfo<T> pooledConn);
     
     /**
      * Service the connection (called periodically) e.g. for Keep Alive and check whether the connection is still useable
@@ -148,7 +161,6 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
         if (state.compareAndSet(INITIALISED, ACTIVE)) {
             preStart();
             
-            inUse = new ConcurrentHashMap<>(maxSize);
             available = new ConcurrentLinkedQueue<>();
             waiting = new ConcurrentLinkedQueue<>();
             
@@ -246,11 +258,9 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
         return result(connection);
     }
     
-    final void releaseConnection(final T connection) {
-        final ConnectionInfo<T> ci = inUse.remove(connection);
-        
-        if ((ci != null) && !isClosed(connection)) {
-            release(() -> onConnectionReleased(connection), ci, false);
+    final void releaseConnection(final ConnectionInfo<T> ci) {
+        if ((ci != null) && !isClosed(ci.connection)) {
+            release(() -> onConnectionReleased(ci.connection), ci, false);
         } else {
             count.decrementAndGet();
             if (isActive()) {
@@ -286,7 +296,7 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
                 count.decrementAndGet();
                 closeInternal(c);
             }
-        } catch (final Throwable t) {
+        } catch (final Throwable t) { // NOSONAR use throwable as future result
             count.decrementAndGet();
             if (isActive()) {
                 createMinSize();
@@ -328,8 +338,7 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
     private Async<C> acquireConnection(final ConnectionInfo<T> ci) {
         await(onConnectionObtained(ci.connection));
         try {
-            inUse.put(ci.connection, ci);
-            return result(wrapConnection(ci.connection));
+            return result(wrapConnection(ci));
         } catch (final RuntimeException e) {
             count.decrementAndGet();
             closeInternal(ci.connection);
@@ -414,21 +423,6 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
             }
         }
         return result();
-    }
-    
-    private static class ConnectionInfo<T> {
-        
-        private final T connection;
-        private long lastAction;
-        private long lastUse;
-        
-        private ConnectionInfo(final T connection, final long timestamp) {
-            
-            this.connection = connection;
-            this.lastAction = timestamp;
-            this.lastUse = timestamp;
-        }
-        
     }
     
 }

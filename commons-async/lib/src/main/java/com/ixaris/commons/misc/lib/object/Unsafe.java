@@ -10,9 +10,9 @@ public final class Unsafe {
         try {
             final Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
             f.setAccessible(true);
-            UNSAFE = (sun.misc.Unsafe)f.get(null);
-        } catch (final Exception e) {
-            throw new Error(e);
+            UNSAFE = (sun.misc.Unsafe) f.get(null);
+        } catch (final NoSuchFieldException | IllegalAccessException e) {
+            throw new IllegalStateException(e);
         }
     }
 

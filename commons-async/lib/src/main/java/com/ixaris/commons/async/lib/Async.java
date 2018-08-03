@@ -71,7 +71,7 @@ public interface Async<T> extends CompletionStage<T> {
      * @return
      */
     static <T> T await(final CompletionStage<T> async) {
-        throw new UnsupportedOperationException("Only allowed in methods that return Async<?>. Use AsyncTransformer to transform this code");
+        throw new UnsupportedOperationException("Only allowed in methods that return CompletionStage<?>. Use AsyncTransformer to transform this code");
     }
     
     /**
@@ -87,23 +87,7 @@ public interface Async<T> extends CompletionStage<T> {
      * @return
      */
     static <T, U extends CompletionStage<T>> U awaitExceptions(final U async) {
-        throw new UnsupportedOperationException("Only allowed in methods that return Async<?>. Use AsyncTransformer to transform this code");
-    }
-    
-    /**
-     * use awaitExceptions instead
-     */
-    @Deprecated
-    static <T, U extends CompletionStage<T>> U awaitResult(final U async) {
-        throw new UnsupportedOperationException("Only allowed in methods that return Async<?>. Use AsyncTransformer to transform this code");
-    }
-    
-    /**
-     * No longer needed as {@link Async} extends {@link CompletionStage}
-     */
-    @Deprecated
-    static <T> CompletionStage<T> async(final Async<T> async) {
-        return async;
+        throw new UnsupportedOperationException("Only allowed in methods that return CompletionStage<?>. Use AsyncTransformer to transform this code");
     }
     
     /**
@@ -144,22 +128,6 @@ public interface Async<T> extends CompletionStage<T> {
         } else {
             return null;
         }
-    }
-    
-    /**
-     * Use CompletionStageUtil.block(async)
-     */
-    @Deprecated
-    static <T> T block(final CompletionStage<T> async) throws InterruptedException {
-        return CompletionStageUtil.block(async);
-    }
-    
-    /**
-     * Use CompletionStageUtil.block(async)
-     */
-    @Deprecated
-    static <T> T block(final CompletionStage<T> async, final long timeout, final TimeUnit unit) throws InterruptedException, TimeoutException {
-        return CompletionStageUtil.block(async, timeout, unit);
     }
     
     /**

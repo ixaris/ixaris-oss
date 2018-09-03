@@ -9,14 +9,4 @@ public class SyncSingleSubscriberPublisherSupport<T> extends AbstractSingleSubsc
         subscriber.onNext(t);
     }
     
-    @Override
-    protected void complete(final Subscriber<? super T> subscriber) {
-        subscriber.onComplete();
-    }
-    
-    @Override
-    protected void error(final Subscriber<? super T> subscriber, final Throwable t) {
-        subscriber.onError(t);
-    }
-    
 }

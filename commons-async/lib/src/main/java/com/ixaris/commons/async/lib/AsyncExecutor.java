@@ -2,7 +2,6 @@ package com.ixaris.commons.async.lib;
 
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.CompletableFutureUtil.complete;
-import static com.ixaris.commons.async.lib.CompletableFutureUtil.completeFrom;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -171,7 +170,7 @@ public final class AsyncExecutor {
      */
     public static <T, E extends Exception> Async<T> exec(final Executor executor, final CompletionStageCallableThrows<T, E> callable) throws E {
         final FutureAsync<T> future = new FutureAsync<>();
-        executor.execute(AsyncTrace.wrap(AsyncLocal.wrap(() -> completeFrom(future, callable))));
+        executor.execute(AsyncTrace.wrap(AsyncLocal.wrap(() -> complete(future, callable))));
         return future;
     }
     
@@ -255,7 +254,7 @@ public final class AsyncExecutor {
                                                              final TimeUnit timeUnit,
                                                              final CompletionStageCallableThrows<T, E> callable) throws E {
         final FutureAsync<T> future = new FutureAsync<>();
-        final Runnable wrapped = AsyncTrace.wrap(AsyncLocal.wrap(() -> completeFrom(future, callable)));
+        final Runnable wrapped = AsyncTrace.wrap(AsyncLocal.wrap(() -> complete(future, callable)));
         if (executor instanceof ScheduledExecutorService) {
             ((ScheduledExecutorService) executor).schedule(wrapped, delay, timeUnit);
         } else {

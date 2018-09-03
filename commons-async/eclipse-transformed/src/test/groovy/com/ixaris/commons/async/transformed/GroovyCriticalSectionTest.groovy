@@ -54,7 +54,7 @@ class GroovyCriticalSectionTest {
     }
     
     private static Async<Void> criticalSection(final AsyncQueue queue, final Shared shared) {
-        return queue.exec { criticalSection(shared) }
+        return queue.exec ({ criticalSection(shared) } as CompletionStageCallableThrows<Void, RuntimeException>)
     }
     
     private static Async<Void> criticalSection(final Shared shared) {

@@ -3,11 +3,10 @@ package com.ixaris.commons.async.lib.scheduler;
 import java.util.Date;
 import java.util.Timer;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import com.ixaris.commons.misc.lib.function.CallableThrows;
+import com.ixaris.commons.async.lib.CompletionStageCallableThrows;
 
 /**
  * Scheduler api similar to ScheduledExecutorService, for the sake of consistency
@@ -37,7 +36,7 @@ public interface Scheduler {
     
     <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit);
     
-    <V> ScheduledFuture<V> schedule(CallableThrows<CompletionStage<V>, ?> callable, long delay, TimeUnit unit);
+    <V> ScheduledFuture<V> schedule(CompletionStageCallableThrows<V, ?> callable, long delay, TimeUnit unit);
     
     /**
      * Schedules the specified task for execution at the specified time.  If

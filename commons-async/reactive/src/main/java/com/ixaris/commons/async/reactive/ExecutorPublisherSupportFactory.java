@@ -99,16 +99,6 @@ public final class ExecutorPublisherSupportFactory implements PublisherSupportFa
             executor.execute(() -> s.onNext(t));
         }
         
-        @Override
-        protected void complete(final Subscriber<? super T> s) {
-            executor.execute(s::onComplete);
-        }
-        
-        @Override
-        protected void error(final Subscriber<? super T> s, final Throwable t) {
-            executor.execute(() -> s.onError(t));
-        }
-        
     }
     
 }

@@ -7,7 +7,7 @@ package com.ixaris.commons.async.pool;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
 import static com.ixaris.commons.async.lib.AsyncExecutor.schedule;
-import static com.ixaris.commons.async.lib.CompletableFutureUtil.completeFrom;
+import static com.ixaris.commons.async.lib.CompletableFutureUtil.complete;
 import static com.ixaris.commons.async.lib.CompletableFutureUtil.reject;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -315,7 +315,7 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
                     
                     final FutureAsync<C> future = ref.getAndSet(null);
                     if (future != null) {
-                        completeFrom(future, acquireConnection(ci));
+                        complete(future, acquireConnection(ci));
                         // connection used, so break out of the while loop and get another connection
                         used = true;
                         break;

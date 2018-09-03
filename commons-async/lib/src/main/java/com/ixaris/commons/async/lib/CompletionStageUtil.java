@@ -14,6 +14,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import com.ixaris.commons.misc.lib.exception.ExceptionUtil;
@@ -50,6 +51,25 @@ public final class CompletionStageUtil {
      */
     public static boolean isDone(final CompletionStage<?> stage) {
         return stage.toCompletableFuture().isDone();
+    }
+    
+    /**
+     * Shortcuts whenComplete (and the corresponding future creation) if the future is done
+     * @param stage
+     * @param action
+     * @param <T>
+     */
+    public static <T> void whenDone(final CompletionStage<T> stage, final BiConsumer<? super T, ? super Throwable> action) {
+        final CompletableFuture<T> future = stage.toCompletableFuture();
+        if (future.isDone()) {
+            try {
+                action.accept(future.getNow(null), null);
+            } catch (final Throwable t) { // NOSONAR
+                action.accept(null, t);
+            }
+        } else {
+            stage.whenComplete(action);
+        }
     }
     
     /**

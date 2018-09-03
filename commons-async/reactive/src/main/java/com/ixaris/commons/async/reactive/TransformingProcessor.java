@@ -62,7 +62,7 @@ public final class TransformingProcessor<T, R> implements Processor<T, R> {
         
         private final Subscription subscription;
         
-        public TransformingSubscription(final Subscription subscription) {
+        private TransformingSubscription(final Subscription subscription) {
             this.subscription = subscription;
         }
         

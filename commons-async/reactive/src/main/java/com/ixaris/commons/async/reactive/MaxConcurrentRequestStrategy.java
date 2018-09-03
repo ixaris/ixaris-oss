@@ -1,6 +1,6 @@
 package com.ixaris.commons.async.reactive;
 
-import org.reactivestreams.Subscription;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A request strategy that allows a maximum of concurrent messages. Requests 1 message for every completed message.
@@ -11,34 +11,20 @@ import org.reactivestreams.Subscription;
  */
 public final class MaxConcurrentRequestStrategy implements RequestStrategy {
     
-    private final long maxConcurrent;
+    private final AtomicInteger available;
     
-    public MaxConcurrentRequestStrategy(final long maxConcurrent) {
-        this.maxConcurrent = maxConcurrent;
+    public MaxConcurrentRequestStrategy(final int maxConcurrent) {
+        available = new AtomicInteger(maxConcurrent);
     }
     
     @Override
-    public final void add(final Subscription subscription) {
-        if (subscription == null) {
-            throw new IllegalArgumentException("subscription is null");
-        }
-        
-        subscription.request(maxConcurrent);
+    public final boolean startMessage() {
+        return available.getAndUpdate(v -> v > 0 ? v - 1 : v) > 0;
     }
     
     @Override
-    public void remove(final Subscription subscription) {
-        // no-op
-    }
-    
-    @Override
-    public final void startMessage(final Subscription subscription) {
-        // no-op
-    }
-    
-    @Override
-    public final void finishMessage(final Subscription subscription) {
-        subscription.request(1L);
+    public final void finishMessage() {
+        available.incrementAndGet();
     }
     
 }

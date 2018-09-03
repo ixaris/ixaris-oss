@@ -17,7 +17,7 @@ public class CompletionStageImplTest {
         
         public static <T> FutureSubclass<T> fromCompletionStage(final CompletionStage<T> stage) {
             final FutureSubclass<T> f = new FutureSubclass<>();
-            CompletableFutureUtil.completeFrom(f, stage);
+            CompletableFutureUtil.complete(f, stage);
             return f;
         }
         

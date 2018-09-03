@@ -1,6 +1,5 @@
 package com.ixaris.commons.async.lib;
 
-import static com.ixaris.commons.async.lib.CompletableFutureUtil.completeFrom;
 import static com.ixaris.commons.misc.lib.object.Tuple.tuple;
 
 import java.util.concurrent.CompletableFuture;
@@ -41,7 +40,8 @@ public final class CompletionStageQueue {
          * @param <T>      the type returned by the callable and the type of the promise
          * @return a stage with result of the same type returned by the callable
          */
-        public <T, E extends Exception> CompletionStage<T> exec(final String id, final CallableThrows<? extends CompletionStage<T>, E> callable) {
+        public <T, E extends Exception> CompletionStage<T> exec(final String id,
+                                                                final CompletionStageCallableThrows<T, E> callable) {
             final CompletableFuture<T> stage = new CompletableFuture<>();
             exec(id, stage, callable);
             return stage;
@@ -55,7 +55,9 @@ public final class CompletionStageQueue {
          * @param callable callable that returns a result
          * @param <T>      the type returned by the callable and the type of the promise
          */
-        public <T, E extends Exception> void exec(final String id, final CompletableFuture<T> future, final CallableThrows<? extends CompletionStage<T>, E> callable) {
+        public <T, E extends Exception> void exec(final String id,
+                                                  final CompletableFuture<T> future,
+                                                  final CompletionStageCallableThrows<T, E> callable) {
             final Tuple2<CompletionStageQueue, CompletableFuture<?>> queue = getOrCreate(id, future);
             queue.get1().internalExec(queue.get2(), future, callable, () -> {
                 if (queue.get1().lastStage.get() == null) {
@@ -71,7 +73,8 @@ public final class CompletionStageQueue {
          * @param runnable runnable task
          * @return a stage with void result
          */
-        public <E extends Exception> CompletionStage<Void> exec(final String id, final RunnableThrows<E> runnable) {
+        public <E extends Exception> CompletionStage<Void> exec(final String id,
+                                                                final RunnableThrows<E> runnable) {
             final CompletableFuture<Void> stage = new CompletableFuture<>();
             exec(id, stage, runnable);
             return stage;
@@ -84,10 +87,12 @@ public final class CompletionStageQueue {
          * @param future   the future to complete with the result of the queued task
          * @param runnable runnable task
          */
-        public <E extends Exception> void exec(final String id, final CompletableFuture<Void> future, final RunnableThrows<E> runnable) {
+        public <E extends Exception> void exec(final String id,
+                                               final CompletableFuture<Void> future,
+                                               final RunnableThrows<E> runnable) {
             exec(id, future, () -> {
                 runnable.run();
-                return CompletableFuture.completedFuture(null);
+                return null;
             });
         }
         
@@ -118,7 +123,8 @@ public final class CompletionStageQueue {
          * @param <T>      the type returned by the callable and the type of the promise
          * @return a stage with result of the same type returned by the callable
          */
-        public <T, E extends Exception> CompletionStage<T> exec(final long id, final CallableThrows<? extends CompletionStage<T>, E> callable) {
+        public <T, E extends Exception> CompletionStage<T> exec(final long id,
+                                                                final CompletionStageCallableThrows<T, E> callable) {
             final CompletableFuture<T> stage = new CompletableFuture<>();
             exec(id, stage, callable);
             return stage;
@@ -132,7 +138,9 @@ public final class CompletionStageQueue {
          * @param callable callable that returns a result
          * @param <T>      the type returned by the callable and the type of the promise
          */
-        public <T, E extends Exception> void exec(final long id, final CompletableFuture<T> future, final CallableThrows<? extends CompletionStage<T>, E> callable) {
+        public <T, E extends Exception> void exec(final long id,
+                                                  final CompletableFuture<T> future,
+                                                  final CompletionStageCallableThrows<T, E> callable) {
             final Tuple2<CompletionStageQueue, CompletableFuture<?>> queue = getOrCreate(id, future);
             queue.get1().internalExec(queue.get2(), future, callable, () -> {
                 if (queue.get1().lastStage.get() == null) {
@@ -148,7 +156,8 @@ public final class CompletionStageQueue {
          * @param runnable runnable task
          * @return a stage with void result
          */
-        public <E extends Exception> CompletionStage<Void> exec(final long id, final RunnableThrows<E> runnable) {
+        public <E extends Exception> CompletionStage<Void> exec(final long id,
+                                                                final RunnableThrows<E> runnable) {
             final CompletableFuture<Void> stage = new CompletableFuture<>();
             exec(id, stage, runnable);
             return stage;
@@ -161,10 +170,12 @@ public final class CompletionStageQueue {
          * @param future   the future to complete with the result of the queued task
          * @param runnable runnable task
          */
-        public <E extends Exception> void exec(final long id, final CompletableFuture<Void> future, final RunnableThrows<E> runnable) {
+        public <E extends Exception> void exec(final long id,
+                                               final CompletableFuture<Void> future,
+                                               final RunnableThrows<E> runnable) {
             exec(id, future, () -> {
                 runnable.run();
-                return CompletableFuture.completedFuture(null);
+                return null;
             });
         }
         
@@ -207,14 +218,14 @@ public final class CompletionStageQueue {
     
     public static <T, E extends Exception> CompletionStage<T> exec(final String name,
                                                                    final String id,
-                                                                   final CallableThrows<? extends CompletionStage<T>, E> callable) {
+                                                                   final CompletionStageCallableThrows<T, E> callable) {
         return STRING_QUEUES.getOrCreate(name, null).get1().exec(id, callable);
     }
     
     public static <T, E extends Exception> void exec(final String name,
                                                      final String id,
                                                      final CompletableFuture<T> future,
-                                                     final CallableThrows<? extends CompletionStage<T>, E> callable) {
+                                                     final CompletionStageCallableThrows<T, E> callable) {
         STRING_QUEUES.getOrCreate(name, null).get1().exec(id, future, callable);
     }
     
@@ -233,14 +244,14 @@ public final class CompletionStageQueue {
     
     public static <T, E extends Exception> CompletionStage<T> exec(final String name,
                                                                    final long id,
-                                                                   final CallableThrows<CompletionStage<T>, E> callable) {
+                                                                   final CompletionStageCallableThrows<T, E> callable) {
         return LONG_QUEUES.getOrCreate(name, null).get1().exec(id, callable);
     }
     
     public static <T, E extends Exception> void exec(final String name,
                                                      final long id,
                                                      final CompletableFuture<T> future,
-                                                     final CallableThrows<? extends CompletionStage<T>, E> callable) {
+                                                     final CompletionStageCallableThrows<T, E> callable) {
         LONG_QUEUES.getOrCreate(name, null).get1().exec(id, future, callable);
     }
     
@@ -273,23 +284,40 @@ public final class CompletionStageQueue {
         lastStage = new AtomicReference<>(initialValue);
     }
     
-    public <T, E extends Exception> CompletionStage<T> exec(final CallableThrows<? extends CompletionStage<T>, E> execCallable) {
+    public <T, E extends Exception> CompletionStage<T> exec(final CallableThrows<? extends CompletionStage<T>, E> task) {
         final CompletableFuture<T> stage = new CompletableFuture<>();
-        exec(stage, execCallable);
+        exec(stage, task);
         return stage;
     }
     
-    public <T, E extends Exception> void exec(final CompletableFuture<T> stage, final CallableThrows<? extends CompletionStage<T>, E> execCallable) {
+    public <T, E extends Exception> void exec(final CompletableFuture<T> stage,
+                                              final CallableThrows<? extends CompletionStage<T>, E> task) {
         final CompletableFuture<?> prevStage = lastStage.getAndSet(stage);
-        internalExec(prevStage, stage, execCallable, null);
+        internalExec(prevStage, stage, task, null);
+    }
+    
+    public <E extends Exception> CompletionStage<Void> exec(final RunnableThrows<E> task) {
+        final CompletableFuture<Void> stage = new CompletableFuture<>();
+        exec(stage, task);
+        return stage;
+    }
+    
+    public <E extends Exception> void exec(final CompletableFuture<Void> stage,
+                                           final RunnableThrows<E> task) {
+        final CompletableFuture<?> prevStage = lastStage.getAndSet(stage);
+        internalExec(prevStage, stage, () -> {
+            task.run();
+            return null;
+        }, null);
     }
     
     private <T, E extends Exception> void internalExec(final CompletableFuture<?> prevStage,
                                                        final CompletableFuture<T> stage,
-                                                       final CallableThrows<? extends CompletionStage<T>, E> execCallable,
+                                                       final CallableThrows<? extends CompletionStage<T>, E> task,
                                                        final DoneCallback doneCallback) {
         // preserve current thread's async local and trace
-        final Runnable runnable = AsyncTrace.wrap(AsyncLocal.wrap(() -> completeFrom(stage, execCallable)));
+        final Runnable runnable =
+            AsyncTrace.wrap(AsyncLocal.wrap(() -> CompletableFutureUtil.complete(stage, CompletionStageCallableThrows.from(task))));
         
         final Executor executor = AsyncExecutor.get();
         if (prevStage == null) {

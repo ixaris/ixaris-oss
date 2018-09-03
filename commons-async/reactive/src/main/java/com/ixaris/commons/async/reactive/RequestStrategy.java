@@ -11,18 +11,16 @@ import org.reactivestreams.Subscription;
  */
 public interface RequestStrategy {
     
-    void add(final Subscription subscription);
-    
-    void remove(final Subscription subscription);
-    
     /**
-     * To be called as soon as onNext is invoked. Signals that a new message has been started
+     * To be called as soon as a new message is to be started
+     *
+     * @return true if message can be handled, false to do backpressure
      */
-    void startMessage(final Subscription subscription);
+    boolean startMessage();
     
     /**
      * To be called as soon as a message has completed processing
      */
-    void finishMessage(final Subscription subscription);
+    void finishMessage();
     
 }

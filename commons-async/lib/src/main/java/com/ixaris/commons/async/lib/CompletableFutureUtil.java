@@ -58,12 +58,12 @@ public class CompletableFutureUtil {
      * @param future the future to be completed with the result / exception of the given stage
      * @param callable the callable from which to obtain the stage from which to complete
      */
-    public static <T> void completeFrom(final CompletableFuture<T> future,
-                                        final CallableThrows<? extends CompletionStage<T>, ?> callable) {
+    public static <T> void complete(final CompletableFuture<T> future,
+                                    final CompletionStageCallableThrows<T, ?> callable) {
         try {
             final CompletionStage<T> stage = callable.call();
             if (stage != null) {
-                completeFrom(future, stage);
+                complete(future, stage);
             } else {
                 future.complete(null);
             }
@@ -78,8 +78,8 @@ public class CompletableFutureUtil {
      * @param future the future to be completed with the result / exception of the given stage
      * @param stage the stage to complete from
      */
-    public static <T> void completeFrom(final CompletableFuture<T> future, final CompletionStage<T> stage) {
-        stage.whenComplete((r, t) -> complete(future, r, t));
+    public static <T> void complete(final CompletableFuture<T> future, final CompletionStage<T> stage) {
+        CompletionStageUtil.whenDone(stage, (r, t) -> complete(future, r, t));
     }
     
     /**

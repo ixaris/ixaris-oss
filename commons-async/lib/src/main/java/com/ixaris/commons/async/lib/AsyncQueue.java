@@ -12,33 +12,33 @@ public final class AsyncQueue {
     
     public static <T, E extends Exception> Async<T> exec(final String name,
                                                          final String id,
-                                                         final CallableThrows<Async<T>, E> callable) throws E {
+                                                         final CompletionStageCallableThrows<T, E> task) throws E {
         final FutureAsync<T> async = new FutureAsync<>();
-        CompletionStageQueue.exec(name, id, async, callable);
+        CompletionStageQueue.exec(name, id, async, task);
         return async;
     }
     
     public static <E extends Exception> Async<Void> exec(final String name,
                                                          final String id,
-                                                         final RunnableThrows<E> runnable) throws E {
+                                                         final RunnableThrows<E> task) throws E {
         final FutureAsync<Void> async = new FutureAsync<>();
-        CompletionStageQueue.exec(name, id, async, runnable);
+        CompletionStageQueue.exec(name, id, async, task);
         return async;
     }
     
     public static <T, E extends Exception> Async<T> exec(final String name,
                                                          final long id,
-                                                         final CallableThrows<Async<T>, E> callable) throws E {
+                                                         final CompletionStageCallableThrows<T, E> task) throws E {
         final FutureAsync<T> async = new FutureAsync<>();
-        CompletionStageQueue.exec(name, id, async, callable);
+        CompletionStageQueue.exec(name, id, async, task);
         return async;
     }
     
     public static <E extends Exception> Async<Void> exec(final String name,
                                                          final long id,
-                                                         final RunnableThrows<E> runnable) throws E {
+                                                         final RunnableThrows<E> task) throws E {
         final FutureAsync<Void> async = new FutureAsync<>();
-        CompletionStageQueue.exec(name, id, async, runnable);
+        CompletionStageQueue.exec(name, id, async, task);
         return async;
     }
     
@@ -48,9 +48,15 @@ public final class AsyncQueue {
         queue = new CompletionStageQueue();
     }
     
-    public <T, E extends Exception> Async<T> exec(final CallableThrows<Async<T>, E> execCallable) throws E {
+    public <T, E extends Exception> Async<T> exec(final CompletionStageCallableThrows<T, E> task) throws E {
         final FutureAsync<T> async = new FutureAsync<>();
-        queue.exec(async, execCallable);
+        queue.exec(async, task);
+        return async;
+    }
+    
+    public <E extends Exception> Async<Void> exec(final RunnableThrows<E> task) throws E {
+        final FutureAsync<Void> async = new FutureAsync<>();
+        queue.exec(async, task);
         return async;
     }
     

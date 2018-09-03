@@ -91,14 +91,6 @@ public interface Async<T> extends CompletionStage<T> {
     }
     
     /**
-     * Use {@link #from(CompletionStage)}
-     */
-    @Deprecated
-    static <T> Async<T> async(final CompletionStage<T> stage) {
-        return from(stage);
-    }
-    
-    /**
      * Interop method to ignore exceptions in the signature since these will not really be thrown but cause the
      * completion stage to be rejected
      *

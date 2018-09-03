@@ -18,26 +18,12 @@ public final class UnboundedRequestStrategy implements RequestStrategy {
     private UnboundedRequestStrategy() {}
     
     @Override
-    public void add(final Subscription subscription) {
-        if (subscription == null) {
-            throw new IllegalArgumentException("subscription is null");
-        }
-        
-        subscription.request(Long.MAX_VALUE);
+    public final boolean startMessage() {
+        return true;
     }
     
     @Override
-    public void remove(final Subscription subscription) {
-        // no-op
-    }
-    
-    @Override
-    public final void startMessage(final Subscription subscription) {
-        // no-op
-    }
-    
-    @Override
-    public final void finishMessage(final Subscription subscription) {
+    public final void finishMessage() {
         // no-op
     }
     

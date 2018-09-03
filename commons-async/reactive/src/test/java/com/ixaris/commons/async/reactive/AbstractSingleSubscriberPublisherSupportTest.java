@@ -1,9 +1,7 @@
 package com.ixaris.commons.async.reactive;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,16 +17,6 @@ public class AbstractSingleSubscriberPublisherSupportTest {
         @Override
         protected void next(final Subscriber<? super Object> subscriber, final Object t) {
             subscriber.onNext(t);
-        }
-        
-        @Override
-        protected void complete(final Subscriber<? super Object> subscriber) {
-            subscriber.onComplete();
-        }
-        
-        @Override
-        protected void error(final Subscriber<? super Object> subscriber, final Throwable t) {
-            subscriber.onError(t);
         }
         
     }
@@ -60,48 +48,6 @@ public class AbstractSingleSubscriberPublisherSupportTest {
             this.completed = true;
         }
         
-    }
-    
-    @Test
-    public void testSuccessPath() {
-        
-        final TestPublisherSupport ps = new TestPublisherSupport();
-        final TestSubscriber s = new TestSubscriber();
-        ps.subscribe(s);
-        
-        // assertEquals(ps, s.s);
-        assertEquals(0, s.published.size());
-        assertFalse(ps.next(new Object()));
-        
-        s.s.request(1L);
-        assertTrue(ps.next(new Object()));
-        assertFalse(ps.next(new Object()));
-        
-        s.s.request(3L);
-        assertTrue(ps.next(new Object()));
-        assertTrue(ps.next(new Object()));
-        assertTrue(ps.next(new Object()));
-        assertFalse(ps.next(new Object()));
-        assertEquals(4, s.published.size());
-        
-        ps.complete();
-        assertTrue(s.completed);
-    }
-    
-    @Test
-    public void testErrorPath() {
-        
-        final TestPublisherSupport ps = new TestPublisherSupport();
-        final TestSubscriber s = new TestSubscriber();
-        ps.subscribe(s);
-        
-        // assertEquals(ps, s.s);
-        assertEquals(0, s.published.size());
-        assertFalse(ps.next(new Object()));
-        
-        RuntimeException r = new RuntimeException();
-        ps.error(r);
-        assertEquals(r, s.t);
     }
     
     @Test

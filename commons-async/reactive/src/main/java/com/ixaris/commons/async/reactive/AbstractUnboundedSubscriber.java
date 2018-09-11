@@ -1,7 +1,5 @@
 package com.ixaris.commons.async.reactive;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
@@ -18,11 +16,8 @@ public abstract class AbstractUnboundedSubscriber<T> implements Subscriber<T> {
     
     private static final Logger LOG = LoggerFactory.getLogger(AbstractUnboundedSubscriber.class);
     
-    private final AtomicReference<Subscription> subscriptionRef = new AtomicReference<>();
-    
     @Override
     public void onSubscribe(final Subscription subscription) {
-        subscriptionRef.set(subscription);
         subscription.request(Long.MAX_VALUE);
     }
     
@@ -34,10 +29,4 @@ public abstract class AbstractUnboundedSubscriber<T> implements Subscriber<T> {
     @Override
     public void onComplete() {}
     
-    protected void cancel() {
-        final Subscription subscription = subscriptionRef.getAndSet(null);
-        if (subscription != null) {
-            subscription.cancel();
-        }
-    }
 }

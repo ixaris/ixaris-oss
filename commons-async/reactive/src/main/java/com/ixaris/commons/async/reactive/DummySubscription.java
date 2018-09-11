@@ -18,7 +18,11 @@ public class DummySubscription implements Subscription {
     private DummySubscription() {}
     
     @Override
-    public void request(final long n) {}
+    public void request(final long n) {
+        if (n <= 0L) {
+            throw new IllegalArgumentException("request should be positive, given " + n);
+        }
+    }
     
     @Override
     public void cancel() {}

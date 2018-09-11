@@ -1,6 +1,5 @@
 package com.ixaris.commons.async.lib;
 
-import com.ixaris.commons.misc.lib.function.CallableThrows;
 import com.ixaris.commons.misc.lib.function.RunnableThrows;
 
 /**
@@ -45,7 +44,11 @@ public final class AsyncQueue {
     private final CompletionStageQueue queue;
     
     public AsyncQueue() {
-        queue = new CompletionStageQueue();
+        this(false);
+    }
+    
+    public AsyncQueue(final boolean forkIfFirstInQueue) {
+        queue = new CompletionStageQueue(forkIfFirstInQueue);
     }
     
     public <T, E extends Exception> Async<T> exec(final CompletionStageCallableThrows<T, E> task) throws E {

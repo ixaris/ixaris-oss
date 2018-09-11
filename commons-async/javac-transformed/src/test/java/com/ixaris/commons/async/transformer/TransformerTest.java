@@ -109,7 +109,11 @@ public class TransformerTest extends BaseTransformerTest {
             mv.visitTypeInsn(CHECKCAST, "com/ixaris/commons/async/lib/Async");
             mv.visitVarInsn(ALOAD, 2);
             mv.visitTypeInsn(CHECKCAST, "com/ixaris/commons/async/lib/Async");
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "all", "(Ljava/util/concurrent/CompletionStage;Ljava/util/concurrent/CompletionStage;)Lcom/ixaris/commons/async/lib/Async;", true);
+            mv.visitMethodInsn(INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "all",
+                "(Ljava/util/concurrent/CompletionStage;Ljava/util/concurrent/CompletionStage;)Lcom/ixaris/commons/async/lib/Async;",
+                true);
             mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;", true);
             mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "result", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", true);
             mv.visitInsn(ARETURN);

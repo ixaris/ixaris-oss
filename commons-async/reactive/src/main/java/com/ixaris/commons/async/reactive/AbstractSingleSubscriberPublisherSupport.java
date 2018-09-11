@@ -4,12 +4,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Abstract publisher support that supports a single subscriber. If messages are published without a subscriber, they will be 
- * rejected in the same way as they are for backpressure. 
+ * Abstract publisher support that supports a single subscriber.
  * 
  * @author brian.vella
  *
@@ -17,10 +14,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractSingleSubscriberPublisherSupport<T> implements PublisherSupport<T> {
     
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractSingleSubscriberPublisherSupport.class);
-    
     private final AtomicReference<SingleSubscription> subscription = new AtomicReference<>();
-    private Throwable t;
     
     public AbstractSingleSubscriberPublisherSupport() {}
     

@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.ixaris.commons.collections.lib.AbstractLazyReadWriteLockedLongMap;
 import com.ixaris.commons.collections.lib.AbstractLazyReadWriteLockedMap;
-import com.ixaris.commons.misc.lib.function.CallableThrows;
 import com.ixaris.commons.misc.lib.function.RunnableThrows;
 import com.ixaris.commons.misc.lib.object.Tuple2;
 
@@ -268,12 +267,21 @@ public final class CompletionStageQueue {
         LONG_QUEUES.getOrCreate(name, null).get1().exec(id, future, runnable);
     }
     
+    private final boolean forkIfFirstInQueue;
     private final AtomicReference<CompletableFuture<?>> lastStage;
     
     /**
      * Default constructor with an empty queue
      */
     public CompletionStageQueue() {
+        this(false);
+    }
+    
+    /**
+     * Default constructor with an empty queue
+     */
+    public CompletionStageQueue(final boolean forkIfFirstInQueue) {
+        this.forkIfFirstInQueue = forkIfFirstInQueue;
         lastStage = new AtomicReference<>();
     }
     
@@ -281,17 +289,18 @@ public final class CompletionStageQueue {
      * Constructor with an initial promise
      */
     public CompletionStageQueue(final CompletableFuture<?> initialValue) {
+        this.forkIfFirstInQueue = false;
         lastStage = new AtomicReference<>(initialValue);
     }
     
-    public <T, E extends Exception> CompletionStage<T> exec(final CallableThrows<? extends CompletionStage<T>, E> task) {
+    public <T, E extends Exception> CompletionStage<T> exec(final CompletionStageCallableThrows<T, E> task) {
         final CompletableFuture<T> stage = new CompletableFuture<>();
         exec(stage, task);
         return stage;
     }
     
     public <T, E extends Exception> void exec(final CompletableFuture<T> stage,
-                                              final CallableThrows<? extends CompletionStage<T>, E> task) {
+                                              final CompletionStageCallableThrows<T, E> task) {
         final CompletableFuture<?> prevStage = lastStage.getAndSet(stage);
         internalExec(prevStage, stage, task, null);
     }
@@ -313,17 +322,21 @@ public final class CompletionStageQueue {
     
     private <T, E extends Exception> void internalExec(final CompletableFuture<?> prevStage,
                                                        final CompletableFuture<T> stage,
-                                                       final CallableThrows<? extends CompletionStage<T>, E> task,
+                                                       final CompletionStageCallableThrows<T, E> task,
                                                        final DoneCallback doneCallback) {
         // preserve current thread's async local and trace
-        final Runnable runnable =
-            AsyncTrace.wrap(AsyncLocal.wrap(() -> CompletableFutureUtil.complete(stage, CompletionStageCallableThrows.from(task))));
-        
-        final Executor executor = AsyncExecutor.get();
-        if (prevStage == null) {
-            executor.execute(runnable);
+        if (forkIfFirstInQueue || (prevStage != null)) {
+            final Runnable runnable =
+                AsyncTrace.wrap(AsyncLocal.wrap(() -> CompletableFutureUtil.complete(stage, task)));
+            
+            final Executor executor = AsyncExecutor.get();
+            if (prevStage == null) {
+                executor.execute(runnable);
+            } else {
+                prevStage.whenComplete((r, t) -> executor.execute(runnable));
+            }
         } else {
-            prevStage.whenComplete((r, t) -> executor.execute(runnable));
+            CompletableFutureUtil.complete(stage, task);
         }
         
         stage.whenComplete((r, t) -> {

@@ -4,13 +4,11 @@ import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
-import org.junit.Test;
-
 import com.ixaris.commons.async.lib.AsyncExecutor.YieldingAsyncIterator;
 import com.ixaris.commons.async.lib.AsyncIterator.NoMoreElementsException;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import org.junit.jupiter.api.Test;
 
 public class AsyncIteratorTest {
     
@@ -24,7 +22,7 @@ public class AsyncIteratorTest {
         while (true) {
             try {
                 use(await(i.next()));
-            } catch (NoMoreElementsException e) {
+            } catch (final NoMoreElementsException e) {
                 break;
             }
         }
@@ -71,19 +69,22 @@ public class AsyncIteratorTest {
         }
         
         AsyncIterator<Integer> asyncIterator() {
-            return new YieldingAsyncIterator<>(new AsyncIterator<Integer>() {
-                
-                private int current;
-                
-                @Override
-                public Async<Integer> next() throws NoMoreElementsException {
-                    if (current >= items) {
-                        throw new NoMoreElementsException();
+            return new YieldingAsyncIterator<>(
+                new AsyncIterator<Integer>() {
+                    
+                    private int current;
+                    
+                    @Override
+                    public Async<Integer> next() throws NoMoreElementsException {
+                        if (current >= items) {
+                            throw new NoMoreElementsException();
+                        }
+                        return result(current++);
                     }
-                    return result(current++);
-                }
-                
-            }, yieldEvery);
+                    
+                },
+                yieldEvery
+            );
         }
         
     }

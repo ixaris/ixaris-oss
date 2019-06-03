@@ -31,13 +31,11 @@ import static jdk.internal.org.objectweb.asm.Opcodes.ALOAD;
 import static jdk.internal.org.objectweb.asm.Opcodes.INVOKESPECIAL;
 import static jdk.internal.org.objectweb.asm.Opcodes.RETURN;
 
+import com.ixaris.commons.async.lib.Async;
+import com.ixaris.commons.async.transformed.test.BaseTest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.function.Consumer;
-
-import com.ixaris.commons.async.lib.Async;
-import com.ixaris.commons.async.transformed.test.BaseTest;
-
 import jdk.internal.org.objectweb.asm.ClassVisitor;
 import jdk.internal.org.objectweb.asm.ClassWriter;
 import jdk.internal.org.objectweb.asm.MethodVisitor;
@@ -74,9 +72,8 @@ public class BaseTransformerTest extends BaseTest {
                 return super.defineClass(o, bytes, 0, bytes.length);
             }
         }
-        // noinspection unchecked
         try {
-            return (T) new Loader().define(null, transform(bytes)).newInstance();
+            return (T) new Loader().define(null, transform(bytes)).getConstructor().newInstance();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

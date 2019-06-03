@@ -43,20 +43,18 @@ import static jdk.internal.org.objectweb.asm.Opcodes.NEW;
 import static jdk.internal.org.objectweb.asm.Opcodes.POP;
 import static jdk.internal.org.objectweb.asm.Opcodes.SIPUSH;
 import static jdk.internal.org.objectweb.asm.Opcodes.SWAP;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.ixaris.commons.async.transformer.FrameAnalyzer.ExtendedValue;
-
 import jdk.internal.org.objectweb.asm.Label;
 import jdk.internal.org.objectweb.asm.Opcodes;
 import jdk.internal.org.objectweb.asm.tree.MethodNode;
 import jdk.internal.org.objectweb.asm.tree.analysis.AnalyzerException;
 import jdk.internal.org.objectweb.asm.tree.analysis.BasicValue;
 import jdk.internal.org.objectweb.asm.tree.analysis.Frame;
+import org.junit.jupiter.api.Test;
 
 public class AnalyserTest extends BaseTransformerTest {
     
@@ -138,11 +136,17 @@ public class AnalyserTest extends BaseTransformerTest {
         mv.visitInsn(ICONST_3);
         Label l0 = new Label();
         mv.visitJumpInsn(IF_ICMPNE, l0);
-        mv.visitLdcInsn(new Double("2.0"));
+        mv.visitLdcInsn(Double.parseDouble("2.0"));
         mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
         mv.visitVarInsn(ASTORE, 2);
         mv.visitLabel(l0);
-        mv.visitFrame(F_FULL, 3, new Object[] { "com/ixaris/commons/async/transformer/Bogus", INTEGER, "java/lang/Number" }, 0, new Object[0]);
+        mv.visitFrame(
+            F_FULL,
+            3,
+            new Object[] { "com/ixaris/commons/async/transformer/Bogus", INTEGER, "java/lang/Number" },
+            0,
+            new Object[0]
+        );
         mv.visitVarInsn(ALOAD, 2);
         mv.visitInsn(ARETURN);
         mv.visitMaxs(2, 3);
@@ -157,11 +161,13 @@ public class AnalyserTest extends BaseTransformerTest {
     
     @Test
     public void exceptionTest() throws AnalyzerException {
-        MethodNode mv = new MethodNode(ACC_PUBLIC,
+        MethodNode mv = new MethodNode(
+            ACC_PUBLIC,
             "doIt",
             "(Ljava/util/concurrent/CompletionStage;)Ljava/util/concurrent/CompletionStage;",
             "(Ljava/util/concurrent/CompletionStage<*>;)Ljava/util/concurrent/CompletionStage<*>;",
-            null);
+            null
+        );
         {
             Label l0 = new Label();
             Label l1 = new Label();
@@ -169,37 +175,63 @@ public class AnalyserTest extends BaseTransformerTest {
             mv.visitTryCatchBlock(l0, l1, l2, "java/lang/Exception");
             mv.visitLabel(l0);
             mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletableFuture;)Ljava/lang/Object;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "await",
+                "(Ljava/util/concurrent/CompletableFuture;)Ljava/lang/Object;",
+                true
+            );
             mv.visitInsn(POP);
             mv.visitLabel(l1);
             Label l3 = new Label();
             mv.visitJumpInsn(GOTO, l3);
             mv.visitLabel(l2);
-            mv.visitFrame(Opcodes.F_FULL,
+            mv.visitFrame(
+                Opcodes.F_FULL,
                 2,
-                new Object[] { "com/ixaris/commons/async/transformer/test/SmallestTest", "com/ixaris/commons/async/transformer/Task" },
+                new Object[] {
+                    "com/ixaris/commons/async/transformer/test/SmallestTest",
+                    "com/ixaris/commons/async/transformer/Task"
+                },
                 1,
-                new Object[] { "java/lang/Exception" });
+                new Object[] { "java/lang/Exception" }
+            );
             mv.visitVarInsn(ASTORE, 2);
             mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/transformer/Await", "await", "(Ljava/util/concurrent/CompletableFuture;)Ljava/lang/Object;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/transformer/Await",
+                "await",
+                "(Ljava/util/concurrent/CompletableFuture;)Ljava/lang/Object;",
+                true
+            );
             mv.visitInsn(POP);
             mv.visitLabel(l3);
-            mv.visitFrame(Opcodes.F_FULL,
+            mv.visitFrame(
+                Opcodes.F_FULL,
                 2,
-                new Object[] { "com/ixaris/commons/async/transformer/test/SmallestTest", "com/ixaris/commons/async/transformer/Task" },
+                new Object[] {
+                    "com/ixaris/commons/async/transformer/test/SmallestTest",
+                    "com/ixaris/commons/async/transformer/Task"
+                },
                 0,
-                new Object[0]);
+                new Object[0]
+            );
             mv.visitVarInsn(ALOAD, 1);
             mv.visitInsn(ARETURN);
             mv.visitMaxs(1, 3);
         }
         
-        Frame<BasicValue>[] frames = new FrameAnalyzer().analyze("com/ixaris/commons/async/transformer/test/SmallestTest", mv);
+        Frame<BasicValue>[] frames = new FrameAnalyzer().analyze(
+            "com/ixaris/commons/async/transformer/test/SmallestTest", mv
+        );
         // when the frameNode is not used by the analyzer this will return java/lang/Object
         Frame<BasicValue> frame = frames[8];
         assertEquals(ASTORE, mv.instructions.get(8).getOpcode());
-        assertEquals("com/ixaris/commons/async/transformer/test/SmallestTest", frame.getLocal(0).getType().getInternalName());
+        assertEquals(
+            "com/ixaris/commons/async/transformer/test/SmallestTest", frame.getLocal(0).getType().getInternalName()
+        );
         assertEquals("com/ixaris/commons/async/transformer/Task", frame.getLocal(1).getType().getInternalName());
         assertEquals("java/lang/Exception", frame.getStack(0).getType().getInternalName());
     }

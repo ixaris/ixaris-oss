@@ -29,17 +29,14 @@ package com.ixaris.commons.async.transformed.test;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
-import static com.ixaris.commons.async.lib.CompletionStageUtil.convert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.ixaris.commons.async.lib.CompletionStageUtil;
 import com.ixaris.commons.async.lib.annotation.Async;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import org.junit.jupiter.api.Test;
 
 public class HowItShouldWorkWithAnnotationsTest {
     
@@ -52,7 +49,7 @@ public class HowItShouldWorkWithAnnotationsTest {
         
         @Async
         public CompletionStage<Object> doSomethingElse(final CompletionStage<String> blocker) {
-            return blocker.thenApply(convert(res -> ":" + res));
+            return blocker.thenApply(res -> ":" + res);
         }
         
     }
@@ -63,22 +60,25 @@ public class HowItShouldWorkWithAnnotationsTest {
             return continuation$doSomething(blocker, 0, null);
         }
         
-        public CompletionStage<Object> continuation$doSomething(final CompletionStage<String> blocker, final int async$state, CompletionStage<?> async$async) {
-            switch (async$state) {
+        public CompletionStage<Object> continuation$doSomething(
+            final CompletionStage<String> blocker, final int async$index, CompletionStage<?> async$stage
+        ) {
+            switch (async$index) {
                 case 0:
-                    async$async = blocker;
-                    if (!CompletionStageUtil.isDone(async$async)) {
-                        return CompletionStageUtil.doneCompose(async$async, f -> continuation$doSomething(blocker, 1, f));
+                    async$stage = blocker;
+                    if (!CompletionStageUtil.isDone(async$stage)) {
+                        return CompletionStageUtil.doneCompose(async$stage, f -> continuation$doSomething(blocker, 1, f)
+                        );
                     }
                 case 1:
-                    return result(":" + CompletionStageUtil.get(async$async));
+                    return result(":" + CompletionStageUtil.get(async$stage));
                 default:
                     throw new IllegalArgumentException();
             }
         }
         
         public CompletionStage<Object> doSomethingElse(final CompletionStage<String> blocker) {
-            return blocker.thenApply(convert(res -> ":" + res));
+            return blocker.thenApply(res -> ":" + res);
         }
         
     }

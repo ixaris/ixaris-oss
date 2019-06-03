@@ -7,10 +7,10 @@ import java.lang.annotation.Target;
 import java.util.concurrent.CompletionStage;
 
 /**
- * Use this annotation to annotate methods that return an implementation of CompletionStage
- * and want to use {@link com.ixaris.commons.async.lib.Async#await(CompletionStage)}
- * or {@link com.ixaris.commons.async.lib.Async#awaitExceptions(CompletionStage)} such that
- * they can be identified and transformed be the transformer
+ * Use this annotation to annotate methods that return an implementation of CompletionStage and want to use {@link
+ * com.ixaris.commons.async.lib.Async#await(CompletionStage)} or {@link
+ * com.ixaris.commons.async.lib.Async#awaitExceptions(CompletionStage)} such that they can be identified and transformed
+ * by the transformer
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

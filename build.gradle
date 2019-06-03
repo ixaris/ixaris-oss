@@ -1,0 +1,16 @@
+buildscript {
+    dependencies {
+        classpath 'com.google.gradle:osdetector-gradle-plugin:1.6.1'
+    }
+}
+
+plugins {
+    id 'org.jetbrains.gradle.plugin.idea-ext' version '0.5'
+}
+
+idea.project.settings {
+    delegateActions {
+        delegateBuildRunToGradle = true // Delegate Run/Build to Gradle
+        testRunner = org.jetbrains.gradle.ext.ActionDelegationConfig.TestRunner.GRADLE // Test execution: PLATFORM, GRADLE or CHOOSE_PER_TEST
+    }
+}

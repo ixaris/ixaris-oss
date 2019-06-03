@@ -3,7 +3,7 @@ package com.ixaris.commons.async.transformed
 import com.ixaris.commons.async.lib.AsyncTrace
 import com.ixaris.commons.async.lib.CompletableFutureUtil
 import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor

@@ -27,17 +27,16 @@
 package com.ixaris.commons.async.transformed.test;
 
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
-import static org.junit.Assert.assertEquals;
-
-import java.lang.reflect.Method;
-import java.util.concurrent.CompletableFuture;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.ixaris.commons.async.lib.Async;
+import java.lang.reflect.Method;
+import java.util.concurrent.CompletableFuture;
+import org.junit.jupiter.api.Test;
 
 public class NoPackageTest extends BaseTest {
     
+    @SuppressWarnings("unchecked")
     @Test
     public void testPackageLessClass() throws ReflectiveOperationException, InterruptedException {
         
@@ -45,7 +44,7 @@ public class NoPackageTest extends BaseTest {
         final Method method = newClass.getMethod("noPackageMethod", CompletableFuture.class, int.class);
         
         CompletableFuture<String> blocker = new CompletableFuture<>();
-        final Async<String> res = (Async<String>) method.invoke(newClass.newInstance(), blocker, 5);
+        final Async<String> res = (Async<String>) method.invoke(newClass.getConstructor().newInstance(), blocker, 5);
         blocker.complete("zzz");
         assertEquals("5:10000000000:1.5:3.5:zzz:true", block(res));
     }

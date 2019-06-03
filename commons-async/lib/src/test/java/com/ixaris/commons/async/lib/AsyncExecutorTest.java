@@ -3,18 +3,17 @@ package com.ixaris.commons.async.lib;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
 import static com.ixaris.commons.async.lib.AsyncExecutor.exec;
+import static com.ixaris.commons.async.lib.AsyncExecutor.execAndRelay;
 import static com.ixaris.commons.async.lib.AsyncExecutor.relay;
 import static com.ixaris.commons.async.lib.AsyncExecutor.yield;
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 
+import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
-
-import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper;
+import org.junit.jupiter.api.Test;
 
 public class AsyncExecutorTest {
     
@@ -76,12 +75,16 @@ public class AsyncExecutorTest {
         // start on ex1
         Assertions.assertThat(AsyncExecutor.get()).isEqualTo(ex1);
         
-        final Async<Void> relay = relay(exec(ex2, () -> {
+        final Async<Void> relay = execAndRelay(ex2, () -> {
             // go to ex2
-            Thread.sleep(100L);
+            try {
+                Thread.sleep(100L);
+            } catch (InterruptedException e) {
+                throw new RuntimeException();
+            }
             Assertions.assertThat(AsyncExecutor.get()).isEqualTo(ex2);
-            return exec(() -> null);
-        }));
+            return exec((CompletionStageCallableThrows<Void, RuntimeException>) Async::result);
+        });
         
         // still on ex1 (should still be on same thread)
         Assertions.assertThat(AsyncExecutor.get()).isEqualTo(ex1);

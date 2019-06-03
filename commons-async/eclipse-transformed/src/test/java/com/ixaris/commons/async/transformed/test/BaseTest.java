@@ -28,13 +28,12 @@ package com.ixaris.commons.async.transformed.test;
 
 import static com.ixaris.commons.misc.lib.object.Tuple.tuple;
 
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.function.Supplier;
-
 import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.async.lib.FutureAsync;
 import com.ixaris.commons.misc.lib.object.Tuple2;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.function.Supplier;
 
 public class BaseTest {
     
@@ -47,8 +46,7 @@ public class BaseTest {
     }
     
     /**
-     * Creates and an uncompleted future and adds it the the queue for later completion.
-     * To help with the tests
+     * Creates and an uncompleted future and adds it the the queue for later completion. To help with the tests
      */
     public <T> FutureAsync<T> getBlockedFuture(final T value) {
         final FutureAsync<T> future = new FutureAsync<>();

@@ -29,19 +29,17 @@ package com.ixaris.commons.async.transformed.test;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
-import java.util.Random;
-import java.util.concurrent.CompletableFuture;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.async.lib.CompletionStageUtil;
+import java.util.Random;
+import java.util.concurrent.CompletableFuture;
+import org.junit.jupiter.api.Test;
 
 public class PrimitiveTest extends BaseTest {
-    public static abstract class Base {
+    public abstract static class Base {
         int i1;
         short s1;
         byte b1;
@@ -61,30 +59,25 @@ public class PrimitiveTest extends BaseTest {
             return null;
         }
         
-        public Async<Object> melange(int pi1,
-                                     short ps1,
-                                     byte pb1,
-                                     double pd1,
-                                     char pc1,
-                                     boolean pz1,
-                                     long lg1,
-                                     Object po1,
-                                     float pf1,
-                                     CompletableFuture<String> blocker,
-                                     long var) {
+        public Async<Object> melange(
+            int pi1,
+            short ps1,
+            byte pb1,
+            double pd1,
+            char pc1,
+            boolean pz1,
+            long lg1,
+            Object po1,
+            float pf1,
+            CompletableFuture<String> blocker,
+            long var
+        ) {
             return null;
         }
         
-        public void setFields(int pi1,
-                              short ps1,
-                              byte pb1,
-                              double pd1,
-                              char pc1,
-                              boolean pz1,
-                              long pg1,
-                              Object po1,
-                              float pf1,
-                              int pi2) {
+        public void setFields(
+            int pi1, short ps1, byte pb1, double pd1, char pc1, boolean pz1, long pg1, Object po1, float pf1, int pi2
+        ) {
             this.i1 = pi1;
             this.s1 = ps1;
             this.b1 = pb1;
@@ -97,24 +90,18 @@ public class PrimitiveTest extends BaseTest {
             this.i2 = pi2;
         }
         
-        public void assertFields(int pi1,
-                                 short ps1,
-                                 byte pb1,
-                                 double pd1,
-                                 char pc1,
-                                 boolean pz1,
-                                 long pg1,
-                                 Object po1,
-                                 float pf1) {
+        public void assertFields(
+            int pi1, short ps1, byte pb1, double pd1, char pc1, boolean pz1, long pg1, Object po1, float pf1
+        ) {
             assertEquals(pi1, i1);
             assertEquals(ps1, s1);
             assertEquals(pb1, b1);
-            assertEquals(pd1, d1, 0);
+            assertEquals(pd1, d1);
             assertEquals(pc1, c1);
             assertEquals(pz1, z1);
             assertEquals(pg1, g1);
             assertEquals(po1, o1);
-            assertEquals(pf1, f1, 0);
+            assertEquals(pf1, f1);
         }
     }
     
@@ -133,17 +120,19 @@ public class PrimitiveTest extends BaseTest {
     }
     
     public static class PrimitiveUser3 extends Base {
-        public Async<Object> melange(int pi1,
-                                     short ps1,
-                                     byte pb1,
-                                     double pd1,
-                                     char pc1,
-                                     boolean pz1,
-                                     long lg1,
-                                     Object po1,
-                                     float pf1,
-                                     CompletableFuture<String> blocker,
-                                     long var) {
+        public Async<Object> melange(
+            int pi1,
+            short ps1,
+            byte pb1,
+            double pd1,
+            char pc1,
+            boolean pz1,
+            long lg1,
+            Object po1,
+            float pf1,
+            CompletableFuture<String> blocker,
+            long var
+        ) {
             await(blocker);
             setFields(pi1, ps1, pb1, pd1, pc1, pz1, lg1, po1, pf1, 0);
             return result(":");
@@ -151,17 +140,19 @@ public class PrimitiveTest extends BaseTest {
     }
     
     public static class PrimitiveUser4 extends Base {
-        public Async<Object> melange(int pi1,
-                                     short ps1,
-                                     byte pb1,
-                                     double pd1,
-                                     char pc1,
-                                     boolean pz1,
-                                     long lg1,
-                                     Object po1,
-                                     float pf1,
-                                     CompletableFuture<String> blocker,
-                                     long var) {
+        public Async<Object> melange(
+            int pi1,
+            short ps1,
+            byte pb1,
+            double pd1,
+            char pc1,
+            boolean pz1,
+            long lg1,
+            Object po1,
+            float pf1,
+            CompletableFuture<String> blocker,
+            long var
+        ) {
             // blocks with a lot of primitives in the stack
             this.setFields(pi1, ps1, pb1, pd1, pc1, pz1, lg1, po1, pf1, await(blocker) != null ? 0 : 1);
             return result(":");

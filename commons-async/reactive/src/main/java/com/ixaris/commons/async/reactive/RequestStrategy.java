@@ -1,12 +1,12 @@
 package com.ixaris.commons.async.reactive;
 
-import org.reactivestreams.Subscription;
-
 /**
- * An request strategy, used to abstract requesting more message from a publisher and to help reuse logic for applying backpressure.
- * 
- * E.g. can have a strategy that allows x messages per period of time, where one would (internally in the strategy) schedule invoking the request callable repeatedly
- * 
+ * An request strategy, used to abstract requesting more message from a publisher and to help reuse logic for applying
+ * backpressure.
+ *
+ * <p>E.g. can have a strategy that allows x messages per period of time, where one would (internally in the strategy)
+ * schedule invoking the request callable repeatedly
+ *
  * @author brian.vella
  */
 public interface RequestStrategy {

@@ -1,0 +1,21 @@
+{{ tab }}public {{ static }}final class {{ validationClassName }} {
+{{ tab }}
+{% if keyEnums is defined %}{{ tab }}    public static EnumDescriptor getKeyEnumDescriptor(final String key) {
+{{ tab }}        switch (key) {
+{% for keyEnum in keyEnums %}{{ tab }}            {{ keyEnum }};
+{% endfor %}
+{{ tab }}            default: return null;
+{{ tab }}        }
+{{ tab }}    }
+{{ tab }}{% endif %}
+{{ tab }}    public static BiConsumer<{{ messageFullName }}, RootValidator> getValidator() {
+{{ tab }}
+{{ tab }}        return (m, v) -> {
+{% for validation in validations %}{{ tab }}            {{ validation }};
+{% endfor %}{{ tab }}        };
+{{ tab }}    }
+{{ tab }}
+{% for message in messages %}{{ message }}
+{% endfor %}
+{{ tab }}}
+

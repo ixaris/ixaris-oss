@@ -14,7 +14,7 @@ To transform code, add the following to the in maven pom.xml file:
                 <annotationProcessorPaths>
                     <path>
                         <groupId>com.ixaris.oss</groupId>
-                        <artifactId>ixaris-commons-async-transformer</artifactId>
+                        <artifactId>ixaris-commons-async-processor</artifactId>
                         <version>VERSION</version>
                         <classifier>nodeps</classifier>
                     </path>
@@ -33,7 +33,7 @@ and add the below dependency:
 ```xml
 <dependency>
     <groupId>com.ixaris.oss</groupId>
-    <artifactId>ixaris-commons-async-transformer</artifactId>
+    <artifactId>ixaris-commons-async-processor</artifactId>
     <version>VERSION</version>
     <classifier>nodeps</classifier>
     <optional>true</optional>

@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package security;
+
+import "google/protobuf/descriptor.proto";
+
+option optimize_for = SPEED;
+
+//this allows us to mark fields as sensitive via `security.sensitive = true`, to prevent their being logged in the API logs
+
+extend google.protobuf.FieldOptions {
+    optional bool sensitive = 62001;
+}

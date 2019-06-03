@@ -1,0 +1,7 @@
+apply from: "$rootDir/common.gradle"
+
+dependencies {
+    compile project(':ixaris-commons-misc-lib')
+    compile 'com.google.guava:guava:27.0.1-jre'
+    compile 'it.unimi.dsi:fastutil:8.2.2'
+}

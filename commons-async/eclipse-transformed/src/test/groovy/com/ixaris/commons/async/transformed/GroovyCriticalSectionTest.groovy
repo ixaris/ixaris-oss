@@ -6,14 +6,14 @@ import com.ixaris.commons.async.lib.AsyncExecutor
 import com.ixaris.commons.async.lib.AsyncQueue
 import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper
 import com.ixaris.commons.misc.lib.function.RunnableThrows
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-import static com.ixaris.commons.async.lib.CompletionStageUtil.allSame
+import static com.ixaris.commons.async.lib.Async.all
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block
 import static org.assertj.core.api.Assertions.assertThat
 
@@ -34,7 +34,7 @@ class GroovyCriticalSectionTest {
         for (int i = 0; i < 5; i++) {
             r.add(AsyncExecutor.exec(ex, { criticalSection(s) } as CompletionStageCallableThrows<Void, RuntimeException>))
         }
-        block allSame(r)
+        block all(r)
         
         assertThat s.counter isNotEqualTo 5
     }
@@ -48,7 +48,7 @@ class GroovyCriticalSectionTest {
         for (int i = 0; i < 5; i++) {
             r.add(AsyncExecutor.exec(ex, { criticalSection q, s } as CompletionStageCallableThrows<Void, RuntimeException>))
         }
-        block allSame(r)
+        block all(r)
         
         assertThat s.counter isEqualTo 5
     }

@@ -16,9 +16,10 @@
         </dependency>
         <dependency>
             <groupId>com.ixaris.oss</groupId>
-            <artifactId>ixaris-commons-async-transformer</artifactId>
+            <artifactId>ixaris-commons-async-processor</artifactId>
             <version>${project.version}</version>
             <classifier>nodeps</classifier>
+            <scope>provided</scope>
             <optional>true</optional>
         </dependency>
     </dependencies>

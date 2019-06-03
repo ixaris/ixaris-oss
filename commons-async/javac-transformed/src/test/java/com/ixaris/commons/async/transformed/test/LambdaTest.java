@@ -28,34 +28,30 @@ package com.ixaris.commons.async.transformed.test;
 
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
-import static org.junit.Assert.assertEquals;
-
-import java.util.concurrent.CompletionStage;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.ixaris.commons.async.lib.CompletionStageUtil;
+import java.util.concurrent.CompletionStage;
+import org.junit.jupiter.api.Test;
 
 public class LambdaTest extends BaseTest {
     
     @Test
     public void testThenCompose() throws InterruptedException {
-        CompletionStage<Integer> task = getBlockedFuture(10)
-            .thenCompose(x -> result(x + await(getBlockedFuture(20))));
+        CompletionStage<Integer> task = getBlockedFuture(10).thenCompose(x -> result(x + await(getBlockedFuture(20))));
         completeFutures();
         assertEquals((Integer) 30, CompletionStageUtil.block(task));
     }
     
     @Test
     public void testLongLambda() throws InterruptedException {
-        CompletionStage<Integer> task = getBlockedFuture(5)
-            .thenCompose(x -> {
-                await(getBlockedFuture());
-                await(getBlockedFuture());
-                await(getBlockedFuture());
-                await(getBlockedFuture());
-                return result(11);
-            });
+        CompletionStage<Integer> task = getBlockedFuture(5).thenCompose(x -> {
+            await(getBlockedFuture());
+            await(getBlockedFuture());
+            await(getBlockedFuture());
+            await(getBlockedFuture());
+            return result(11);
+        });
         completeFutures();
         assertEquals((Integer) 11, CompletionStageUtil.block(task));
     }

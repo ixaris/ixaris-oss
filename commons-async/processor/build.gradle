@@ -1,0 +1,24 @@
+apply from: "$rootDir/common.gradle"
+
+dependencies {
+    compile project(':ixaris-commons-async-transformer')
+    compileOnly "org.slf4j:slf4j-api:$slf4jVersion"
+}
+
+task packageNoDeps(type: Jar) {
+    archiveClassifier = 'nodeps'
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    with jar
+}
+
+artifacts.archives(tasks.packageNoDeps)
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact packageNoDeps
+        }
+    }
+}

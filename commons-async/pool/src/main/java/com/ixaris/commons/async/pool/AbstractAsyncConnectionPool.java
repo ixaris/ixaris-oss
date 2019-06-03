@@ -10,6 +10,8 @@ import static com.ixaris.commons.async.lib.AsyncExecutor.schedule;
 import static com.ixaris.commons.async.lib.CompletableFutureUtil.complete;
 import static com.ixaris.commons.async.lib.CompletableFutureUtil.reject;
 
+import com.ixaris.commons.async.lib.Async;
+import com.ixaris.commons.async.lib.FutureAsync;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -17,20 +19,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import com.ixaris.commons.async.lib.Async;
-import com.ixaris.commons.async.lib.FutureAsync;
-
 /**
  * An abstract Connection Pool, managing a number of connections.
  *
- * A concrete subclass should:
+ * <p>A concrete subclass should:
+ *
  * <ul>
- * <li>Call start() to initiate and start connection pool.</li>
- * <li>Call stop() to close all connections and stop pool.</li>
- * <li>Every serviceInterval, serviceConnection() is called on connections and pool size is adjusted to at least minSize</li>
+ *   <li>Call start() to initiate and start connection pool.
+ *   <li>Call stop() to close all connections and stop pool.
+ *   <li>Every serviceInterval, serviceConnection() is called on connections and pool size is adjusted to at least
+ *       minSize
  * </ul>
  */
-public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnection<T, C>> implements AsyncConnectionPool<C> {
+public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnection<T, C>>
+implements AsyncConnectionPool<C> {
     
     public static final class ConnectionInfo<T> {
         
@@ -79,13 +81,15 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
     
     /**
      * Constructor configuring all properties
-     * 
+     *
      * @param minSize minimum size of the pool, default 2
      * @param maxSize maximum size of the pool, if set to 0 : unlimited, default 50
      * @param maxIdleTime lifetime of an object in the pool, default 10 minutes
      * @param serviceInterval interval for the service task, default 5 minutes
      */
-    public AbstractAsyncConnectionPool(final int minSize, final int maxSize, final long maxIdleTime, final long serviceInterval) {
+    public AbstractAsyncConnectionPool(
+        final int minSize, final int maxSize, final long maxIdleTime, final long serviceInterval
+    ) {
         this(minSize, maxSize);
         
         setMaxIdleTime(maxIdleTime);
@@ -103,8 +107,9 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
     protected abstract C wrapConnection(ConnectionInfo<T> pooledConn);
     
     /**
-     * Service the connection (called periodically) e.g. for Keep Alive and check whether the connection is still useable
-     * 
+     * Service the connection (called periodically) e.g. for Keep Alive and check whether the connection is still
+     * useable
+     *
      * @param pooledConn the connection to service
      * @return promise fulfilled when the connection is services
      */
@@ -167,13 +172,15 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
             createMinSize();
             
             // set up timer
-            serviceTask = scheduleWithFixedDelay(this::service, serviceInterval, serviceInterval, TimeUnit.MILLISECONDS);
+            serviceTask = scheduleServiceTask(this::service, serviceInterval, serviceInterval, TimeUnit.MILLISECONDS);
         } else {
             throw new IllegalStateException("Pool has already been started");
         }
     }
     
-    protected abstract ScheduledFuture<?> scheduleWithFixedDelay(Runnable task, long initialDelay, final long delay, final TimeUnit unit);
+    protected abstract ScheduledFuture<?> scheduleServiceTask(
+        Runnable task, long initialDelay, final long delay, final TimeUnit unit
+    );
     
     /**
      * switch off the pool
@@ -233,7 +240,12 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
                     schedule(timeout, TimeUnit.MILLISECONDS, () -> {
                         final FutureAsync<C> cc = ref.getAndSet(null);
                         if (cc != null) {
-                            reject(future, new ConnectionAcquisitionException("Could not obtain a connection after " + timeout + " ms (" + count + " in use)"));
+                            reject(
+                                future,
+                                new ConnectionAcquisitionException(String.format(
+                                    "Could not obtain a connection after %d ms (%d in use)", timeout, count.get()
+                                ))
+                            );
                         }
                     });
                 } catch (final IllegalStateException e) {
@@ -396,12 +408,9 @@ public abstract class AbstractAsyncConnectionPool<T, C extends AsyncPooledConnec
                 closeInternal(ci.connection);
             }
         }
-        
     }
     
-    private Async<Void> release(final Supplier<Async<T>> supplier,
-                                final ConnectionInfo<T> ci,
-                                final boolean service) {
+    private Async<Void> release(final Supplier<Async<T>> supplier, final ConnectionInfo<T> ci, final boolean service) {
         try {
             await(supplier.get());
             if (isActive()) {

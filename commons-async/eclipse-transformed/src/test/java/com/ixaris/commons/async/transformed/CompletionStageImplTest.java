@@ -3,13 +3,11 @@ package com.ixaris.commons.async.transformed;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-
-import org.junit.Test;
-
 import com.ixaris.commons.async.lib.CompletableFutureUtil;
 import com.ixaris.commons.async.lib.annotation.Async;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import org.junit.jupiter.api.Test;
 
 public class CompletionStageImplTest {
     

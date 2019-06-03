@@ -1,11 +1,14 @@
 package com.ixaris.commons.async.lib.thread;
 
+import static com.ixaris.commons.async.lib.Async.from;
+
+import com.ixaris.commons.async.lib.Async;
+import com.ixaris.commons.async.lib.CompletionStageCallableThrows;
+import com.ixaris.commons.misc.lib.function.CallableThrows;
+import com.ixaris.commons.misc.lib.function.RunnableThrows;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import com.ixaris.commons.misc.lib.function.CallableThrows;
-import com.ixaris.commons.misc.lib.function.RunnableThrows;
 
 /**
  * Supplies an api for setting thread locals and unsetting at the end of the task.
@@ -80,7 +83,28 @@ public class ThreadLocalHelper {
         return new Builder().with(threadLocal, value);
     }
     
-    public static <T, V, E extends Exception> V exec(final ThreadLocal<T> threadLocal, final T value, final CallableThrows<V, E> task) throws E {
+    public static <T, E extends Exception> void exec(
+        final ThreadLocal<T> threadLocal, final T value, final RunnableThrows<E> task
+    ) throws E {
+        if (threadLocal == null) {
+            throw new IllegalArgumentException("threadLocal is null");
+        }
+        if (task == null) {
+            throw new IllegalArgumentException("task is null");
+        }
+        
+        final T prev = threadLocal.get();
+        threadLocal.set(value);
+        try {
+            task.run();
+        } finally {
+            threadLocal.set(prev);
+        }
+    }
+    
+    public static <T, V, E extends Exception> V exec(
+        final ThreadLocal<T> threadLocal, final T value, final CallableThrows<V, E> task
+    ) throws E {
         if (threadLocal == null) {
             throw new IllegalArgumentException("threadLocal is null");
         }
@@ -97,7 +121,9 @@ public class ThreadLocalHelper {
         }
     }
     
-    public static <T, E extends Exception> void exec(final ThreadLocal<T> threadLocal, final T value, final RunnableThrows<E> task) throws E {
+    public static <T, V, E extends Exception> Async<V> exec(
+        final ThreadLocal<T> threadLocal, final T value, final CompletionStageCallableThrows<V, E> task
+    ) throws E {
         if (threadLocal == null) {
             throw new IllegalArgumentException("threadLocal is null");
         }
@@ -108,7 +134,7 @@ public class ThreadLocalHelper {
         final T prev = threadLocal.get();
         threadLocal.set(value);
         try {
-            task.run();
+            return from(task.call());
         } finally {
             threadLocal.set(prev);
         }

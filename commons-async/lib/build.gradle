@@ -1,0 +1,15 @@
+apply from: "$rootDir/common.gradle"
+
+dependencies {
+    compile project(':ixaris-commons-misc-lib')
+    compile project(':ixaris-commons-collections-lib')
+    compile project(':ixaris-commons-protobuf-lib')
+    
+    annotationProcessor project(':ixaris-commons-async-processor')
+    annotationProcessor project(':ixaris-commons-protobuf-validationcodegen')
+    
+    testCompile project(':ixaris-commons-async-test')
+    testCompile "org.slf4j:slf4j-simple:$slf4jVersion"
+    
+    testAnnotationProcessor project(':ixaris-commons-async-processor')
+}

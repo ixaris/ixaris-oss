@@ -1,16 +1,16 @@
 package com.ixaris.commons.async.lib.executor;
 
+import com.ixaris.commons.async.lib.AsyncExecutor;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import com.ixaris.commons.async.lib.AsyncExecutor;
-
 /**
  * Wrapper for an {@link ScheduledExecutorService} to wrap jobs using {@link AsyncExecutor}
  */
-public class AsyncScheduledExecutorServiceWrapper<E extends ScheduledExecutorService> extends AsyncExecutorServiceWrapper<E> implements ScheduledExecutorService {
+public class AsyncScheduledExecutorServiceWrapper<E extends ScheduledExecutorService>
+extends AsyncExecutorServiceWrapper<E> implements ScheduledExecutorService {
     
     public AsyncScheduledExecutorServiceWrapper(final E wrapped) {
         super(wrapped);
@@ -27,12 +27,16 @@ public class AsyncScheduledExecutorServiceWrapper<E extends ScheduledExecutorSer
     }
     
     @Override
-    public ScheduledFuture<?> scheduleAtFixedRate(final Runnable command, final long initialDelay, final long period, final TimeUnit unit) {
+    public ScheduledFuture<?> scheduleAtFixedRate(
+        final Runnable command, final long initialDelay, final long period, final TimeUnit unit
+    ) {
         return wrapped.scheduleAtFixedRate(AsyncExecutor.wrap(this, command), initialDelay, period, unit);
     }
     
     @Override
-    public ScheduledFuture<?> scheduleWithFixedDelay(final Runnable command, final long initialDelay, final long delay, final TimeUnit unit) {
+    public ScheduledFuture<?> scheduleWithFixedDelay(
+        final Runnable command, final long initialDelay, final long delay, final TimeUnit unit
+    ) {
         return wrapped.scheduleWithFixedDelay(AsyncExecutor.wrap(this, command), initialDelay, delay, unit);
     }
     

@@ -1,5 +1,6 @@
 package com.ixaris.commons.async.lib;
 
+import com.ixaris.commons.misc.lib.object.Wrapper;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
@@ -7,8 +8,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import com.ixaris.commons.misc.lib.object.Wrapper;
 
 final class DelegatingAsync<T> implements Async<T>, Wrapper<CompletionStage<T>> {
     
@@ -71,32 +70,46 @@ final class DelegatingAsync<T> implements Async<T>, Wrapper<CompletionStage<T>> 
     }
     
     @Override
-    public <U, V> CompletionStage<V> thenCombine(final CompletionStage<? extends U> other, final BiFunction<? super T, ? super U, ? extends V> fn) {
+    public <U, V> CompletionStage<V> thenCombine(
+        final CompletionStage<? extends U> other, final BiFunction<? super T, ? super U, ? extends V> fn
+    ) {
         return wrapped.thenCombine(other, fn);
     }
     
     @Override
-    public <U, V> CompletionStage<V> thenCombineAsync(final CompletionStage<? extends U> other, final BiFunction<? super T, ? super U, ? extends V> fn) {
+    public <U, V> CompletionStage<V> thenCombineAsync(
+        final CompletionStage<? extends U> other, final BiFunction<? super T, ? super U, ? extends V> fn
+    ) {
         return wrapped.thenCombineAsync(other, fn);
     }
     
     @Override
-    public <U, V> CompletionStage<V> thenCombineAsync(final CompletionStage<? extends U> other, final BiFunction<? super T, ? super U, ? extends V> fn, final Executor executor) {
+    public <U, V> CompletionStage<V> thenCombineAsync(
+        final CompletionStage<? extends U> other,
+        final BiFunction<? super T, ? super U, ? extends V> fn,
+        final Executor executor
+    ) {
         return wrapped.thenCombineAsync(other, fn, executor);
     }
     
     @Override
-    public <U> CompletionStage<Void> thenAcceptBoth(final CompletionStage<? extends U> other, final BiConsumer<? super T, ? super U> action) {
+    public <U> CompletionStage<Void> thenAcceptBoth(
+        final CompletionStage<? extends U> other, final BiConsumer<? super T, ? super U> action
+    ) {
         return wrapped.thenAcceptBoth(other, action);
     }
     
     @Override
-    public <U> CompletionStage<Void> thenAcceptBothAsync(final CompletionStage<? extends U> other, final BiConsumer<? super T, ? super U> action) {
+    public <U> CompletionStage<Void> thenAcceptBothAsync(
+        final CompletionStage<? extends U> other, final BiConsumer<? super T, ? super U> action
+    ) {
         return wrapped.thenAcceptBothAsync(other, action);
     }
     
     @Override
-    public <U> CompletionStage<Void> thenAcceptBothAsync(final CompletionStage<? extends U> other, final BiConsumer<? super T, ? super U> action, final Executor executor) {
+    public <U> CompletionStage<Void> thenAcceptBothAsync(
+        final CompletionStage<? extends U> other, final BiConsumer<? super T, ? super U> action, final Executor executor
+    ) {
         return wrapped.thenAcceptBothAsync(other, action, executor);
     }
     
@@ -111,37 +124,51 @@ final class DelegatingAsync<T> implements Async<T>, Wrapper<CompletionStage<T>> 
     }
     
     @Override
-    public CompletionStage<Void> runAfterBothAsync(final CompletionStage<?> other, final Runnable action, final Executor executor) {
+    public CompletionStage<Void> runAfterBothAsync(
+        final CompletionStage<?> other, final Runnable action, final Executor executor
+    ) {
         return wrapped.runAfterBothAsync(other, action, executor);
     }
     
     @Override
-    public <U> CompletionStage<U> applyToEither(final CompletionStage<? extends T> other, final Function<? super T, U> fn) {
+    public <U> CompletionStage<U> applyToEither(
+        final CompletionStage<? extends T> other, final Function<? super T, U> fn
+    ) {
         return wrapped.applyToEither(other, fn);
     }
     
     @Override
-    public <U> CompletionStage<U> applyToEitherAsync(final CompletionStage<? extends T> other, final Function<? super T, U> fn) {
+    public <U> CompletionStage<U> applyToEitherAsync(
+        final CompletionStage<? extends T> other, final Function<? super T, U> fn
+    ) {
         return wrapped.applyToEitherAsync(other, fn);
     }
     
     @Override
-    public <U> CompletionStage<U> applyToEitherAsync(final CompletionStage<? extends T> other, final Function<? super T, U> fn, final Executor executor) {
+    public <U> CompletionStage<U> applyToEitherAsync(
+        final CompletionStage<? extends T> other, final Function<? super T, U> fn, final Executor executor
+    ) {
         return wrapped.applyToEitherAsync(other, fn, executor);
     }
     
     @Override
-    public CompletionStage<Void> acceptEither(final CompletionStage<? extends T> other, final Consumer<? super T> action) {
+    public CompletionStage<Void> acceptEither(
+        final CompletionStage<? extends T> other, final Consumer<? super T> action
+    ) {
         return wrapped.acceptEither(other, action);
     }
     
     @Override
-    public CompletionStage<Void> acceptEitherAsync(final CompletionStage<? extends T> other, final Consumer<? super T> action) {
+    public CompletionStage<Void> acceptEitherAsync(
+        final CompletionStage<? extends T> other, final Consumer<? super T> action
+    ) {
         return wrapped.acceptEitherAsync(other, action);
     }
     
     @Override
-    public CompletionStage<Void> acceptEitherAsync(final CompletionStage<? extends T> other, final Consumer<? super T> action, final Executor executor) {
+    public CompletionStage<Void> acceptEitherAsync(
+        final CompletionStage<? extends T> other, final Consumer<? super T> action, final Executor executor
+    ) {
         return wrapped.acceptEitherAsync(other, action, executor);
     }
     
@@ -156,7 +183,9 @@ final class DelegatingAsync<T> implements Async<T>, Wrapper<CompletionStage<T>> 
     }
     
     @Override
-    public CompletionStage<Void> runAfterEitherAsync(final CompletionStage<?> other, final Runnable action, final Executor executor) {
+    public CompletionStage<Void> runAfterEitherAsync(
+        final CompletionStage<?> other, final Runnable action, final Executor executor
+    ) {
         return wrapped.runAfterEitherAsync(other, action, executor);
     }
     
@@ -171,7 +200,9 @@ final class DelegatingAsync<T> implements Async<T>, Wrapper<CompletionStage<T>> 
     }
     
     @Override
-    public <U> CompletionStage<U> thenComposeAsync(final Function<? super T, ? extends CompletionStage<U>> fn, final Executor executor) {
+    public <U> CompletionStage<U> thenComposeAsync(
+        final Function<? super T, ? extends CompletionStage<U>> fn, final Executor executor
+    ) {
         return wrapped.thenComposeAsync(fn, executor);
     }
     
@@ -191,7 +222,9 @@ final class DelegatingAsync<T> implements Async<T>, Wrapper<CompletionStage<T>> 
     }
     
     @Override
-    public CompletionStage<T> whenCompleteAsync(final BiConsumer<? super T, ? super Throwable> action, final Executor executor) {
+    public CompletionStage<T> whenCompleteAsync(
+        final BiConsumer<? super T, ? super Throwable> action, final Executor executor
+    ) {
         return wrapped.whenCompleteAsync(action, executor);
     }
     
@@ -206,7 +239,9 @@ final class DelegatingAsync<T> implements Async<T>, Wrapper<CompletionStage<T>> 
     }
     
     @Override
-    public <U> CompletionStage<U> handleAsync(final BiFunction<? super T, Throwable, ? extends U> fn, final Executor executor) {
+    public <U> CompletionStage<U> handleAsync(
+        final BiFunction<? super T, Throwable, ? extends U> fn, final Executor executor
+    ) {
         return wrapped.handleAsync(fn, executor);
     }
     

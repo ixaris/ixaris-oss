@@ -33,20 +33,17 @@ import static jdk.internal.org.objectweb.asm.Opcodes.ARETURN;
 import static jdk.internal.org.objectweb.asm.Opcodes.CHECKCAST;
 import static jdk.internal.org.objectweb.asm.Opcodes.INVOKESTATIC;
 import static jdk.internal.org.objectweb.asm.Opcodes.POP;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.async.lib.CompletionStageUtil;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 import jdk.internal.org.objectweb.asm.MethodVisitor;
+import org.junit.jupiter.api.Test;
 
 public class BaseTestTransformerTest extends BaseTransformerTest {
     
@@ -54,30 +51,61 @@ public class BaseTestTransformerTest extends BaseTransformerTest {
     @Test
     public void testCreateClass() throws Exception {
         assertTrue(createClass(ArrayList.class, cv -> {}) instanceof List);
-        assertEquals("hello", createClass(Callable.class, cv -> {
-            final MethodVisitor mv = cv.visitMethod(ACC_PUBLIC, "call", "()Ljava/lang/Object;", null, new String[] { "java/lang/Exception" });
-            mv.visitCode();
-            mv.visitLdcInsn("hello");
-            mv.visitInsn(ARETURN);
-            mv.visitMaxs(1, 1);
-            mv.visitEnd();
-        }).call());
+        assertEquals(
+            "hello",
+            createClass(Callable.class, cv -> {
+                final MethodVisitor mv = cv.visitMethod(
+                    ACC_PUBLIC, "call", "()Ljava/lang/Object;", null, new String[] { "java/lang/Exception" }
+                );
+                mv.visitCode();
+                mv.visitLdcInsn("hello");
+                mv.visitInsn(ARETURN);
+                mv.visitMaxs(1, 1);
+                mv.visitEnd();
+            })
+                .call()
+        );
     }
     
     // sanity check of the creator
     @Test
     public void simpleAsyncMethod() throws Exception {
         final Async<?> task = createClass(AsyncCallable.class, cw -> {
-            MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "call", "()Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
+            MethodVisitor mv = cw.visitMethod(
+                ACC_PUBLIC,
+                "call",
+                "()Lcom/ixaris/commons/async/lib/Async;",
+                null,
+                new String[] { "java/lang/Exception" }
+            );
             mv.visitCode();
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "result", "()Lcom/ixaris/commons/async/lib/Async;", true);
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "result",
+                "()Lcom/ixaris/commons/async/lib/Async;",
+                true
+            );
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "await",
+                "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;",
+                true
+            );
             mv.visitInsn(POP);
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "result", "()Lcom/ixaris/commons/async/lib/Async;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "result",
+                "()Lcom/ixaris/commons/async/lib/Async;",
+                true
+            );
             mv.visitInsn(ARETURN);
             mv.visitMaxs(1, 1);
             mv.visitEnd();
-        }).call();
+        })
+            .call();
         assertTrue(CompletionStageUtil.isFulfilled(task));
     }
     
@@ -86,19 +114,38 @@ public class BaseTestTransformerTest extends BaseTransformerTest {
     @SuppressWarnings("unchecked")
     public void simpleBlockingAsyncMethod() throws Exception {
         final Async<?> task = createClass(AsyncFunction.class, cw -> {
-            MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
+            MethodVisitor mv = cw.visitMethod(
+                ACC_PUBLIC,
+                "apply",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                null,
+                new String[] { "java/lang/Exception" }
+            );
             mv.visitCode();
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, "java/util/concurrent/CompletionStage");
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "await",
+                "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;",
+                true
+            );
             mv.visitInsn(POP);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, "java/util/concurrent/CompletionStage");
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "from", "(Ljava/util/concurrent/CompletionStage;)Lcom/ixaris/commons/async/lib/Async;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "from",
+                "(Ljava/util/concurrent/CompletionStage;)Lcom/ixaris/commons/async/lib/Async;",
+                true
+            );
             mv.visitInsn(ARETURN);
             mv.visitMaxs(1, 2);
             mv.visitEnd();
-        }).apply(getBlockedFuture("hello"));
+        })
+            .apply(getBlockedFuture("hello"));
         assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
         assertEquals("hello", block(task));

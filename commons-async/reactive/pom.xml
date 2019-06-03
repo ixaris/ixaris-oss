@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.ixaris.oss</groupId>
         <artifactId>ixaris-commons-async</artifactId>
-        <version>1.6.0-SNAPSHOT</version>
+        <version>1.6.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>ixaris-commons-async-reactive</artifactId>

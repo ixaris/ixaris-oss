@@ -92,17 +92,28 @@ public class AsyncIteratorTest {
     @Test
     public void asyncIterator_benchmark() throws InterruptedException {
         
+        final CountingAsyncIterable i0 = new CountingAsyncIterable(100000, 1);
         final CountingAsyncIterable i1 = new CountingAsyncIterable(10000000, 250);
         final CountingAsyncIterable i2 = new CountingAsyncIterable(10000000, Integer.MAX_VALUE);
         long start;
         
         // warm up
+        iterate(i0.iterator());
+        block(iterate(i0.asyncIterator()));
         iterate(i1.iterator());
         block(iterate(i1.asyncIterator()));
         iterate(i2.iterator());
         block(iterate(i2.asyncIterator()));
         
         // benchmark
+        start = System.nanoTime();
+        iterate(i0.iterator());
+        System.out.println("sync(0) took " + ((System.nanoTime() - start) / 1000000));
+        
+        start = System.nanoTime();
+        block(iterate(i0.asyncIterator()));
+        System.out.println("async(0) took " + ((System.nanoTime() - start) / 1000000));
+        
         start = System.nanoTime();
         iterate(i1.iterator());
         System.out.println("sync(1) took " + ((System.nanoTime() - start) / 1000000));

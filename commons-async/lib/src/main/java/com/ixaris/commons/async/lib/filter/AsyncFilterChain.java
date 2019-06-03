@@ -2,9 +2,9 @@ package com.ixaris.commons.async.lib.filter;
 
 import static com.ixaris.commons.async.lib.Async.awaitExceptions;
 
+import com.google.common.collect.ImmutableList;
 import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.misc.lib.function.FunctionThrows;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -18,11 +18,11 @@ public final class AsyncFilterChain<IN, OUT> {
     
     @SafeVarargs
     public AsyncFilterChain(final AsyncFilter<IN, OUT>... filters) {
-        this(Arrays.asList(filters));
+        this.filters = ImmutableList.copyOf(filters);
     }
     
     public AsyncFilterChain(final List<? extends AsyncFilter<IN, OUT>> filters) {
-        this.filters = filters;
+        this.filters = ImmutableList.copyOf(filters);
     }
     
     public AsyncFilterNext<IN, OUT> with(

@@ -34,12 +34,22 @@ public final class Intent {
         
         @Override
         public AsyncLocalValue encode(final Intent value) {
-            return AsyncLocalValue.newBuilder().setBytesValue(value.toProtobuf().toByteString()).build();
+            return AsyncLocalValue.newBuilder()
+                .setBytesValue(
+                    IntentValue.newBuilder()
+                        .setId(value.id)
+                        .setPath(value.path)
+                        .setHash(value.hash)
+                        .build()
+                        .toByteString()
+                )
+                .build();
         }
         
         @Override
         public Intent decode(final AsyncLocalValue value) throws InvalidProtocolBufferException {
-            return new Intent(MessageHelper.parse(IntentValue.class, value.getBytesValue()));
+            final IntentValue intent = MessageHelper.parse(IntentValue.class, value.getBytesValue());
+            return new Intent(intent.getId(), intent.getPath(), intent.getHash());
         }
         
     };
@@ -55,12 +65,6 @@ public final class Intent {
         this.id = id;
         this.path = path;
         this.hash = hash;
-    }
-    
-    private Intent(final IntentValue value) {
-        this.id = value.getId();
-        this.path = value.getPath();
-        this.hash = value.getHash();
     }
     
     public long getId() {
@@ -95,10 +99,6 @@ public final class Intent {
     @Override
     public String toString() {
         return ToStringUtil.of(this).with("id", id).with("path", path).with("hash", hash).toString();
-    }
-    
-    private IntentValue toProtobuf() {
-        return IntentValue.newBuilder().setId(id).setPath(path).setHash(hash).build();
     }
     
 }

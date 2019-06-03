@@ -1,0 +1,21 @@
+apply from: "$rootDir/common.gradle"
+
+dependencies {
+    compile project(':ixaris-commons-async-lib')
+    compile project(':ixaris-commons-async-transformer')
+    compile files("${System.getProperty('java.home')}/../lib/tools.jar")
+
+    annotationProcessor project(':ixaris-commons-async-processor')
+
+    testRuntime "org.slf4j:slf4j-simple:$slf4jVersion"
+    
+    testAnnotationProcessor project(':ixaris-commons-async-processor')
+}
+
+compileTestJava {
+    options.with {
+        compilerArgs.addAll([
+                '-bootclasspath', "${System.getProperty('java.home')}/../jre/lib/rt.jar"
+        ])
+    }
+}

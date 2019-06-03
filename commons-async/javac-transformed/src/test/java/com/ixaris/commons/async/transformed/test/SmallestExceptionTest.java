@@ -29,11 +29,10 @@ package com.ixaris.commons.async.transformed.test;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
-import static org.junit.Assert.assertNull;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.ixaris.commons.async.lib.Async;
+import org.junit.jupiter.api.Test;
 
 public class SmallestExceptionTest extends BaseTest {
     

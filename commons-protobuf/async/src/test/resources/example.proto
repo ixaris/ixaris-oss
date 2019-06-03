@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package com.ixaris.commons.protobuf.async.example;
+
+import "valid.proto";
+import "security.proto";
+import "sensitive.proto";
+
+option optimize_for = SPEED;
+
+message Nested {
+    string a = 1 [(valid.field) = "required"];
+    string b = 2;
+    int32 c = 3;
+    int64 d = 4;
+    Nested n = 5;
+    E e = 6;
+
+    enum E {
+        DEFAULT = 0;
+        A = 1;
+        B = 2;
+        C = 3;
+        D = 4;
+    }
+}
+
+message NestedSensitive {
+    string another_card_number = 1 [(sensitive.field) = PERMANENT];
+    string not_sensitive = 2;
+}
+
+message DataWithSensitiveFields {
+    string data = 1;
+    string dontlogme = 2  [(security.sensitive) = true];
+    string password = 3  [(sensitive.field) = TEMPORARY];
+    string card_number = 4  [(sensitive.field) = PERMANENT];
+    string masked_only = 5 [(sensitive.field) = MASKED];
+
+    NestedSensitive nested = 6;
+    repeated NestedSensitive repeated_nested = 7;
+    map<string, NestedSensitive> map_nested = 8;
+    repeated ExampleEnum actions = 9;
+    repeated int64 numbers = 10;
+    map<string, string> strings = 11;
+    Nested not_sensitive = 12;
+    map<string, Nested> map_not_sensitive = 13;
+
+
+    enum ExampleEnum {
+        ZERO = 0;
+        ONE = 1;
+        TWO = 2;
+    }
+}
+

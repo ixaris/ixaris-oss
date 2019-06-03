@@ -1,0 +1,6 @@
+apply from: "$rootDir/common.gradle"
+
+dependencies {
+    compile project(':ixaris-commons-misc-lib')
+    compile "org.assertj:assertj-core:$assertjVersion"
+}

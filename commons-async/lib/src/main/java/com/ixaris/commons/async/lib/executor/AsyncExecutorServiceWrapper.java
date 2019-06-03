@@ -1,5 +1,6 @@
 package com.ixaris.commons.async.lib.executor;
 
+import com.ixaris.commons.async.lib.AsyncExecutor;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -9,12 +10,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.ixaris.commons.async.lib.AsyncExecutor;
-
 /**
  * Wrapper for an {@link ExecutorService} to wrap jobs using {@link AsyncExecutor}
  */
-public class AsyncExecutorServiceWrapper<E extends ExecutorService> extends AsyncExecutorWrapper<E> implements ExecutorService {
+public class AsyncExecutorServiceWrapper<E extends ExecutorService> extends AsyncExecutorWrapper<E>
+implements ExecutorService {
     
     public AsyncExecutorServiceWrapper(final E wrapped) {
         super(wrapped);
@@ -66,17 +66,23 @@ public class AsyncExecutorServiceWrapper<E extends ExecutorService> extends Asyn
     }
     
     @Override
-    public <T> List<Future<T>> invokeAll(final Collection<? extends Callable<T>> tasks, final long timeout, final TimeUnit unit) throws InterruptedException {
+    public <T> List<Future<T>> invokeAll(
+        final Collection<? extends Callable<T>> tasks, final long timeout, final TimeUnit unit
+    ) throws InterruptedException {
         return wrapped.invokeAll(AsyncExecutor.wrap(this, tasks), timeout, unit);
     }
     
     @Override
-    public <T> T invokeAny(final Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
+    public <T> T invokeAny(
+        final Collection<? extends Callable<T>> tasks
+    ) throws InterruptedException, ExecutionException {
         return wrapped.invokeAny(AsyncExecutor.wrap(this, tasks));
     }
     
     @Override
-    public <T> T invokeAny(final Collection<? extends Callable<T>> tasks, final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public <T> T invokeAny(
+        final Collection<? extends Callable<T>> tasks, final long timeout, final TimeUnit unit
+    ) throws InterruptedException, ExecutionException, TimeoutException {
         return wrapped.invokeAny(AsyncExecutor.wrap(this, tasks), timeout, unit);
     }
     

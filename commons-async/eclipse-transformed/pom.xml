@@ -22,23 +22,23 @@
         </dependency>
         <dependency>
             <groupId>com.ixaris.oss</groupId>
-            <artifactId>ixaris-commons-async-transformer</artifactId>
+            <artifactId>ixaris-commons-async-processor</artifactId>
             <version>${project.version}</version>
             <classifier>nodeps</classifier>
+            <scope>provided</scope>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <pluginRepositories>
         <pluginRepository>
-            <id>groovy-bintray</id>
-            <name>Groovy Bintray</name>
+            <id>bintray-groovy-maven</id>
             <url>https://dl.bintray.com/groovy/maven</url>
-            <releases>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
         </pluginRepository>
     </pluginRepositories>
     <build>
@@ -63,19 +63,19 @@
                     <dependency>
                         <groupId>org.codehaus.groovy</groupId>
                         <artifactId>groovy-eclipse-compiler</artifactId>
-                        <version>2.9.2-04</version>
+                        <version>3.0.0-01</version>
                     </dependency>
                     <dependency>
                         <groupId>org.codehaus.groovy</groupId>
                         <artifactId>groovy-eclipse-batch</artifactId>
-                        <version>2.4.15-01</version>
+                        <version>2.5.4-01</version>
                     </dependency>
                 </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy-eclipse-compiler</artifactId>
-                <version>2.9.2-04</version>
+                <version>3.0.0-01</version>
                 <extensions>true</extensions>
             </plugin>
         </plugins>

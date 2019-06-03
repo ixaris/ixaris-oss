@@ -1,9 +1,8 @@
 package com.ixaris.commons.async.lib;
 
+import com.ixaris.commons.misc.lib.function.CallableThrows;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionStage;
-
-import com.ixaris.commons.misc.lib.function.CallableThrows;
 
 @FunctionalInterface
 public interface CompletionStageCallableThrows<T, E extends Throwable> {
@@ -14,7 +13,9 @@ public interface CompletionStageCallableThrows<T, E extends Throwable> {
     }
     
     @SuppressWarnings("unchecked")
-    static <T, E extends Throwable> CompletionStageCallableThrows<T, E> from(final CallableThrows<? extends CompletionStage<T>, E> c) {
+    static <T, E extends Throwable> CompletionStageCallableThrows<T, E> from(
+        final CallableThrows<? extends CompletionStage<T>, E> c
+    ) {
         return c::call;
     }
     

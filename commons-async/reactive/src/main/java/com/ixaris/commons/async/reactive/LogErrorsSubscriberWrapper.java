@@ -1,15 +1,14 @@
 package com.ixaris.commons.async.reactive;
 
+import com.ixaris.commons.misc.lib.logging.Logger;
+import com.ixaris.commons.misc.lib.logging.LoggerFactory;
+import com.ixaris.commons.misc.lib.object.Wrapper;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.ixaris.commons.misc.lib.object.Wrapper;
 
 public class LogErrorsSubscriberWrapper<T> implements Subscriber<T>, Wrapper<Subscriber<T>> {
     
-    private static final Logger LOG = LoggerFactory.getLogger(LogErrorsSubscriberWrapper.class);
+    private static final Logger LOG = LoggerFactory.forEnclosingClass();
     
     private final Subscriber<T> wrapped;
     
@@ -26,7 +25,7 @@ public class LogErrorsSubscriberWrapper<T> implements Subscriber<T>, Wrapper<Sub
         try {
             wrapped.onSubscribe(s);
         } catch (final RuntimeException e) {
-            LOG.error("Error in onSubscribe", e);
+            LOG.atError(e).log("Error in onSubscribe");
         }
     }
     
@@ -35,7 +34,7 @@ public class LogErrorsSubscriberWrapper<T> implements Subscriber<T>, Wrapper<Sub
         try {
             wrapped.onNext(t);
         } catch (final RuntimeException e) {
-            LOG.error("Error in onNext", e);
+            LOG.atError(e).log("Error in onNext");
         }
     }
     
@@ -44,7 +43,7 @@ public class LogErrorsSubscriberWrapper<T> implements Subscriber<T>, Wrapper<Sub
         try {
             wrapped.onComplete();
         } catch (final RuntimeException e) {
-            LOG.error("Error in onComplete", e);
+            LOG.atError(e).log("Error in onComplete");
         }
     }
     
@@ -53,7 +52,7 @@ public class LogErrorsSubscriberWrapper<T> implements Subscriber<T>, Wrapper<Sub
         try {
             wrapped.onError(t);
         } catch (final RuntimeException e) {
-            LOG.error("Error in onError", e);
+            LOG.atError(e).log("Error in onError");
         }
     }
     

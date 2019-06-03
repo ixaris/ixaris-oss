@@ -14,6 +14,7 @@
         <module>javac-transformed</module>
         <module>lib</module>
         <module>pool</module>
+        <module>processor</module>
         <module>reactive</module>
         <module>test</module>
         <module>transformer</module>

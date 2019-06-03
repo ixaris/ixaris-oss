@@ -30,14 +30,12 @@ import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.awaitExceptions;
 import static com.ixaris.commons.async.lib.Async.result;
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
-import static org.junit.Assert.assertEquals;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.ixaris.commons.async.lib.Async;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import org.junit.jupiter.api.Test;
 
 public class FrameTest extends BaseTest {
     
@@ -204,15 +202,21 @@ public class FrameTest extends BaseTest {
         new SingleParamConstructor(await(t));
         new SingleParamConstructor(new SingleParamConstructor(await(t)));
         new SingleParamConstructor(new SingleParamConstructor(await(t)));
-        new SingleParamConstructor(new SingleParamConstructor(new SingleParamConstructor(new SingleParamConstructor(await(t)))));
-        new MultiParamConstructor(1, new SingleParamConstructor(new SingleParamConstructor(new SingleParamConstructor(new SingleParamConstructor(await(t))))));
+        new SingleParamConstructor(
+            new SingleParamConstructor(new SingleParamConstructor(new SingleParamConstructor(await(t))))
+        );
+        new MultiParamConstructor(
+            1,
+            new SingleParamConstructor(
+                new SingleParamConstructor(new SingleParamConstructor(new SingleParamConstructor(await(t))))
+            )
+        );
         return Async.from(t);
     }
     
     private static class MultiParamConstructor {
-        MultiParamConstructor(Number o1, Object o2) {
-            
-        }
+        MultiParamConstructor(Number o1, Object o2) {}
+        
     }
     
     @Test
@@ -231,9 +235,8 @@ public class FrameTest extends BaseTest {
     }
     
     private static class ConstructorWithExceptions {
-        ConstructorWithExceptions(Number o1, Object o2) throws Exception {
-            
-        }
+        ConstructorWithExceptions(Number o1, Object o2) throws Exception {}
+        
     }
     
     @Test

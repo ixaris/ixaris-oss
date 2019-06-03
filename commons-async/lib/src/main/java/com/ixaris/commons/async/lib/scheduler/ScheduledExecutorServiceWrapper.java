@@ -2,6 +2,8 @@ package com.ixaris.commons.async.lib.scheduler;
 
 import static com.ixaris.commons.async.lib.CompletableFutureUtil.complete;
 
+import com.ixaris.commons.misc.lib.function.CallableThrows;
+import com.ixaris.commons.misc.lib.object.Wrapper;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -14,13 +16,11 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.ixaris.commons.misc.lib.function.CallableThrows;
-import com.ixaris.commons.misc.lib.object.Wrapper;
-
 /**
  * Wrapper for a {@link Scheduler} to execute scheduled jobs on the given executor
  */
-public class ScheduledExecutorServiceWrapper<E extends ExecutorService> implements ScheduledExecutorService, Wrapper<E> {
+public class ScheduledExecutorServiceWrapper<E extends ExecutorService>
+implements ScheduledExecutorService, Wrapper<E> {
     
     protected final E wrapped;
     protected final Scheduler scheduler;
@@ -61,20 +61,28 @@ public class ScheduledExecutorServiceWrapper<E extends ExecutorService> implemen
     
     @Override
     public <V> ScheduledFuture<V> schedule(final Callable<V> callable, final long delay, final TimeUnit unit) {
-        return scheduler.schedule(() -> {
-            final CompletableFuture<V> future = new CompletableFuture<>();
-            wrapped.execute(() -> complete(future, CallableThrows.from(callable)));
-            return future;
-        }, delay, unit);
+        return scheduler.schedule(
+            () -> {
+                final CompletableFuture<V> future = new CompletableFuture<>();
+                wrapped.execute(() -> complete(future, CallableThrows.from(callable)));
+                return future;
+            },
+            delay,
+            unit
+        );
     }
     
     @Override
-    public ScheduledFuture<?> scheduleAtFixedRate(final Runnable runnable, final long initialDelay, final long period, final TimeUnit unit) {
+    public ScheduledFuture<?> scheduleAtFixedRate(
+        final Runnable runnable, final long initialDelay, final long period, final TimeUnit unit
+    ) {
         return scheduler.scheduleAtFixedRate(() -> wrapped.execute(runnable), initialDelay, period, unit);
     }
     
     @Override
-    public ScheduledFuture<?> scheduleWithFixedDelay(final Runnable runnable, final long initialDelay, final long delay, final TimeUnit unit) {
+    public ScheduledFuture<?> scheduleWithFixedDelay(
+        final Runnable runnable, final long initialDelay, final long delay, final TimeUnit unit
+    ) {
         return scheduler.scheduleWithFixedDelay(() -> wrapped.execute(runnable), initialDelay, delay, unit);
     }
     
@@ -114,17 +122,23 @@ public class ScheduledExecutorServiceWrapper<E extends ExecutorService> implemen
     }
     
     @Override
-    public <T> List<Future<T>> invokeAll(final Collection<? extends Callable<T>> tasks, final long timeout, final TimeUnit unit) throws InterruptedException {
+    public <T> List<Future<T>> invokeAll(
+        final Collection<? extends Callable<T>> tasks, final long timeout, final TimeUnit unit
+    ) throws InterruptedException {
         return wrapped.invokeAll(tasks, timeout, unit);
     }
     
     @Override
-    public <T> T invokeAny(final Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
+    public <T> T invokeAny(
+        final Collection<? extends Callable<T>> tasks
+    ) throws InterruptedException, ExecutionException {
         return wrapped.invokeAny(tasks);
     }
     
     @Override
-    public <T> T invokeAny(final Collection<? extends Callable<T>> tasks, final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public <T> T invokeAny(
+        final Collection<? extends Callable<T>> tasks, final long timeout, final TimeUnit unit
+    ) throws InterruptedException, ExecutionException, TimeoutException {
         return wrapped.invokeAny(tasks, timeout, unit);
     }
     

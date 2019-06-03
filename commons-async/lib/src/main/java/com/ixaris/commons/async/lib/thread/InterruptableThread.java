@@ -3,12 +3,12 @@ package com.ixaris.commons.async.lib.thread;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Allows a thread to do some uninterruptable work and defer the interrupt till after that work is done.
- * Particularly useful when some code does not correctly handle interrupts.
- * <p>
- * WARNING: the uninterruptable work should NOT block! The intent is to avoid interrupting this work but not
- * to ignore the interrupt indefinitely, otherwise an application might hang.
- * 
+ * Allows a thread to do some uninterruptable work and defer the interrupt till after that work is done. Particularly
+ * useful when some code does not correctly handle interrupts.
+ *
+ * <p>WARNING: the uninterruptable work should NOT block! The intent is to avoid interrupting this work but not to
+ * ignore the interrupt indefinitely, otherwise an application might hang.
+ *
  * @author brian.vella
  */
 public class InterruptableThread extends Thread {
@@ -27,10 +27,12 @@ public class InterruptableThread extends Thread {
         if (interrupted) {
             // this means that thread was interrupted and flag was reset to false, so we reset internal state as well
             if (!ct.state.compareAndSet(INTERRUPTED, INTERRUPTABLE)) {
-                throw new IllegalStateException("Thread was interrupted; Expecting internal state to be " + INTERRUPTED + " but was " + ct.state.get());
+                throw new IllegalStateException(
+                    "Thread was interrupted; Expecting internal state to be INTERRUPTED (2) but was " + ct.state.get()
+                );
             }
         } else {
-            // thread interrupted flag was not set but we could have been interrupted, so return (and reset) internal state
+            // interrupted flag was not set but we could have been interrupted, so return (and reset) internal state
             interrupted = ct.state.compareAndSet(INTERRUPTED, INTERRUPTABLE);
         }
         
@@ -75,7 +77,7 @@ public class InterruptableThread extends Thread {
                 // try to change back from NON_INTERRUPTABLE to INTERRUPTABLE
                 // if unsuccessful, state was changed to INTERRUPTED in interrupt()
                 if (!state.compareAndSet(NON_INTERRUPTABLE, INTERRUPTABLE)) {
-                    // in this case the interrupt() call was skipped to not interrupt our work above, so we interrupt() now
+                    // in this case the interrupt() call was skipped to not interrupt work above, so we interrupt() now
                     super.interrupt();
                 }
             }

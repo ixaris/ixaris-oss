@@ -1,22 +1,20 @@
 package com.ixaris.commons.async.transformed;
 
-import static com.ixaris.commons.async.lib.Async.allSame;
+import static com.ixaris.commons.async.lib.Async.all;
 import static com.ixaris.commons.async.lib.AsyncExecutor.schedule;
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.Test;
 
 import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.async.lib.AsyncExecutor;
 import com.ixaris.commons.async.lib.AsyncQueue;
 import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.Test;
 
 public class CriticalSectionTest {
     
@@ -35,7 +33,7 @@ public class CriticalSectionTest {
         for (int i = 0; i < 5; i++) {
             r.add(AsyncExecutor.exec(ex, () -> criticalSection(s)));
         }
-        block(allSame(r));
+        block(all(r));
         
         assertThat(s.counter).isNotEqualTo(5);
     }
@@ -49,7 +47,7 @@ public class CriticalSectionTest {
         for (int i = 0; i < 5; i++) {
             r.add(AsyncExecutor.exec(ex, () -> criticalSection(q, s)));
         }
-        block(allSame(r));
+        block(all(r));
         
         assertThat(s.counter).isEqualTo(5);
     }
@@ -62,7 +60,7 @@ public class CriticalSectionTest {
         final int counter = shared.counter;
         System.out.println(Thread.currentThread().getName() + " start from " + counter);
         // simulate work being done
-        return schedule(10, TimeUnit.MILLISECONDS, () -> {
+        return schedule(100L, TimeUnit.MILLISECONDS, () -> {
             System.out.println(Thread.currentThread().getName() + " continue from " + counter);
             shared.counter = counter + 1;
         });

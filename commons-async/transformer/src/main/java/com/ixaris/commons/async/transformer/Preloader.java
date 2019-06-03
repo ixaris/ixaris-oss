@@ -12,10 +12,10 @@ public class Preloader {
     
     public static void preloadClassesInPackage(final ClassLoader classLoader, final String pkgName) {
         try {
-            String pkgPath = pkgName.replace('.', '/');
+            final String pkgPath = pkgName.replace('.', '/');
             final Enumeration<URL> resources = classLoader.getResources(pkgPath);
             
-            for (URL url; resources.hasMoreElements() && ((url = resources.nextElement()) != null);) {
+            for (URL url; resources.hasMoreElements() && ((url = resources.nextElement()) != null); ) {
                 final URLConnection connection = url.openConnection();
                 
                 if (connection instanceof JarURLConnection) {
@@ -27,10 +27,12 @@ public class Preloader {
         }
     }
     
-    private static void checkJarFile(final JarURLConnection connection, final String pkgPath) throws ClassNotFoundException, IOException {
+    private static void checkJarFile(
+        final JarURLConnection connection, final String pkgPath
+    ) throws ClassNotFoundException, IOException {
         final JarFile jarFile = connection.getJarFile();
         final Enumeration<JarEntry> entries = jarFile.entries();
-        for (JarEntry jarEntry; entries.hasMoreElements() && ((jarEntry = entries.nextElement()) != null);) {
+        for (JarEntry jarEntry; entries.hasMoreElements() && ((jarEntry = entries.nextElement()) != null); ) {
             String name = jarEntry.getName();
             if (name.contains(".class") && name.startsWith(pkgPath)) {
                 name = name.substring(0, name.length() - 6).replace('/', '.');

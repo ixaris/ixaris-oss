@@ -6,7 +6,7 @@ public interface AsyncConnectionPool<T> {
     
     /**
      * get a connection from the pool
-     * 
+     *
      * @param timeout 0 to wait forever
      */
     Async<T> get(long timeout);

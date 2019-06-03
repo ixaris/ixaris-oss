@@ -28,52 +28,58 @@ package com.ixaris.commons.async.transformed.test;
 
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
-import static org.junit.Assert.assertEquals;
-
-import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.async.lib.CompletionStageUtil;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
+import org.junit.jupiter.api.Test;
 
 public class LocalVarsTest extends BaseTest {
     
     @Test
     public void testRepeatedLocalVarsNames() throws InterruptedException {
-        final CompletionStage<Integer> res = CompletionStageUtil.fulfilled(null)
-            .thenCompose((Function<Object, Async<Integer>>) r -> {
-                {
-                    String a = "a1";
-                }
-                await(getBlockedFuture());
-                {
-                    String a = "a2";
-                }
-                return result(10);
-            });
+        final CompletionStage<Integer> res = CompletionStageUtil
+            .fulfilled(null)
+            .thenCompose(
+                (Function<Object, Async<Integer>>)
+                    r -> {
+                        {
+                            String a = "a1";
+                        }
+                        await(getBlockedFuture());
+                        {
+                            String a = "a2";
+                        }
+                        return result(10);
+                    }
+            );
         completeFutures();
         assertEquals((Integer) 10, CompletionStageUtil.block(res));
     }
     
     @Test
     public void testRepeatedLocalVarsNames2() throws InterruptedException {
-        final CompletionStage<Integer> res = CompletionStageUtil.fulfilled(null)
-            .thenCompose((Function<Object, Async<Integer>>) r -> {
-                {
-                    String a = "a1";
-                    String b = "b1";
-                    int c = 1;
-                }
-                await(getBlockedFuture());
-                {
-                    String a = "a2";
-                    String b = "b2";
-                    int c = 10;
-                    return result(c);
-                }
-            });
+        final CompletionStage<Integer> res = CompletionStageUtil
+            .fulfilled(null)
+            .thenCompose(
+                (Function<Object, Async<Integer>>)
+                    r -> {
+                        {
+                            String a = "a1";
+                            String b = "b1";
+                            int c = 1;
+                        }
+                        await(getBlockedFuture());
+                        {
+                            String a = "a2";
+                            String b = "b2";
+                            int c = 10;
+                            return result(c);
+                        }
+                    }
+            );
         completeFutures();
         assertEquals((Integer) 10, CompletionStageUtil.block(res));
     }

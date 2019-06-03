@@ -1,0 +1,13 @@
+apply from: "$rootDir/common.gradle"
+
+dependencies {
+    compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
+}
+
+compileJava {
+    options.with {
+        compilerArgs.addAll([
+            '-bootclasspath', "${System.getProperty('java.home')}/../jre/lib/rt.jar"
+        ])
+    }
+}

@@ -1,0 +1,23 @@
+plugins {
+    id 'groovy'
+}
+
+apply from: "$rootDir/common.gradle"
+
+sourceSets {
+    test {
+        java { srcDirs = [] }    
+        groovy { srcDirs = ["src/test/java", "src/test/groovy"] } 
+    }
+}
+
+dependencies {
+    compile project(':ixaris-commons-async-lib')
+    compile 'org.codehaus.groovy:groovy-all:2.4.15'
+
+    annotationProcessor project(':ixaris-commons-async-processor')
+
+    testRuntime "org.slf4j:slf4j-simple:$slf4jVersion"
+
+    testAnnotationProcessor project(':ixaris-commons-async-processor')
+}

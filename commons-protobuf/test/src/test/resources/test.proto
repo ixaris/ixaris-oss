@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package com.ixaris.commons.protobuf.test;
+
+import "valid.proto";
+import "example_nested.proto";
+import "other_example.proto";
+
+option optimize_for = SPEED;
+option java_multiple_files = true;
+        
+message TestMessage {
+
+    string str = 1 [(valid.field) = "required size(0,10) regex(^[a-zA-Z0-9_.*@\\-]*$|^([a-zA-Z0-9!#$%&'*+=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&'*+=?^_`{|}~-]+)*@[a-zA-Z0-9_\\-\\+=&&[^//]]+(\\.[a-zA-Z0-9_\\-\\+=&&[^//]]+)+)$)"];
+    
+    string str2 = 2;
+    repeated string str_list = 3 [(valid.field) = "size(2,_)", (valid.values) = "required size(_,10)"];
+    map<string, nested.Nested.E> str_map = 4 [(valid.field) = "size(2,5)", (valid.keys) = "in(core.nested.Nested.E)", (valid.values) = "required"];
+
+    int32 int = 5 [(valid.field) = "required range(_,int2)"];
+    int32 int2 = 6;
+    repeated int32 int_list = 7 [(valid.field) = "size(2,_)", (valid.values) = "required range(_, 10)"];
+    map<string, int32> int_map = 8 [(valid.field) = "size(2,5)", (valid.keys) = "in('a','b')", (valid.values) = "required range(_, 10)"];
+
+    nested.Nested nested = 9 [(valid.field) = "required"];
+    repeated nested.Nested nested_list = 10 [(valid.field) = "required", (valid.values) = "required"];
+
+    oneof args {
+        SomeOtherMessage someOtherMessage = 11;
+        TestMessage tm = 12;
+        other.OtherTestMessage otm = 13;
+    }
+
+    option (valid.message) = "at_least(1,str,str2)";
+    option (valid.message) = "exactly(1,someOtherMessage,tm,otm)";
+
+    message SomeOtherMessage {
+        string str = 1 [(valid.field) = "required size(0,10) regex(a*b)"];
+    }
+
+}
+

@@ -1,0 +1,11 @@
+apply from: "$rootDir/common.gradle"
+
+dependencies {
+    compile project(':ixaris-commons-protobuf-lib')
+    compile project(':ixaris-commons-async-lib')
+    
+    annotationProcessor project(':ixaris-commons-async-processor')
+    
+    testAnnotationProcessor project(':ixaris-commons-async-processor')
+    testAnnotationProcessor project(':ixaris-commons-protobuf-validationcodegen')
+}

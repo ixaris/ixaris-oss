@@ -29,19 +29,17 @@ package com.ixaris.commons.async.transformed.test;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.ixaris.commons.async.lib.Async;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
-import org.junit.Test;
-
-import com.ixaris.commons.async.lib.Async;
+import org.junit.jupiter.api.Test;
 
 public class FunctionCallTest extends BaseTest {
     public static class TaskSomethingAsync {
-        private List<CompletableFuture> blockers = new ArrayList<>();
+        private List<CompletableFuture<String>> blockers = new ArrayList<>();
         
         public Async<String> doSomething() {
             String res1 = await(blocker());

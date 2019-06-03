@@ -3,7 +3,6 @@ package com.ixaris.commons.async.reactive;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-
 import org.reactivestreams.Processor;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
@@ -11,8 +10,8 @@ import org.reactivestreams.Subscription;
 
 /**
  * A processor that asynchronously transforms a stream.
- * @author brian.vella
  *
+ * @author brian.vella
  * @param <T>
  * @param <R>
  */

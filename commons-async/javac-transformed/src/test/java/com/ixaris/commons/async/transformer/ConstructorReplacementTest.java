@@ -37,18 +37,16 @@ import static jdk.internal.org.objectweb.asm.Opcodes.POP;
 import static jdk.internal.org.objectweb.asm.Opcodes.POP2;
 import static jdk.internal.org.objectweb.asm.Opcodes.SIPUSH;
 import static jdk.internal.org.objectweb.asm.Opcodes.SWAP;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.junit.Test;
-
 import jdk.internal.org.objectweb.asm.tree.AbstractInsnNode;
 import jdk.internal.org.objectweb.asm.tree.ClassNode;
 import jdk.internal.org.objectweb.asm.tree.MethodNode;
+import org.junit.jupiter.api.Test;
 
 public class ConstructorReplacementTest extends BaseTransformerTest {
     @Test
@@ -60,7 +58,9 @@ public class ConstructorReplacementTest extends BaseTransformerTest {
         // -- { new dup dup ... <init> }
         // this tests what happens if:
         // -- { new dup push_1 swap ... <init> pop }
-        MethodNode mv = new MethodNode(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Ljava/lang/Object;", null, new String[] { "java/lang/Exception" });
+        MethodNode mv = new MethodNode(
+            ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Ljava/lang/Object;", null, new String[] { "java/lang/Exception" }
+        );
         mv.visitTypeInsn(NEW, "java/lang/Integer");
         mv.visitInsn(DUP);
         mv.visitVarInsn(ALOAD, 1);
@@ -79,9 +79,9 @@ public class ConstructorReplacementTest extends BaseTransformerTest {
         // with replacement
         {
             final ClassNode cn = createClassNode(Function.class, null);
-            AsyncTransformer.replaceObjectInitialization(mv,
-                new FrameAnalyzer().analyze(cn.name, mv),
-                findConstructors(mv));
+            AsyncTransformer.replaceObjectInitialization(
+                mv, new FrameAnalyzer().analyze(cn.name, mv), findConstructors(mv)
+            );
             mv.accept(cn);
             // DevDebug.debugSaveTrace(cn.name, cn);
             assertEquals(101, createClass(Function.class, cn).apply("101"));
@@ -97,7 +97,9 @@ public class ConstructorReplacementTest extends BaseTransformerTest {
         // -- { new dup dup ... <init> }
         // this tests what happens if:
         // -- { new dup push_1 swap ... <init> pop }
-        MethodNode mv = new MethodNode(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Ljava/lang/Object;", null, new String[] { "java/lang/Exception" });
+        MethodNode mv = new MethodNode(
+            ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Ljava/lang/Object;", null, new String[] { "java/lang/Exception" }
+        );
         mv.visitTypeInsn(NEW, "java/lang/Integer");
         mv.visitInsn(DUP);
         // interleaving copies in the stack
@@ -123,9 +125,9 @@ public class ConstructorReplacementTest extends BaseTransformerTest {
         // with replacement
         {
             final ClassNode cn = createClassNode(Function.class, null);
-            AsyncTransformer.replaceObjectInitialization(mv,
-                new FrameAnalyzer().analyze(cn.name, mv),
-                findConstructors(mv));
+            AsyncTransformer.replaceObjectInitialization(
+                mv, new FrameAnalyzer().analyze(cn.name, mv), findConstructors(mv)
+            );
             mv.accept(cn);
             // DevDebug.debugSaveTrace(cn.name, cn);
             assertEquals(101, createClass(Function.class, cn).apply("101"));
@@ -133,9 +135,7 @@ public class ConstructorReplacementTest extends BaseTransformerTest {
     }
     
     private Set<AbstractInsnNode> findConstructors(final MethodNode mv) {
-        return Stream.of(mv.instructions.toArray())
-            .filter(i -> i.getOpcode() == NEW)
-            .collect(Collectors.toSet());
+        return Stream.of(mv.instructions.toArray()).filter(i -> i.getOpcode() == NEW).collect(Collectors.toSet());
     }
     
     @Test
@@ -143,7 +143,9 @@ public class ConstructorReplacementTest extends BaseTransformerTest {
     public void withMultipleInterleavedCopies() throws Exception {
         // check that the constructor replacement is able to replace interleaved elements in the stack
         // obs.: the java compiler doesn't usually produce code like this
-        MethodNode mv = new MethodNode(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Ljava/lang/Object;", null, new String[] { "java/lang/Exception" });
+        MethodNode mv = new MethodNode(
+            ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Ljava/lang/Object;", null, new String[] { "java/lang/Exception" }
+        );
         mv.visitTypeInsn(NEW, "java/lang/Integer");
         mv.visitInsn(DUP);
         mv.visitVarInsn(ASTORE, 2);
@@ -186,9 +188,9 @@ public class ConstructorReplacementTest extends BaseTransformerTest {
         // with replacement
         {
             final ClassNode cn = createClassNode(Function.class, null);
-            AsyncTransformer.replaceObjectInitialization(mv,
-                new FrameAnalyzer().analyze(cn.name, mv),
-                findConstructors(mv));
+            AsyncTransformer.replaceObjectInitialization(
+                mv, new FrameAnalyzer().analyze(cn.name, mv), findConstructors(mv)
+            );
             mv.accept(cn);
             // DevDebug.debugSaveTrace(cn.name, cn);
             assertEquals(101, createClass(Function.class, cn).apply("101"));

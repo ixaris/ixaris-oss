@@ -1,9 +1,8 @@
 package com.ixaris.commons.async.lib.executor;
 
-import java.util.concurrent.Executor;
-
 import com.ixaris.commons.async.lib.AsyncExecutor;
 import com.ixaris.commons.misc.lib.object.Wrapper;
+import java.util.concurrent.Executor;
 
 /**
  * Wrapper for an {@link Executor} to wrap jobs using {@link AsyncExecutor}

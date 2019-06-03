@@ -1,14 +1,5 @@
 package com.ixaris.commons.async.reactive;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
-import org.reactivestreams.Subscriber;
-
 import com.ixaris.commons.async.lib.AsyncExecutor;
 import com.ixaris.commons.async.lib.executor.AsyncExecutorServiceWrapper;
 import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper;
@@ -18,11 +9,19 @@ import com.ixaris.commons.async.lib.scheduler.ScheduledExecutorWrapper;
 import com.ixaris.commons.async.lib.scheduler.Scheduler;
 import com.ixaris.commons.async.lib.thread.NamedThreadFactory;
 import com.ixaris.commons.misc.lib.object.Wrapper;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import org.reactivestreams.Subscriber;
 
 /**
  * The executor for this factory should be wrapped in an {@link AsyncExecutor} wrapper
  */
-public final class ExecutorPublisherSupportFactory implements PublisherSupportFactory, SchedulingSupport, AutoCloseable {
+public final class ExecutorPublisherSupportFactory
+implements PublisherSupportFactory, SchedulingSupport, AutoCloseable {
     
     public static ExecutorPublisherSupportFactory common() {
         return new ExecutorPublisherSupportFactory(AsyncExecutor.DEFAULT);
@@ -58,7 +57,9 @@ public final class ExecutorPublisherSupportFactory implements PublisherSupportFa
         if (Wrapper.isWrappedBy(executor, AsyncExecutorServiceWrapper.class)) {
             this.executor = new ScheduledExecutorServiceWrapper<>(executor, scheduler);
         } else {
-            this.executor = new AsyncScheduledExecutorServiceWrapper<>(new ScheduledExecutorServiceWrapper<>(executor, scheduler));
+            this.executor = new AsyncScheduledExecutorServiceWrapper<>(
+                new ScheduledExecutorServiceWrapper<>(executor, scheduler)
+            );
         }
     }
     
@@ -73,7 +74,9 @@ public final class ExecutorPublisherSupportFactory implements PublisherSupportFa
         if (Wrapper.isWrappedBy(executor, AsyncExecutorWrapper.class)) {
             this.executor = new ScheduledExecutorWrapper<>(executor, scheduler);
         } else {
-            this.executor = new AsyncScheduledExecutorServiceWrapper<>(new ScheduledExecutorWrapper<>(executor, scheduler));
+            this.executor = new AsyncScheduledExecutorServiceWrapper<>(
+                new ScheduledExecutorWrapper<>(executor, scheduler)
+            );
         }
     }
     

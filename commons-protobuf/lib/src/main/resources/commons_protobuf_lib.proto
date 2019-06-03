@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package com.ixaris.commons.protobuf.lib;
+
+import "valid.proto";
+import "description.proto";
+import "sensitive.proto";
+
+option optimize_for = SPEED;
+
+message Ack {}
+
+enum TimeUnit {
+    MILLISECOND = 0;
+    SECOND = 1;
+    MINUTE = 2;
+    HOUR = 3;
+    DAY = 4;
+    MONTH = 5;
+    YEAR = 6;
+}
+
+message TimePeriod {
+    int32 duration = 1;
+    TimeUnit time_unit = 2;
+}
+
+message Paging {
+    bool count = 1 [(description.field) = "Indicates whether to also fetch the count matching the provided filter (regardless of paging)"];
+    int32 offset = 2 [(valid.field) = "range(0,_)"];
+    int32 limit = 3 [(valid.field) = "range(1,100)"];
+}
+
+message SensitiveString {
+    string value = 1 [(valid.field) = "size(_,255)", (sensitive.field) = TEMPORARY];
+}
+
+enum OrderType {
+    ASC = 0; //sensible default here... if nothing specified ASC will be assumed
+    DESC = 1;
+}
+
+enum NullableBoolean {
+    option (description.enumeration) = "A boolean whose default value is 'unset' instead of false/true. Allows distinction between unset and true/false";
+    NULL = 0;
+    TRUE = 1;
+    FALSE = 2;
+}
+
+message NullableInt32 {
+    int32 value = 1 [(description.field) = "If value is 0, set has_value to true"];
+    bool has_value = 2 [(description.field) = "If value is default (0) then true indicates 0 while false indicates null"];
+}
+
+message NullableInt64 {
+    int64 value = 1 [(description.field) = "If value is 0, set has_value to true"];
+    bool has_value = 2 [(description.field) = "If value is default (0) then true indicates 0 while false indicates null"];
+}
+
+message NullableDouble {
+    double value = 1 [(description.field) = "If value is 0, set has_value to true"];
+    bool has_value = 2 [(description.field) = "If value is default (0) then true indicates 0 while false indicates null"];
+}
+
+message Empty {}

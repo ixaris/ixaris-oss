@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package com.ixaris.commons.protobuf.test.nested;
+
+import "valid.proto";
+
+option optimize_for = SPEED;
+
+message Nested {
+    string a = 1;
+    string b = 2;
+    int32 c = 3;
+    int64 d = 4;
+    Nested n = 5;
+    E e = 6;
+
+    enum E {
+        DEFAULT = 0;
+        A = 1;
+        B = 2;
+    }
+}
+
+
+

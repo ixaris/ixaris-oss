@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ixaris.oss</groupId>
     <artifactId>ixaris-oss</artifactId>
-    <version>1.6.0</version>
+    <version>1.7.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Ixaris Open Source Parent</name>
     <description>Ixaris Open Source</description>
@@ -27,7 +27,7 @@
     <scm>
         <url>https://github.com/ixaris/ixaris-oss</url>
         <connection>scm:git:https://github.com/ixaris/ixaris-oss</connection>
-        <tag>ixaris-oss-1.6.0</tag>
+        <tag>1.1.0</tag>
     </scm>
     <properties>
         <java.version>1.8</java.version>

@@ -29,7 +29,7 @@ public static final class FutureSubclass<T> extends CompletableFuture<T> {
 ```
 
 Use `Async.await()` to compose asynchronous results. In addition, concurrent 
-asynchronous results can be composed in a single result using overloaded methods `Async.all()` and `Async.allSame()`. 
+asynchronous results can be composed in a single result using overloaded methods `Async.all()`. 
 Below are some examples:
 
 
@@ -66,7 +66,8 @@ IDE / compiler would stop incorrect use. The primary point of confusion is excep
 
 - Non-async methods (do not return `Async<>` or are not annotated with `@Async`) are not allowed to call 
 `Async.await()` and `Async.awaitExceptions()`. The only way to wait for the result in such methods is
-`Async.block()`. Async methods that don't return a result should return `Async<Void>` instead of `void`
+`CompletionStageUtil.block()` or `CompletionStageUtil.join()`. Async methods that don't return a result should 
+return `Async<Void>` instead of `void`
 - Monitors obtained in synchronized blocks are released before `Async.await()` and reacquired after. Other locks
 should be managed explicitly. In particular, acquiring a lock before `Async.await()` and releasing after means 
 that the lock is held until the awaited future is resolved. Consider also that the code after `Async.await()` 
@@ -121,8 +122,8 @@ try {
 ### Testing with Async
 
 Since test methods need to return void, one cannot `await()` inside a test method. It is recommended to use 
-`CompletionStageUtil.block()` to block waiting for results. For assertions, it is recommended to use 
-`CompletionStageAssert` in [`ix-commons-async-test`](../test/README.md), which makes use of the `assertj` library.
+`CompletionStageUtil.join()` to wait for results. For assertions, it is recommended to use `CompletionStageAssert` 
+in [`ix-commons-async-test`](../test/README.md), which makes use of the `assertj` library.
 
 ## Async Locals
 
@@ -132,7 +133,7 @@ of an `AsyncLocal`:
 
 ```java
 ...
-public static final AsyncLocal<String> SOME_VALUE = new AsyncLocal<>();
+public static final AsyncLocal<String> SOME_VALUE = new AsyncLocal<>("some_value");
 ...
 // set a value for the async local
 SOME_VALUE.exec("value", () -> {
@@ -166,10 +167,11 @@ executor.execute(() -> AsyncLocal.exec(snapshot, () -> {
 }));
 ```
 
-### Stacking
+### Encoding / Decoding
 
-Async Local value can be stackable. If stackable, values are pushed to a stack and popped 
-afterwards. Otherwise, an error is thrown if a value is already set.
+In clustered scenarios with data partitioning, control may be handed off to another node. To retain the Async Local 
+state of the process, async locals may be encoded using protobuf and decoded on the recieving node. A value may be encoded
+as a String, long (64-bit number) or a byte array (typically a custom protobuf message).
 
 ## Async Trace
 

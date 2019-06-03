@@ -1,5 +1,6 @@
 package com.ixaris.commons.async.transformer;
 
+import com.ixaris.commons.async.transformer.AsyncProcessor.Helper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -10,23 +11,19 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-
 import javax.annotation.processing.ProcessingEnvironment;
 
-import com.ixaris.commons.async.transformer.AsyncProcessor.Helper;
-
 /**
- * Handler for the eclipse compiler that intercepts calls to org.eclipse.jdt.internal.compiler.ICompilerRequestor.acceptResult()
- * and rewrites the written class.
+ * Handler for the eclipse compiler that intercepts calls to
+ * org.eclipse.jdt.internal.compiler.ICompilerRequestor.acceptResult() and rewrites the written class.
  *
- * Approach was determined after looking at eclipse compiler code. This was done using mvnDebug with a dependency on
+ * <p>Approach was determined after looking at eclipse compiler code. This was done using mvnDebug with a dependency on
  * org.codehaus.groovy:groovy-eclipse-compiler:2.9.2-01 and org.codehaus.groovygroovy-eclipse-batch:2.4.3-01, halting
  * during annotation processing and working backwards.
  */
 public class EclipseHelper implements Helper {
     
-    public void init(final ProcessingEnvironment procEnv, final AsyncTransformer transformer) {
-        
+    public synchronized void init(final ProcessingEnvironment procEnv, final AsyncTransformer transformer) {
         try {
             // the below code works using reflection to avoid packaging the eclipse compiler with the transformer
             // through a transitive dependency, since ide support requires a dependency on the transformer
@@ -44,8 +41,7 @@ public class EclipseHelper implements Helper {
                     // so getting to instance of main through inner class parent field this$0
                     tmp = getPrivate(requestor, "this$0");
                 } catch (final NoSuchFieldException e) {
-                    // later versions of eclipse compiler have requestor field compiler referring to
-                    // instance of main
+                    // later versions of eclipse compiler have requestor field compiler referring to instance of main
                     tmp = getPrivate(requestor, "compiler");
                 }
                 main = tmp;
@@ -56,7 +52,7 @@ public class EclipseHelper implements Helper {
             // implementor is responsible for writing the actual class file. As such, we call the original
             // implementor and then do the transformation right after. However, the compiler reuses instances
             // for compiled classes, so we need to copy the class file output path before the instance is
-            // reused and this path changed (found this the hard way).
+            // reused and this path changes (found this the hard way).
             
             // The code below follows the same logic as org.eclipse.jdt.internal.compiler.batch.Main.outputClassFiles()
             final InvocationHandler invocationHandler = (proxy, method, args) -> {
@@ -85,10 +81,11 @@ public class EclipseHelper implements Helper {
                         for (int fileCount = classFiles.length; i < fileCount; ++i) {
                             final Object classFile = classFiles[i];
                             final char[] filename = (char[]) invoke(classFile, "fileName");
-                            absolutePathsToTransform[i] = currentDestinationPath
-                                + File.separatorChar
-                                + new String(filename).replace('/', File.separatorChar)
-                                + ".class";
+                            absolutePathsToTransform[i] =
+                                currentDestinationPath
+                                    + File.separatorChar
+                                    + new String(filename).replace('/', File.separatorChar)
+                                    + ".class";
                         }
                     }
                 }
@@ -116,35 +113,49 @@ public class EclipseHelper implements Helper {
                 return result;
             };
             
-            requestorField.set(compiler,
-                Proxy.newProxyInstance(requestorInterface.getClassLoader(), new Class<?>[] { requestorInterface }, invocationHandler));
-        } catch (final IllegalAccessException | InvocationTargetException | NoSuchMethodException | NoSuchFieldException e) {
+            requestorField.set(
+                compiler,
+                Proxy.newProxyInstance(
+                    requestorInterface.getClassLoader(), new Class<?>[] { requestorInterface }, invocationHandler
+                )
+            );
+        } catch (
+            final IllegalAccessException | InvocationTargetException | NoSuchMethodException | NoSuchFieldException e
+        ) {
             throw new IllegalStateException(e);
         }
     }
     
-    private static Object invoke(final Object instance, final String methodName) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    private static Object invoke(
+        final Object instance, final String methodName
+    ) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         final Method method = instance.getClass().getMethod(methodName);
         method.setAccessible(true);
         return method.invoke(instance);
     }
     
-    private static Object get(final Object instance, final String fieldName) throws NoSuchFieldException, IllegalAccessException {
+    private static Object get(
+        final Object instance, final String fieldName
+    ) throws NoSuchFieldException, IllegalAccessException {
         final Field field = instance.getClass().getField(fieldName);
         field.setAccessible(true);
         return field.get(instance);
     }
     
-    private static Object getPrivate(final Object instance, final String fieldName) throws NoSuchFieldException, IllegalAccessException {
+    private static Object getPrivate(
+        final Object instance, final String fieldName
+    ) throws NoSuchFieldException, IllegalAccessException {
         final Field field = instance.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
         return field.get(instance);
     }
     
-    private static String extractDestinationPathFromSourceFile(final Object compilationUnit) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    private static String extractDestinationPathFromSourceFile(
+        final Object compilationUnit
+    ) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         if (compilationUnit != null) {
             char[] fileName = (char[]) compilationUnit.getClass().getMethod("getFileName").invoke(compilationUnit);
-            int lastIndex = lastIndexOf(File.separatorChar, fileName);
+            int lastIndex = lastIndexOfSeparatorChar(fileName);
             if (lastIndex != -1) {
                 String outputPathName = new String(fileName, 0, lastIndex);
                 File output = new File(outputPathName);
@@ -157,14 +168,14 @@ public class EclipseHelper implements Helper {
         return System.getProperty("user.dir");
     }
     
-    private static int lastIndexOf(char toBeFound, char[] array) {
+    private static int lastIndexOfSeparatorChar(char[] array) {
         int i = array.length;
         do {
             --i;
             if (i < 0) {
                 return -1;
             }
-        } while (toBeFound != array[i]);
+        } while (File.separatorChar != array[i]);
         
         return i;
     }

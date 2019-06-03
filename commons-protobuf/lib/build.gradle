@@ -1,0 +1,13 @@
+apply from: "$rootDir/common.gradle"
+
+dependencies {
+    compile project(':ixaris-commons-protobuf-protoschema')
+    compile project(':ixaris-commons-misc-lib')
+    compile "com.google.protobuf:protobuf-java-util:$protobufVersion"
+
+    annotationProcessor project(':ixaris-commons-protobuf-validationcodegen')
+
+    testRuntime "org.slf4j:slf4j-simple:$slf4jVersion"
+    
+    testAnnotationProcessor project(':ixaris-commons-protobuf-validationcodegen')
+}

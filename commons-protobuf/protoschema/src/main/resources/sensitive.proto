@@ -1,0 +1,18 @@
+syntax = "proto2";
+
+package sensitive;
+
+import "google/protobuf/descriptor.proto";
+
+option optimize_for = SPEED;
+
+extend google.protobuf.FieldOptions {
+    optional SensitiveDataLifetime field = 53001;
+}
+
+enum SensitiveDataLifetime {
+    NONE = 1;
+    TEMPORARY = 2;
+    PERMANENT = 3;
+    MASKED = 4;
+}

@@ -1,13 +1,16 @@
 package com.ixaris.commons.async.transformed;
 
 import static com.ixaris.commons.async.lib.Async.all;
-import static com.ixaris.commons.async.lib.Async.allSame;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.awaitExceptions;
 import static com.ixaris.commons.async.lib.Async.from;
 import static com.ixaris.commons.async.lib.Async.result;
 import static com.ixaris.commons.async.lib.AsyncExecutor.exec;
 
+import com.ixaris.commons.async.lib.Async;
+import com.ixaris.commons.async.lib.CompletionStageUtil;
+import com.ixaris.commons.misc.lib.function.CallableThrows;
+import com.ixaris.commons.misc.lib.object.Tuple4;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -15,16 +18,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
-import com.ixaris.commons.async.lib.Async;
-import com.ixaris.commons.async.lib.CompletionStageUtil;
-import com.ixaris.commons.misc.lib.function.CallableThrows;
-import com.ixaris.commons.misc.lib.object.Tuple4;
-
 public class TransformCornerCases {
     
-    public static final class Exception1 extends Exception {
-        
-    }
+    public static final class Exception1 extends Exception {}
     
     public interface Example {
         
@@ -81,7 +77,7 @@ public class TransformCornerCases {
         final List<Async<Integer>> stages = Arrays.stream(new Integer[] { 1, 2 })
             .map(i -> from(lambdaWithBodyHelper(i)))
             .collect(Collectors.toList());
-        return allSame(stages).map(ok -> ok.stream().reduce(0, (a, b) -> a + b)).map(a -> (long) a);
+        return all(stages).map(ok -> ok.stream().reduce(0, (a, b) -> a + b)).map(a -> (long) a);
     }
     
     public CompletionStage<Integer> lambdaWithBodyHelper(final int i) {
@@ -120,7 +116,9 @@ public class TransformCornerCases {
         try {
             final Async<Integer> op2 = operation2(0);
             final TestHolder x = new TestHolder(await(op2));
-            final Tuple4<Integer, Long, Long, Long> c = await(all(operation2(0), usingLambdaWithBody(), usingMethodReference(), futureOperation()));
+            final Tuple4<Integer, Long, Long, Long> c = await(all(
+                operation2(0), usingLambdaWithBody(), usingMethodReference(), futureOperation()
+            ));
             long result = x.val + (c.get1() * 2 + c.get2() + c.get3() + c.get4());
             System.out.println(this + "1: " + result);
             
@@ -254,7 +252,7 @@ public class TransformCornerCases {
     }
     
     public static Async<Void> infiniteLoop() {
-        for (;;) {
+        for (; ; ) {
             await(result());
         }
     }

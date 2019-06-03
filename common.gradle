@@ -1,0 +1,70 @@
+group = 'com.ixaris.commons'
+version = '1.6.0-SNAPSHOT'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+ext {
+    assertjVersion = '3.11.1'
+    awaitilityVersion = '3.1.6'
+    jacksonVersion = '2.9.8'
+    jinJavaVersion = '2.5.0'
+    junitJupiterVersion = '5.4.0'
+    mockitoVersion = '2.23.4'
+    protobufVersion = '3.7.1'
+    slf4jVersion = '1.7.26'
+}
+
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+dependencies {
+    compile 'javax.annotation:javax.annotation-api:1.3.2'
+    compile "org.slf4j:slf4j-api:$slf4jVersion"
+    testCompile "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
+    testCompile "org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion"
+    testCompile "org.mockito:mockito-core:$mockitoVersion"
+    testCompile "org.mockito:mockito-junit-jupiter:$mockitoVersion"
+    testCompile "org.assertj:assertj-core:$assertjVersion"
+    testCompile "org.awaitility:awaitility:$awaitilityVersion"
+    testRuntime "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+// Force main rebuild if resources are changed
+if (file('src/main/resources').exists()) {
+    compileJava.inputs.dir('src/main/resources')
+}
+
+// Force test rebuild if resources are changed
+if (file('src/test/resources').exists()) {
+    compileTestJava.inputs.dir('src/test/resources')
+}
+
+// junit 5
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Version': version
+        // so we can call this.getClass().getPackage().getImplementationVersion()
+    }
+}
+
+task packageSources(type: Jar) {
+    archiveClassifier = 'sources'
+    from(sourceSets.main.allSource)
+}
+
+// when creating a jar, also create a sources jar
+artifacts.archives(tasks.packageSources)
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

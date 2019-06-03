@@ -3,8 +3,9 @@ package com.ixaris.commons.async.reactive;
 import org.reactivestreams.Subscription;
 
 /**
- * Dummy subscription. To be used when rejecting subscribers, by supplying this no-op subscription and then calling onError()
- * 
+ * Dummy subscription. To be used when rejecting subscribers, by supplying this no-op subscription and then calling
+ * onError()
+ *
  * @author brian.vella
  */
 public class DummySubscription implements Subscription {

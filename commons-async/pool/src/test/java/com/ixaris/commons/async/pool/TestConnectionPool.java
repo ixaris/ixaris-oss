@@ -6,13 +6,12 @@ package com.ixaris.commons.async.pool;
 
 import static com.ixaris.commons.async.lib.Async.result;
 
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
 import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.async.lib.scheduler.Scheduler;
 import com.ixaris.commons.async.pool.TestConnectionPool.TestConnection;
 import com.ixaris.commons.async.pool.TestConnectionPool.TestPooledConnection;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class TestConnectionPool extends AbstractAsyncConnectionPool<TestPooledConnection, TestConnection> {
     
@@ -55,7 +54,9 @@ public class TestConnectionPool extends AbstractAsyncConnectionPool<TestPooledCo
     }
     
     @Override
-    protected ScheduledFuture<?> scheduleWithFixedDelay(final Runnable task, final long initialDelay, final long delay, final TimeUnit unit) {
+    protected ScheduledFuture<?> scheduleServiceTask(
+        final Runnable task, final long initialDelay, final long delay, final TimeUnit unit
+    ) {
         return Scheduler.commonScheduler().scheduleWithFixedDelay(task, initialDelay, delay, unit);
     }
     

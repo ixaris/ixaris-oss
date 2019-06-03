@@ -2,41 +2,62 @@ package com.ixaris.commons.async.lib.filter;
 
 import static com.ixaris.commons.async.lib.Async.awaitExceptions;
 
+import com.ixaris.commons.async.lib.Async;
+import com.ixaris.commons.misc.lib.function.FunctionThrows;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import com.ixaris.commons.async.lib.Async;
-import com.ixaris.commons.misc.lib.function.FunctionThrows;
-
 /**
- * @author <a href="mailto:aldrin.seychell@ixaris.com">aldrin.seychell</a>
+ * Asynchronous filter chain. Supports having multiple asynchronous tasks that can change the input and/or output as
+ * well as bypass the rest of the chain altogether, e.g. caching. Works in a similar way as servlet filters but every
  */
 public final class AsyncFilterChain<IN, OUT> {
     
     private final List<? extends AsyncFilter<IN, OUT>> filters;
-    private final FunctionThrows<IN, Async<OUT>, ?> endFunction;
-    private final BiFunction<IN, Throwable, Async<OUT>> errorFunction;
     
-    private int index = 0;
-    
-    public AsyncFilterChain(final List<? extends AsyncFilter<IN, OUT>> filters,
-                            final FunctionThrows<IN, Async<OUT>, ?> endFunction,
-                            final BiFunction<IN, Throwable, Async<OUT>> errorFunction) {
-        this.filters = filters;
-        this.endFunction = endFunction;
-        this.errorFunction = errorFunction;
+    @SafeVarargs
+    public AsyncFilterChain(final AsyncFilter<IN, OUT>... filters) {
+        this(Arrays.asList(filters));
     }
     
-    public Async<OUT> doFilter(final IN in) {
+    public AsyncFilterChain(final List<? extends AsyncFilter<IN, OUT>> filters) {
+        this.filters = filters;
+    }
+    
+    public AsyncFilterNext<IN, OUT> with(
+        final FunctionThrows<IN, Async<OUT>, ?> endFunction, final BiFunction<IN, Throwable, Async<OUT>> errorFunction
+    ) {
+        return in -> exec(in, endFunction, errorFunction);
+    }
+    
+    public Async<OUT> exec(
+        final IN in,
+        final FunctionThrows<IN, Async<OUT>, ?> endFunction,
+        final BiFunction<IN, Throwable, Async<OUT>> errorFunction
+    ) {
+        return doFilter(in, -1, endFunction, errorFunction);
+    }
+    
+    @SuppressWarnings("squid:S1181")
+    private Async<OUT> doFilter(
+        final IN in,
+        final int index,
+        final FunctionThrows<IN, Async<OUT>, ?> endFunction,
+        final BiFunction<IN, Throwable, Async<OUT>> errorFunction
+    ) {
         try {
             final Async<OUT> stage;
-            if (filters.size() == index) {
+            if (index == filters.size() - 1) {
                 stage = endFunction.apply(in);
             } else {
-                stage = filters.get(index++).doFilter(in, this);
+                final int nextIndex = index + 1;
+                stage = filters.get(nextIndex).doFilter(in, nextIn ->
+                    doFilter(nextIn, nextIndex, endFunction, errorFunction)
+                );
             }
             return awaitExceptions(stage);
-        } catch (final Throwable t) { // NOSONAR handling edge error
+        } catch (final Throwable t) {
             return errorFunction.apply(in, t);
         }
     }

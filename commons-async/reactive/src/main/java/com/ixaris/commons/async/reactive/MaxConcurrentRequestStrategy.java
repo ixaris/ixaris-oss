@@ -4,9 +4,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A request strategy that allows a maximum of concurrent messages. Requests 1 message for every completed message.
- * Users of this class should make sure that finishMessage is called when a message finishes processing, otherwise 
- * the requests may become exhausted.
- *  
+ * Users of this class should make sure that finishMessage is called when a message finishes processing, otherwise the
+ * requests may become exhausted.
+ *
  * @author brian.vella
  */
 public final class MaxConcurrentRequestStrategy implements RequestStrategy {
@@ -19,7 +19,7 @@ public final class MaxConcurrentRequestStrategy implements RequestStrategy {
     
     @Override
     public final boolean startMessage() {
-        return available.getAndUpdate(v -> v > 0 ? v - 1 : v) > 0;
+        return available.getAndUpdate(v -> (v > 0) ? (v - 1) : v) > 0;
     }
     
     @Override

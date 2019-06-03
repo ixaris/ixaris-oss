@@ -1,11 +1,7 @@
 package com.ixaris.commons.async.reactive;
 
-import org.reactivestreams.Subscription;
-
 /**
  * Unbounded request strategy
- *  
- * @author brian.vella
  */
 public final class UnboundedRequestStrategy implements RequestStrategy {
     

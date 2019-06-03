@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package description;
+
+import "google/protobuf/descriptor.proto";
+
+option optimize_for = SPEED;
+
+// Protobuf option used to allow messages to be documented.
+// Messages, fields, enums and enum values can be documented
+// with the options described below. Option names are different
+// since Protobuf does not allow them to clash.
+
+extend google.protobuf.MessageOptions  {
+    string message = 52001;
+}
+
+extend google.protobuf.FieldOptions  {
+    string field = 52002;
+}
+
+extend google.protobuf.EnumOptions {
+    string enumeration = 52003;
+}
+
+extend google.protobuf.EnumValueOptions {
+    string value = 52004;
+}

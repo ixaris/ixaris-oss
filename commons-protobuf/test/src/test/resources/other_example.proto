@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package com.ixaris.commons.protobuf.test.other;
+
+import "valid.proto";
+import "example_nested.proto";
+
+option optimize_for = SPEED;
+
+message TestMessage {
+
+    string str = 1;
+
+}
+
+message OtherTestMessage {
+
+    string str = 1;
+
+}
+

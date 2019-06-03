@@ -37,15 +37,15 @@ import static jdk.internal.org.objectweb.asm.Opcodes.ISTORE;
 import static jdk.internal.org.objectweb.asm.Opcodes.LCONST_0;
 import static jdk.internal.org.objectweb.asm.Opcodes.LSTORE;
 import static jdk.internal.org.objectweb.asm.Opcodes.SIPUSH;
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 
 import com.ixaris.commons.async.lib.Async;
-
+import java.time.Duration;
 import jdk.internal.org.objectweb.asm.ClassWriter;
 import jdk.internal.org.objectweb.asm.MethodVisitor;
 import jdk.internal.org.objectweb.asm.tree.ClassNode;
+import org.junit.jupiter.api.Test;
 
 public class TransformerTest extends BaseTransformerTest {
     
@@ -54,12 +54,30 @@ public class TransformerTest extends BaseTransformerTest {
     @SuppressWarnings("unchecked")
     public void simpleAsyncMethod() throws Exception {
         final ClassNode cn = createClassNode(AsyncFunction.class, cw -> {
-            MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
+            MethodVisitor mv = cw.visitMethod(
+                ACC_PUBLIC,
+                "apply",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                null,
+                new String[] { "java/lang/Exception" }
+            );
             mv.visitCode();
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, "com/ixaris/commons/async/lib/Async");
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;", true);
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "result", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "await",
+                "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;",
+                true
+            );
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "result",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                true
+            );
             mv.visitInsn(ARETURN);
             mv.visitMaxs(1, 2);
             mv.visitEnd();
@@ -75,7 +93,13 @@ public class TransformerTest extends BaseTransformerTest {
     @SuppressWarnings("unchecked")
     public void withLocals() throws Exception {
         final ClassNode cn = createClassNode(AsyncFunction.class, cw -> {
-            MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
+            MethodVisitor mv = cw.visitMethod(
+                ACC_PUBLIC,
+                "apply",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                null,
+                new String[] { "java/lang/Exception" }
+            );
             mv.visitCode();
             mv.visitIntInsn(SIPUSH, 1);
             mv.visitVarInsn(ISTORE, 2);
@@ -84,8 +108,20 @@ public class TransformerTest extends BaseTransformerTest {
             mv.visitVarInsn(LSTORE, 3);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, "com/ixaris/commons/async/lib/Async");
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;", true);
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "result", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "await",
+                "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;",
+                true
+            );
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "result",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                true
+            );
             mv.visitInsn(ARETURN);
             mv.visitMaxs(2, 5);
             mv.visitEnd();
@@ -97,38 +133,59 @@ public class TransformerTest extends BaseTransformerTest {
         assertEquals("hello", block(fn.apply(result("hello"))));
     }
     
-    @Test(timeout = 10_000L)
+    @Test
     @SuppressWarnings("unchecked")
-    public void withTwoFutures() throws Exception {
-        final ClassNode cn = createClassNode(AsyncBiFunction.class, cw -> {
-            MethodVisitor mv =
-                cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
-            mv.visitCode();
+    public void withTwoFutures() {
+        assertTimeout(Duration.ofSeconds(10L), () -> {
+            final ClassNode cn = createClassNode(AsyncBiFunction.class, cw -> {
+                MethodVisitor mv = cw.visitMethod(
+                    ACC_PUBLIC,
+                    "apply",
+                    "(Ljava/lang/Object;Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                    null,
+                    new String[] { "java/lang/Exception" }
+                );
+                mv.visitCode();
+                
+                mv.visitVarInsn(ALOAD, 1);
+                mv.visitTypeInsn(CHECKCAST, "com/ixaris/commons/async/lib/Async");
+                mv.visitVarInsn(ALOAD, 2);
+                mv.visitTypeInsn(CHECKCAST, "com/ixaris/commons/async/lib/Async");
+                mv.visitMethodInsn(
+                    INVOKESTATIC,
+                    "com/ixaris/commons/async/lib/Async",
+                    "all",
+                    "(Ljava/util/concurrent/CompletionStage;Ljava/util/concurrent/CompletionStage;)Lcom/ixaris/commons/async/lib/Async;",
+                    true
+                );
+                mv.visitMethodInsn(
+                    INVOKESTATIC,
+                    "com/ixaris/commons/async/lib/Async",
+                    "await",
+                    "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;",
+                    true
+                );
+                mv.visitMethodInsn(
+                    INVOKESTATIC,
+                    "com/ixaris/commons/async/lib/Async",
+                    "result",
+                    "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                    true
+                );
+                mv.visitInsn(ARETURN);
+                mv.visitMaxs(2, 5);
+                mv.visitEnd();
+            });
+            ClassWriter cw = new ClassWriter(0);
+            cn.accept(cw);
+            //        DevDebug.debugSaveTrace(cn.name, bytes);
+            AsyncBiFunction fn = createClass(AsyncBiFunction.class, cw.toByteArray());
+            assertEquals(tuple("hello", "world"), block(fn.apply(result("hello"), result("world"))));
             
-            mv.visitVarInsn(ALOAD, 1);
-            mv.visitTypeInsn(CHECKCAST, "com/ixaris/commons/async/lib/Async");
-            mv.visitVarInsn(ALOAD, 2);
-            mv.visitTypeInsn(CHECKCAST, "com/ixaris/commons/async/lib/Async");
-            mv.visitMethodInsn(INVOKESTATIC,
-                "com/ixaris/commons/async/lib/Async",
-                "all",
-                "(Ljava/util/concurrent/CompletionStage;Ljava/util/concurrent/CompletionStage;)Lcom/ixaris/commons/async/lib/Async;",
-                true);
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;", true);
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "result", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", true);
-            mv.visitInsn(ARETURN);
-            mv.visitMaxs(2, 5);
-            mv.visitEnd();
+            final Async<?> rest = fn.apply(getBlockedFuture("hello"), getBlockedFuture("world"));
+            completeFutures();
+            assertEquals(tuple("hello", "world"), block(rest));
         });
-        ClassWriter cw = new ClassWriter(0);
-        cn.accept(cw);
-        //        DevDebug.debugSaveTrace(cn.name, bytes);
-        AsyncBiFunction fn = createClass(AsyncBiFunction.class, cw.toByteArray());
-        assertEquals(tuple("hello", "world"), block(fn.apply(result("hello"), result("world"))));
-        
-        final Async<?> rest = fn.apply(getBlockedFuture("hello"), getBlockedFuture("world"));
-        completeFutures();
-        assertEquals(tuple("hello", "world"), block(rest));
     }
     
 }

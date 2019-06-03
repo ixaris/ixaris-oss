@@ -11,7 +11,7 @@
     <dependencies>
         <dependency>
             <groupId>com.ixaris.oss</groupId>
-            <artifactId>ixaris-commons-async-lib</artifactId>
+            <artifactId>ixaris-commons-misc-lib</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

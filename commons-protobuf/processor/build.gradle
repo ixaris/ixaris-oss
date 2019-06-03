@@ -1,0 +1,6 @@
+apply from: "$rootDir/common.gradle"
+
+dependencies {
+    compile project(':ixaris-commons-protobuf-codegen')
+    compileOnly "org.slf4j:slf4j-api:$slf4jVersion"
+}

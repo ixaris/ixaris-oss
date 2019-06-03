@@ -2,6 +2,9 @@ package com.ixaris.commons.async.lib.scheduler;
 
 import static com.ixaris.commons.async.lib.CompletableFutureUtil.complete;
 
+import com.ixaris.commons.async.lib.CompletionStageCallableThrows;
+import com.ixaris.commons.misc.lib.function.CallableThrows;
+import com.ixaris.commons.misc.lib.function.RunnableThrows;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -12,11 +15,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import com.ixaris.commons.async.lib.CompletableFutureUtil;
-import com.ixaris.commons.async.lib.CompletionStageCallableThrows;
-import com.ixaris.commons.misc.lib.function.CallableThrows;
-import com.ixaris.commons.misc.lib.function.RunnableThrows;
 
 /**
  * Adapter that exposes a {@link Timer} as a {@link Scheduler}
@@ -117,7 +115,9 @@ final class TimerToSchedulerAdapter implements Scheduler {
         }
         
         @Override
-        public T get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        public T get(
+            final long timeout, final TimeUnit unit
+        ) throws InterruptedException, ExecutionException, TimeoutException {
             return future.get(timeout, unit);
         }
         
@@ -130,8 +130,8 @@ final class TimerToSchedulerAdapter implements Scheduler {
     }
     
     @Override
-    public ScheduledFuture<?> schedule(final Runnable runnable, final long delay, final TimeUnit unit) {
-        final ScheduledFutureImpl<?> task = ScheduledFutureImpl.from(runnable, 0L);
+    public ScheduledFuture<Void> schedule(final Runnable runnable, final long delay, final TimeUnit unit) {
+        final ScheduledFutureImpl<Void> task = ScheduledFutureImpl.from(runnable, 0L);
         timer.schedule(task.task, unit.toMillis(delay));
         return task;
     }
@@ -144,31 +144,37 @@ final class TimerToSchedulerAdapter implements Scheduler {
     }
     
     @Override
-    public <V> ScheduledFuture<V> schedule(final CompletionStageCallableThrows<V, ?> callable, final long delay, final TimeUnit unit) {
+    public <V> ScheduledFuture<V> schedule(
+        final CompletionStageCallableThrows<V, ?> callable, final long delay, final TimeUnit unit
+    ) {
         final ScheduledFutureImpl<V> task = ScheduledFutureImpl.from(callable);
         timer.schedule(task.task, unit.toMillis(delay));
         return task;
     }
     
     @Override
-    public ScheduledFuture<?> schedule(final Runnable runnable, final Date time) {
-        final ScheduledFutureImpl<?> task = ScheduledFutureImpl.from(runnable, 0L);
+    public ScheduledFuture<Void> schedule(final Runnable runnable, final Date time) {
+        final ScheduledFutureImpl<Void> task = ScheduledFutureImpl.from(runnable, 0L);
         timer.schedule(task.task, time);
         return task;
     }
     
     @Override
-    public ScheduledFuture<?> scheduleAtFixedRate(final Runnable runnable, final long initialDelay, final long period, final TimeUnit unit) {
+    public ScheduledFuture<Void> scheduleAtFixedRate(
+        final Runnable runnable, final long initialDelay, final long period, final TimeUnit unit
+    ) {
         final long msPeriod = unit.toMillis(period);
-        final ScheduledFutureImpl<?> task = ScheduledFutureImpl.from(runnable, msPeriod);
+        final ScheduledFutureImpl<Void> task = ScheduledFutureImpl.from(runnable, msPeriod);
         timer.scheduleAtFixedRate(task.task, unit.toMillis(initialDelay), msPeriod);
         return task;
     }
     
     @Override
-    public ScheduledFuture<?> scheduleWithFixedDelay(final Runnable runnable, final long initialDelay, final long delay, final TimeUnit unit) {
+    public ScheduledFuture<Void> scheduleWithFixedDelay(
+        final Runnable runnable, final long initialDelay, final long delay, final TimeUnit unit
+    ) {
         final long msPeriod = unit.toMillis(delay);
-        final ScheduledFutureImpl<?> task = ScheduledFutureImpl.from(runnable, msPeriod);
+        final ScheduledFutureImpl<Void> task = ScheduledFutureImpl.from(runnable, msPeriod);
         timer.schedule(task.task, unit.toMillis(initialDelay), msPeriod);
         return task;
     }

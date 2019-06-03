@@ -25,6 +25,8 @@
  */
 package com.ixaris.commons.async.transformer;
 
+import static com.ixaris.commons.async.transformer.AsmHelper.ASM_VERSION;
+
 import jdk.internal.org.objectweb.asm.Opcodes;
 import jdk.internal.org.objectweb.asm.Type;
 import jdk.internal.org.objectweb.asm.tree.AbstractInsnNode;
@@ -41,30 +43,9 @@ import jdk.internal.org.objectweb.asm.tree.analysis.Frame;
 import jdk.internal.org.objectweb.asm.tree.analysis.Interpreter;
 
 /**
- * uses previous frames
- * consider uninitialized values
+ * uses previous frames consider uninitialized values
  */
 final class FrameAnalyzer extends Analyzer<BasicValue> {
-    
-    private static final int ASM_VERSION;
-    
-    static {
-        int ver;
-        try {
-            ver = (int) Opcodes.class.getField("ASM6").get(null);
-        } catch (final ReflectiveOperationException e) {
-            ver = ASM5;
-        }
-        ASM_VERSION = ver;
-    }
-    
-    private static final int FN_TOP = 0;
-    private static final int FN_INTEGER = 1;
-    private static final int FN_FLOAT = 2;
-    private static final int FN_DOUBLE = 3;
-    private static final int FN_LONG = 4;
-    private static final int FN_NULL = 5;
-    private static final int FN_UNINITIALIZED_THIS = 6;
     
     static final class ExtendedValue extends BasicValue {
         
@@ -133,48 +114,51 @@ final class FrameAnalyzer extends Analyzer<BasicValue> {
             return frame;
         }
         
+        @SuppressWarnings("squid:S1151")
         @Override
-        public void execute(final AbstractInsnNode insn, final Interpreter<BasicValue> interpreter) throws AnalyzerException {
+        public void execute(
+            final AbstractInsnNode insn, final Interpreter<BasicValue> interpreter
+        ) throws AnalyzerException {
             switch (insn.getOpcode()) {
-                case MONITORENTER: {
-                    final BasicValue[] newMonitors = new BasicValue[monitors.length + 1];
-                    System.arraycopy(monitors, 0, newMonitors, 0, monitors.length);
-                    newMonitors[monitors.length] = pop();
-                    monitors = newMonitors;
-                    return;
-                }
-                case MONITOREXIT: {
+                case MONITORENTER:
+                    final BasicValue[] enterNewMonitors = new BasicValue[monitors.length + 1];
+                    System.arraycopy(monitors, 0, enterNewMonitors, 0, monitors.length);
+                    enterNewMonitors[monitors.length] = pop();
+                    monitors = enterNewMonitors;
+                    break;
+                case MONITOREXIT:
                     // tracking the monitors by `Value` identity only works if
                     // all object values are always unique different even if they have the same type
                     // if that can't be guaranteed we could store each monitor in a local variable
                     
                     final BasicValue v = pop();
                     int iv = monitors.length;
-                    while (--iv >= 0 && monitors[iv] != v) {
-                        // find lastIndexOf this monitor in the "monitor stack"
-                    }
+                    // find lastIndexOf this monitor in the "monitor stack"
+                    while (--iv >= 0 && monitors[iv] != v) ;
+                    
                     // there are usually two or more MONITOREXIT for each monitor
                     // due to the compiler generated exception handler
                     // obs.: the application code won't be in the handlers' block
                     if (iv != -1) {
-                        final BasicValue[] newMonitors = new BasicValue[monitors.length - 1];
+                        final BasicValue[] exitNewMonitors = new BasicValue[monitors.length - 1];
                         if (iv > 0) {
                             // if not the first element
-                            System.arraycopy(monitors, 0, newMonitors, 0, iv);
+                            System.arraycopy(monitors, 0, exitNewMonitors, 0, iv);
                         }
                         if (monitors.length - iv > 1) {
                             // if not the last element
-                            System.arraycopy(monitors, iv + 1, newMonitors, iv, monitors.length - iv);
+                            System.arraycopy(monitors, iv + 1, exitNewMonitors, iv, monitors.length - iv);
                         }
-                        monitors = newMonitors;
+                        monitors = exitNewMonitors;
                     }
-                    return;
-                }
-                case INVOKESPECIAL: {
+                    break;
+                case INVOKESPECIAL:
                     final MethodInsnNode methodInsnNode = (MethodInsnNode) insn;
                     if (methodInsnNode.name.equals("<init>")) {
                         // clear uninitialized flag from values in the frame
-                        final BasicValue target = getStack(getStackSize() - (1 + Type.getArgumentTypes(methodInsnNode.desc).length));
+                        final BasicValue target = getStack(
+                            getStackSize() - (1 + Type.getArgumentTypes(methodInsnNode.desc).length)
+                        );
                         final BasicValue newValue = interpreter.newValue(target.getType());
                         super.execute(insn, interpreter);
                         for (int i = 0; i < getLocals(); i++) {
@@ -184,24 +168,26 @@ final class FrameAnalyzer extends Analyzer<BasicValue> {
                         }
                         int s = getStackSize();
                         final BasicValue[] stack = new BasicValue[s];
-                        for (int i = s; --i >= 0;) {
-                            final BasicValue v = pop();
-                            stack[i] = target.equals(v) ? newValue : v;
+                        for (int i = s; --i >= 0; ) {
+                            final BasicValue vv = pop();
+                            stack[i] = target.equals(vv) ? newValue : vv;
                         }
                         for (int i = 0; i < s; i++) {
                             push(stack[i]);
                         }
-                        return;
+                        break;
                     }
+                    // fallthrough
+                default:
+                    super.execute(insn, interpreter);
                     break;
-                }
             }
-            super.execute(insn, interpreter);
         }
         
         @Override
-        public boolean merge(final Frame<? extends BasicValue> frame,
-                             final Interpreter<BasicValue> interpreter) throws AnalyzerException {
+        public boolean merge(
+            final Frame<? extends BasicValue> frame, final Interpreter<BasicValue> interpreter
+        ) throws AnalyzerException {
             if (force) {
                 // uses the current frame
                 return true;
@@ -212,11 +198,11 @@ final class FrameAnalyzer extends Analyzer<BasicValue> {
             }
             return super.merge(frame, interpreter);
         }
+        
     }
     
     /**
-     * Used to discover the object types that are currently
-     * being stored in the stack and in the locals.
+     * Used to discover the object types that are currently being stored in the stack and in the locals.
      */
     private static final BasicInterpreter TYPE_INTERPRETER = new BasicInterpreter(ASM_VERSION) {
         
@@ -245,9 +231,7 @@ final class FrameAnalyzer extends Analyzer<BasicValue> {
             if (v != w && !v.equals(w)) {
                 final Type t = v.getType();
                 final Type u = w.getType();
-                if (t != null && u != null
-                    && t.getSort() == Type.OBJECT
-                    && u.getSort() == Type.OBJECT) {
+                if (t != null && u != null && t.getSort() == Type.OBJECT && u.getSort() == Type.OBJECT) {
                     // could find a common super type here, a bit expensive
                     // TODO: test this with an assignment
                     // like: local1 was CompletableFuture <- store Task
@@ -318,24 +302,23 @@ final class FrameAnalyzer extends Analyzer<BasicValue> {
         if (v instanceof String) {
             return TYPE_INTERPRETER.newValue(Type.getObjectType((String) v));
         } else if (v instanceof Integer) {
-            switch ((Integer) v) {
-                case FN_TOP:
-                    // TODO: check this
-                    return TYPE_INTERPRETER.newValue(null);
-                case FN_INTEGER:
-                    return TYPE_INTERPRETER.newValue(Type.INT_TYPE);
-                case FN_FLOAT:
-                    return TYPE_INTERPRETER.newValue(Type.FLOAT_TYPE);
-                case FN_DOUBLE:
-                    return TYPE_INTERPRETER.newValue(Type.DOUBLE_TYPE);
-                case FN_LONG:
-                    return TYPE_INTERPRETER.newValue(Type.LONG_TYPE);
-                case FN_NULL:
-                    // TODO: check this
-                    return TYPE_INTERPRETER.newValue(BasicValue.REFERENCE_VALUE.getType());
-                case FN_UNINITIALIZED_THIS:
-                    // TODO: check this
-                    return TYPE_INTERPRETER.newValue(null);
+            if (v.equals(Opcodes.TOP)) {
+                // TODO: check this
+                return TYPE_INTERPRETER.newValue(null);
+            } else if (v.equals(Opcodes.INTEGER)) {
+                return TYPE_INTERPRETER.newValue(Type.INT_TYPE);
+            } else if (v.equals(Opcodes.FLOAT)) {
+                return TYPE_INTERPRETER.newValue(Type.FLOAT_TYPE);
+            } else if (v.equals(Opcodes.DOUBLE)) {
+                return TYPE_INTERPRETER.newValue(Type.DOUBLE_TYPE);
+            } else if (v.equals(Opcodes.LONG)) {
+                return TYPE_INTERPRETER.newValue(Type.LONG_TYPE);
+            } else if (v.equals(Opcodes.NULL)) {
+                // TODO: check this
+                return TYPE_INTERPRETER.newValue(BasicValue.REFERENCE_VALUE.getType());
+            } else if (v.equals(Opcodes.UNINITIALIZED_THIS)) {
+                // TODO: check this
+                return TYPE_INTERPRETER.newValue(null);
             }
         } else if (v instanceof LabelNode) {
             AbstractInsnNode node = (AbstractInsnNode) v;
@@ -346,4 +329,5 @@ final class FrameAnalyzer extends Analyzer<BasicValue> {
         }
         return TYPE_INTERPRETER.newValue(null);
     }
+    
 }

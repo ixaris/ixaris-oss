@@ -5,13 +5,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -20,21 +17,14 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
 
-import org.kohsuke.MetaInfServices;
-
 /**
- * Entrypoint to async code transformation, in the form of an annotation processor. Does not really do any
- * annotation processing, instead transforms every compiled class's bytecode.
+ * Entrypoint to async code transformation, in the form of an annotation processor. Does not really do any annotation
+ * processing, instead transforms every compiled class's bytecode.
  *
- * Annotation processing can occur in rounds, where an annotation processor may signal that another round is
+ * <p>Annotation processing can occur in rounds, where an annotation processor may signal that another round is
  * required. It is therefore required for the AsyncTransformer to be idempotent (which it is).
- *
- * A maven plugin uses @MetaInfServices to create the corresponding META-INF/services file to register the
- * annotation processor
  */
-@MetaInfServices(Processor.class)
 @SupportedAnnotationTypes("*")
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AsyncProcessor extends AbstractProcessor {
     
     @FunctionalInterface
@@ -60,24 +50,28 @@ public class AsyncProcessor extends AbstractProcessor {
     private final Map<String, ElementInfo> elements = new HashMap<>();
     
     @Override
-    public void init(final ProcessingEnvironment procEnv) {
-        super.init(procEnv);
+    public SourceVersion getSupportedSourceVersion() {
+        return AsmHelper.SOURCE_VERSION;
+    }
+    
+    @Override
+    public synchronized void init(final ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
         
         if (initialised.compareAndSet(false, true)) {
-            final AsyncTransformer transformer = new AsyncTransformer((fqcn, sig, message) -> {
-                final Element element = Optional
-                    .ofNullable(elements.get(fqcn))
+            final AsyncTransformer transformer = new AsyncTransformer((fqcn, sig, ln, message) -> {
+                final Element element = Optional.ofNullable(elements.get(fqcn))
                     .map(info -> Optional.<Element>ofNullable(info.methods.get(sig)).orElse(info.element))
                     .orElse(null);
                 if (element != null) {
-                    procEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING, message, element);
+                    processingEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING, message, element);
                 } else {
-                    procEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING, message);
+                    processingEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING, message);
                 }
             });
             
-            final Helper helper = determineAndConstructHelper(procEnv);
-            helper.init(procEnv, transformer);
+            final Helper helper = determineAndConstructHelper(processingEnv);
+            helper.init(processingEnv, transformer);
         }
     }
     
@@ -125,18 +119,25 @@ public class AsyncProcessor extends AbstractProcessor {
         return sig.append(')').toString();
     }
     
+    @SuppressWarnings("squid:S2658")
     private Helper determineAndConstructHelper(final ProcessingEnvironment procEnv) {
         if (procEnv.getClass().getName().startsWith("org.eclipse")) {
             try {
-                return (Helper) Class.forName("com.ixaris.commons.async.transformer.EclipseHelper").newInstance();
-            } catch (final InstantiationException | ClassNotFoundException | IllegalAccessException e) {
+                return (Helper)
+                    Class.forName("com.ixaris.commons.async.transformer.EclipseHelper")
+                        .getDeclaredConstructor()
+                        .newInstance();
+            } catch (final ReflectiveOperationException e) {
                 throw new IllegalStateException(e);
             }
         } else {
             // by default fall back to javac
             try {
-                return (Helper) Class.forName("com.ixaris.commons.async.transformer.JavacHelper").newInstance();
-            } catch (final InstantiationException | ClassNotFoundException | IllegalAccessException e) {
+                return (Helper)
+                    Class.forName("com.ixaris.commons.async.transformer.JavacHelper")
+                        .getDeclaredConstructor()
+                        .newInstance();
+            } catch (final ReflectiveOperationException e) {
                 throw new IllegalStateException(e);
             }
         }

@@ -29,13 +29,13 @@ package com.ixaris.commons.async.transformed.test;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
-import static org.junit.Assert.assertEquals;
-
-import java.util.concurrent.CompletableFuture;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 
 import com.ixaris.commons.async.lib.Async;
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import org.junit.jupiter.api.Test;
 
 public class BasicTest extends BaseTest {
     
@@ -93,42 +93,50 @@ public class BasicTest extends BaseTest {
         assertEquals(":x", block(res));
     }
     
-    @Test(timeout = 2_000)
-    public void testBlocking() throws InterruptedException {
-        final SomethingAsync a = new SomethingAsync();
-        CompletableFuture<String> blocker = new CompletableFuture<>();
-        final Async<Object> res = a.doSomething(blocker);
-        blocker.complete("x");
-        assertEquals(":x", block(res));
+    @Test
+    public void testBlocking() {
+        assertTimeout(Duration.ofSeconds(2), () -> {
+            final SomethingAsync a = new SomethingAsync();
+            CompletableFuture<String> blocker = new CompletableFuture<>();
+            final Async<Object> res = a.doSomething(blocker);
+            blocker.complete("x");
+            assertEquals(":x", block(res));
+        });
     }
     
-    @Test(timeout = 2_000)
-    public void testBlockingWithStackAndLocal() throws InterruptedException {
-        final SomethingWithLocalsAndStack a = new SomethingWithLocalsAndStack();
-        
-        CompletableFuture<String> blocker = new CompletableFuture<>();
-        final Async<Object> res = a.doSomething(blocker);
-        blocker.complete("0123456789");
-        assertEquals(":10", block(res));
+    @Test
+    public void testBlockingWithStackAndLocal() {
+        assertTimeout(Duration.ofSeconds(2), () -> {
+            final SomethingWithLocalsAndStack a = new SomethingWithLocalsAndStack();
+            
+            CompletableFuture<String> blocker = new CompletableFuture<>();
+            final Async<Object> res = a.doSomething(blocker);
+            blocker.complete("0123456789");
+            assertEquals(":10", block(res));
+        });
     }
     
-    @Test(timeout = 2_000)
-    public void testBlockingAndException() throws InterruptedException {
-        final SomethingAsyncWithEx a = new SomethingAsyncWithEx();
-        
-        CompletableFuture<String> blocker = new CompletableFuture<>();
-        final Async<Object> res = a.doSomething(blocker);
-        blocker.completeExceptionally(new RuntimeException("Exception"));
-        assertEquals(":Exception", block(res));
+    @Test
+    public void testBlockingAndException() {
+        assertTimeout(Duration.ofSeconds(2), () -> {
+            final SomethingAsyncWithEx a = new SomethingAsyncWithEx();
+            
+            CompletableFuture<String> blocker = new CompletableFuture<>();
+            final Async<Object> res = a.doSomething(blocker);
+            blocker.completeExceptionally(new RuntimeException("Exception"));
+            assertEquals(":Exception", block(res));
+        });
     }
     
-    @Test(timeout = 2_000)
-    public void testDataFlow() throws InterruptedException {
-        final SomethingWithDataMutation a = new SomethingWithDataMutation();
-        
-        CompletableFuture<String> blocker = new CompletableFuture<>();
-        final Async<Object> res = a.doSomething(blocker);
-        blocker.complete("x");
-        assertEquals(":12[x]", block(res));
+    @Test
+    public void testDataFlow() {
+        assertTimeout(Duration.ofSeconds(2), () -> {
+            final SomethingWithDataMutation a = new SomethingWithDataMutation();
+            
+            CompletableFuture<String> blocker = new CompletableFuture<>();
+            final Async<Object> res = a.doSomething(blocker);
+            blocker.complete("x");
+            assertEquals(":12[x]", block(res));
+        });
     }
 }

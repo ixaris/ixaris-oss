@@ -1,9 +1,8 @@
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
 
-import java.util.concurrent.CompletableFuture;
-
 import com.ixaris.commons.async.lib.Async;
+import java.util.concurrent.CompletableFuture;
 
 public class NoPackageAsync {
     

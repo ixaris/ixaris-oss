@@ -29,13 +29,11 @@ package com.ixaris.commons.async.transformed.test;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
-import static org.junit.Assert.assertNull;
-
-import java.util.concurrent.CompletionStage;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.ixaris.commons.async.lib.Async;
+import java.util.concurrent.CompletionStage;
+import org.junit.jupiter.api.Test;
 
 public class AConstNullTest extends BaseTest {
     

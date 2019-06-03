@@ -2,6 +2,8 @@ package com.ixaris.commons.async.lib.scheduler;
 
 import static com.ixaris.commons.async.lib.CompletableFutureUtil.complete;
 
+import com.ixaris.commons.misc.lib.function.CallableThrows;
+import com.ixaris.commons.misc.lib.object.Wrapper;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.AbstractExecutorService;
@@ -14,13 +16,11 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.ixaris.commons.misc.lib.function.CallableThrows;
-import com.ixaris.commons.misc.lib.object.Wrapper;
-
 /**
  * Wrapper for a {@link Scheduler} to execute scheduled jobs on the given executor
  */
-public class ScheduledExecutorWrapper<E extends Executor> extends AbstractExecutorService implements ScheduledExecutorService, Wrapper<E> {
+public class ScheduledExecutorWrapper<E extends Executor> extends AbstractExecutorService
+implements ScheduledExecutorService, Wrapper<E> {
     
     protected final E wrapped;
     protected final Scheduler scheduler;
@@ -87,28 +87,35 @@ public class ScheduledExecutorWrapper<E extends Executor> extends AbstractExecut
     @Override
     public <V> ScheduledFuture<V> schedule(final Callable<V> callable, final long delay, final TimeUnit unit) {
         if (active.get()) {
-            return scheduler.schedule(() -> {
-                final CompletableFuture<V> future = new CompletableFuture<>();
-                wrapped.execute(() -> complete(future, CallableThrows.from(callable)));
-                return future;
-            }, delay, unit);
+            return scheduler.schedule(
+                () -> {
+                    final CompletableFuture<V> future = new CompletableFuture<>();
+                    wrapped.execute(() -> complete(future, CallableThrows.from(callable)));
+                    return future;
+                },
+                delay,
+                unit
+            );
         } else {
             throw new RejectedExecutionException();
         }
     }
     
     @Override
-    public ScheduledFuture<?> scheduleAtFixedRate(final Runnable runnable, final long initialDelay, final long period, final TimeUnit unit) {
+    public ScheduledFuture<?> scheduleAtFixedRate(
+        final Runnable runnable, final long initialDelay, final long period, final TimeUnit unit
+    ) {
         if (active.get()) {
             return scheduler.scheduleAtFixedRate(() -> wrapped.execute(runnable), initialDelay, period, unit);
         } else {
             throw new RejectedExecutionException();
         }
-        
     }
     
     @Override
-    public ScheduledFuture<?> scheduleWithFixedDelay(final Runnable runnable, final long initialDelay, final long delay, final TimeUnit unit) {
+    public ScheduledFuture<?> scheduleWithFixedDelay(
+        final Runnable runnable, final long initialDelay, final long delay, final TimeUnit unit
+    ) {
         if (active.get()) {
             return scheduler.scheduleWithFixedDelay(() -> wrapped.execute(runnable), initialDelay, delay, unit);
         } else {

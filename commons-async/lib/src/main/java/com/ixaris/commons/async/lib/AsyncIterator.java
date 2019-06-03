@@ -7,7 +7,20 @@ import com.ixaris.commons.misc.lib.function.ConsumerThrows;
 
 public interface AsyncIterator<E> {
     
-    static <T, E extends Exception> Async<Void> forEach(final AsyncIterator<T> iterator, ConsumerThrows<T, E> consumer) throws E {
+    /**
+     * Used to chunk synchronous I/O into an asynchronous iterator
+     */
+    @FunctionalInterface
+    interface Chunker<T> {
+        
+        T next() throws NoMoreElementsException;
+        
+    }
+    
+    @SuppressWarnings("squid:S1166")
+    static <T, E extends Exception> Async<Void> forEach(
+        final AsyncIterator<T> iterator, ConsumerThrows<T, E> consumer
+    ) throws E {
         boolean done = false;
         while (!done) {
             try {
@@ -20,13 +33,11 @@ public interface AsyncIterator<E> {
     }
     
     /**
-     * @return a future resolved with the next element in the iteration
-     *         or rejected with {@link java.util.NoSuchElementException} if the iteration has no more elements
+     * @return a future resolved with the next element in the iteration or rejected with {@link
+     *     java.util.NoSuchElementException} if the iteration has no more elements
      */
     Async<E> next() throws NoMoreElementsException;
     
-    class NoMoreElementsException extends Exception {
-        
-    }
+    class NoMoreElementsException extends Exception {}
     
 }

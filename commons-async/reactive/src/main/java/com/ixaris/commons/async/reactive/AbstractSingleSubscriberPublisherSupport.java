@@ -1,14 +1,11 @@
 package com.ixaris.commons.async.reactive;
 
 import java.util.concurrent.atomic.AtomicReference;
-
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 /**
  * Abstract publisher support that supports a single subscriber.
- * 
- * @author brian.vella
  *
  * @param <T>
  */
@@ -31,8 +28,6 @@ public abstract class AbstractSingleSubscriberPublisherSupport<T> implements Pub
     @Override
     public final void next(final T t) {
         final SingleSubscription s = subscription.get();
-        // if requested is equal to MAX_VALUE, then the subscriber requested unlimited items
-        // otherwise decrement the number of requested items if positive
         if (s != null) {
             next(s.subscriber, t);
         } else {

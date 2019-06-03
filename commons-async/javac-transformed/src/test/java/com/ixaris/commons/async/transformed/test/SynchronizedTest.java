@@ -29,18 +29,16 @@ package com.ixaris.commons.async.transformed.test;
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.ixaris.commons.async.lib.Async;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
-
-import org.junit.Test;
-
-import com.ixaris.commons.async.lib.Async;
+import org.junit.jupiter.api.Test;
 
 public class SynchronizedTest extends BaseTest {
     @Test

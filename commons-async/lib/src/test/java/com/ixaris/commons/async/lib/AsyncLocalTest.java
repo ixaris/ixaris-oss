@@ -2,27 +2,25 @@ package com.ixaris.commons.async.lib;
 
 import static com.ixaris.commons.async.lib.Async.await;
 import static com.ixaris.commons.async.lib.Async.result;
-import static com.ixaris.commons.async.lib.AsyncExecutor.exec;
+import static com.ixaris.commons.async.lib.AsyncExecutor.execAndRelay;
 import static com.ixaris.commons.async.lib.AsyncExecutor.sleep;
 import static com.ixaris.commons.async.lib.CompletionStageUtil.block;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Arrays;
+import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-
-import org.junit.Test;
-
-import com.ixaris.commons.async.lib.executor.AsyncExecutorWrapper;
+import org.junit.jupiter.api.Test;
 
 public class AsyncLocalTest {
     
-    private static final AsyncLocal<String> VAL1 = new AsyncLocal<>();
-    private static final AsyncLocal<String> VAL2 = new AsyncLocal<>(true);
+    private static final AsyncLocal<String> VAL1 = new AsyncLocal<>("VAL1");
+    
+    private static final AsyncLocal<String> VAL2 = new AsyncLocal<>("VAL2", true);
     
     @Test
     public void testSetValue() {
@@ -34,7 +32,7 @@ public class AsyncLocalTest {
     }
     
     @Test
-    public void testSetSameValue_expectException() {
+    public void testSetSameValue() {
         assertThat(VAL1.get()).isNull();
         VAL1.exec("TEST", () -> {
             assertThat(VAL1.get()).isEqualTo("TEST");
@@ -91,7 +89,7 @@ public class AsyncLocalTest {
                 map.put(VAL2, "1");
                 assertThat(AsyncLocal.snapshot().getMap()).isEqualTo(map);
                 VAL2.exec("2", () -> {
-                    map.put(VAL2, Arrays.asList("2", "1"));
+                    map.put(VAL2, AsyncLocal.Stack.init("1", "2"));
                     assertThat(AsyncLocal.snapshot().getMap()).isEqualTo(map);
                 });
                 map.put(VAL2, "1");
@@ -109,22 +107,28 @@ public class AsyncLocalTest {
         assertThat(VAL1.get()).isNull();
         assertThat(VAL2.get()).isNull();
         
-        AsyncLocal.with(VAL1, "TEST").with(VAL2, "1").exec(() -> {
-            assertThat(VAL1.get()).isEqualTo("TEST");
-            assertThat(VAL2.get()).isEqualTo("1");
-            
-            AsyncLocal.with(VAL2, "2").exec(() -> {
+        AsyncLocal
+            .with(VAL1, "TEST")
+            .with(VAL2, "1")
+            .exec(() -> {
                 assertThat(VAL1.get()).isEqualTo("TEST");
-                assertThat(VAL2.get()).isEqualTo("2");
+                assertThat(VAL2.get()).isEqualTo("1");
                 
-                assertThatThrownBy(() -> AsyncLocal.with(VAL1, "TEST2").with(VAL2, "3").exec(() -> {})).isInstanceOf(IllegalStateException.class);
-                
+                AsyncLocal
+                    .with(VAL2, "2")
+                    .exec(() -> {
+                        assertThat(VAL1.get()).isEqualTo("TEST");
+                        assertThat(VAL2.get()).isEqualTo("2");
+                        
+                        assertThatThrownBy(() -> AsyncLocal.with(VAL1, "TEST2").with(VAL2, "3").exec(() -> {}))
+                            .isInstanceOf(IllegalStateException.class);
+                        
+                        assertThat(VAL1.get()).isEqualTo("TEST");
+                        assertThat(VAL2.get()).isEqualTo("2");
+                    });
                 assertThat(VAL1.get()).isEqualTo("TEST");
-                assertThat(VAL2.get()).isEqualTo("2");
+                assertThat(VAL2.get()).isEqualTo("1");
             });
-            assertThat(VAL1.get()).isEqualTo("TEST");
-            assertThat(VAL2.get()).isEqualTo("1");
-        });
         assertThat(VAL1.get()).isNull();
         assertThat(VAL2.get()).isNull();
     }
@@ -138,12 +142,14 @@ public class AsyncLocalTest {
             
             await(VAL2.exec("1", () -> {
                 assertThat(VAL2.get()).isEqualTo("1");
-                await(exec(ex, () -> VAL2.exec("2", () -> {
-                    assertThat(VAL1.get()).isEqualTo("TEST");
-                    assertThat(VAL2.get()).isEqualTo("2");
-                    await(sleep(10L, MILLISECONDS));
-                    return result();
-                })));
+                await(execAndRelay(ex, () ->
+                    VAL2.exec("2", () -> {
+                        assertThat(VAL1.get()).isEqualTo("TEST");
+                        assertThat(VAL2.get()).isEqualTo("2");
+                        await(sleep(10L, MILLISECONDS));
+                        return result();
+                    })
+                ));
                 assertThat(VAL2.get()).isEqualTo("1");
                 return result();
             }));

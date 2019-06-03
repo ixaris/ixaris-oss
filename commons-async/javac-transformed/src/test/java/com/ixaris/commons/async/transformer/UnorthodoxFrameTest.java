@@ -41,15 +41,13 @@ import static jdk.internal.org.objectweb.asm.Opcodes.NEW;
 import static jdk.internal.org.objectweb.asm.Opcodes.POP;
 import static jdk.internal.org.objectweb.asm.Opcodes.SIPUSH;
 import static jdk.internal.org.objectweb.asm.Opcodes.SWAP;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.ixaris.commons.async.lib.Async;
 import com.ixaris.commons.async.lib.CompletionStageUtil;
-
 import jdk.internal.org.objectweb.asm.MethodVisitor;
+import org.junit.jupiter.api.Test;
 
 // testing scenarios that might have been produced by other bytecode libraries
 // sometimes valid bytecode is different from what the java compiler produces.
@@ -60,21 +58,40 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
     @SuppressWarnings("unchecked")
     public void regularConstructorCall() throws Exception {
         final Async<?> task = createClass(AsyncFunction.class, cw -> {
-            MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
+            MethodVisitor mv = cw.visitMethod(
+                ACC_PUBLIC,
+                "apply",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                null,
+                new String[] { "java/lang/Exception" }
+            );
             mv.visitCode();
             mv.visitTypeInsn(NEW, "java/lang/Integer");
             mv.visitInsn(DUP);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, "java/util/concurrent/CompletionStage");
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "await",
+                "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;",
+                true
+            );
             mv.visitTypeInsn(CHECKCAST, "java/lang/String");
             mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Integer", "<init>", "(Ljava/lang/String;)V", false);
             
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "result", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "result",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                true
+            );
             mv.visitInsn(ARETURN);
             mv.visitMaxs(3, 2);
             mv.visitEnd();
-        }).apply(getBlockedFuture("100"));
+        })
+            .apply(getBlockedFuture("100"));
         assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
         assertEquals(100, block(task));
@@ -85,7 +102,13 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
     public void uninitializedStore() throws Exception {
         // check what happens when the uninitialized object is stored in a local variable
         final Async<?> task = createClass(AsyncFunction.class, cw -> {
-            MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
+            MethodVisitor mv = cw.visitMethod(
+                ACC_PUBLIC,
+                "apply",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                null,
+                new String[] { "java/lang/Exception" }
+            );
             mv.visitCode();
             mv.visitTypeInsn(NEW, "java/lang/Integer");
             mv.visitInsn(DUP);
@@ -96,7 +119,13 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
             
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, "java/util/concurrent/CompletionStage");
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "await",
+                "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;",
+                true
+            );
             mv.visitTypeInsn(CHECKCAST, "java/lang/String");
             mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Integer", "<init>", "(Ljava/lang/String;)V", false);
             
@@ -104,11 +133,18 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
             mv.visitInsn(POP);
             mv.visitVarInsn(ALOAD, 2);
             
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "result", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "result",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                true
+            );
             mv.visitInsn(ARETURN);
             mv.visitMaxs(4, 3);
             mv.visitEnd();
-        }).apply(getBlockedFuture("101"));
+        })
+            .apply(getBlockedFuture("101"));
         assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
         assertEquals(101, block(task));
@@ -120,7 +156,13 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
         // check what happens when the uninitialized object is stored in a local variable
         // and with gaps and wide var (long and double)
         final Async<?> task = createClass(AsyncFunction.class, cw -> {
-            MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
+            MethodVisitor mv = cw.visitMethod(
+                ACC_PUBLIC,
+                "apply",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                null,
+                new String[] { "java/lang/Exception" }
+            );
             mv.visitCode();
             mv.visitLdcInsn(2.0);
             mv.visitVarInsn(DSTORE, 9);
@@ -137,7 +179,13 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
             
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, "java/util/concurrent/CompletionStage");
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "await",
+                "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;",
+                true
+            );
             mv.visitTypeInsn(CHECKCAST, "java/lang/String");
             mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Integer", "<init>", "(Ljava/lang/String;)V", false);
             
@@ -145,11 +193,18 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
             mv.visitInsn(POP);
             mv.visitVarInsn(ALOAD, 6);
             
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "result", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "result",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                true
+            );
             mv.visitInsn(ARETURN);
             mv.visitMaxs(5, 15);
             mv.visitEnd();
-        }).apply(getBlockedFuture("101"));
+        })
+            .apply(getBlockedFuture("101"));
         assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
         assertEquals(101, block(task));
@@ -161,7 +216,13 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
         // check what happens if there only one copy of the uninitialized object in the stack.
         // the java compiler usually leaves two copies
         final Async<?> task = createClass(AsyncFunction.class, cw -> {
-            MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
+            MethodVisitor mv = cw.visitMethod(
+                ACC_PUBLIC,
+                "apply",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                null,
+                new String[] { "java/lang/Exception" }
+            );
             mv.visitCode();
             mv.visitTypeInsn(NEW, "java/lang/Integer");
             // note a missing DUP here
@@ -169,16 +230,29 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
             
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, "java/util/concurrent/CompletionStage");
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "await",
+                "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;",
+                true
+            );
             mv.visitTypeInsn(CHECKCAST, "java/lang/String");
             mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Integer", "<init>", "(Ljava/lang/String;)V", false);
             // no pop need as the constructor consumes the one copy
             
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "result", "()Lcom/ixaris/commons/async/lib/Async;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "result",
+                "()Lcom/ixaris/commons/async/lib/Async;",
+                true
+            );
             mv.visitInsn(ARETURN);
             mv.visitMaxs(4, 3);
             mv.visitEnd();
-        }).apply(getBlockedFuture("101"));
+        })
+            .apply(getBlockedFuture("101"));
         assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
         // return should be null as we are using task.done()
@@ -191,7 +265,13 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
         // check what happens when the uninitialized object appears 3 consecutive times in the stack
         // the java compiler usually puts two copies.
         final Async<?> task = createClass(AsyncFunction.class, cw -> {
-            MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
+            MethodVisitor mv = cw.visitMethod(
+                ACC_PUBLIC,
+                "apply",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                null,
+                new String[] { "java/lang/Exception" }
+            );
             mv.visitCode();
             mv.visitTypeInsn(NEW, "java/lang/Integer");
             mv.visitInsn(DUP);
@@ -201,18 +281,32 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
             
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, "java/util/concurrent/CompletionStage");
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "await",
+                "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;",
+                true
+            );
             mv.visitTypeInsn(CHECKCAST, "java/lang/String");
             mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Integer", "<init>", "(Ljava/lang/String;)V", false);
             
-            // discarding the object and getting the one that is in the stack (without instrumentation they are the same)
+            // discarding the object and getting the one that is in the stack (without instrumentation they are the
+            // same)
             mv.visitInsn(POP);
             
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "result", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "result",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                true
+            );
             mv.visitInsn(ARETURN);
             mv.visitMaxs(4, 3);
             mv.visitEnd();
-        }).apply(getBlockedFuture("101"));
+        })
+            .apply(getBlockedFuture("101"));
         assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
         assertEquals(101, block(task));
@@ -228,7 +322,13 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
             // check what happens when the uninitialized object is stored in a local variable
             // without proper stack management this will fail in the jvm verifier
             final Async<?> task = createClass(AsyncFunction.class, cw -> {
-                MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
+                MethodVisitor mv = cw.visitMethod(
+                    ACC_PUBLIC,
+                    "apply",
+                    "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                    null,
+                    new String[] { "java/lang/Exception" }
+                );
                 mv.visitCode();
                 mv.visitTypeInsn(NEW, "java/lang/Integer");
                 mv.visitInsn(DUP);
@@ -240,20 +340,34 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
                 
                 mv.visitVarInsn(ALOAD, 1);
                 mv.visitTypeInsn(CHECKCAST, "java/util/concurrent/CompletionStage");
-                mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;", true);
+                mv.visitMethodInsn(
+                    INVOKESTATIC,
+                    "com/ixaris/commons/async/lib/Async",
+                    "await",
+                    "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;",
+                    true
+                );
                 mv.visitTypeInsn(CHECKCAST, "java/lang/String");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Integer", "<init>", "(Ljava/lang/String;)V", false);
                 
-                // discarding the object and getting the one that is in the stack (without instrumentation they are the same)
+                // discarding the object and getting the one that is in the stack (without instrumentation they are
+                // the same)
                 for (int i = 0; i < extra; i++) {
                     mv.visitInsn(POP);
                 }
                 
-                mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "result", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", true);
+                mv.visitMethodInsn(
+                    INVOKESTATIC,
+                    "com/ixaris/commons/async/lib/Async",
+                    "result",
+                    "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                    true
+                );
                 mv.visitInsn(ARETURN);
                 mv.visitMaxs(4 + extra, 3);
                 mv.visitEnd();
-            }).apply(getBlockedFuture("101"));
+            })
+                .apply(getBlockedFuture("101"));
             assertFalse(CompletionStageUtil.isDone(task));
             completeFutures();
             assertEquals(101, block(task));
@@ -270,7 +384,13 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
         // this tests what happens if:
         // -- { new dup push_1 swap ... <init> pop }
         final Async<?> task = createClass(AsyncFunction.class, cw -> {
-            MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "apply", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", null, new String[] { "java/lang/Exception" });
+            MethodVisitor mv = cw.visitMethod(
+                ACC_PUBLIC,
+                "apply",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                null,
+                new String[] { "java/lang/Exception" }
+            );
             mv.visitCode();
             mv.visitTypeInsn(NEW, "java/lang/Integer");
             
@@ -281,18 +401,31 @@ public class UnorthodoxFrameTest extends BaseTransformerTest {
             // stack: { uobj, int, uobj }
             mv.visitVarInsn(ALOAD, 1);
             mv.visitTypeInsn(CHECKCAST, "java/util/concurrent/CompletionStage");
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "await", "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "await",
+                "(Ljava/util/concurrent/CompletionStage;)Ljava/lang/Object;",
+                true
+            );
             mv.visitTypeInsn(CHECKCAST, "java/lang/String");
             mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Integer", "<init>", "(Ljava/lang/String;)V", false);
             // stack: { uobj, int }
             mv.visitInsn(POP);
             // stack: { uobj }
             
-            mv.visitMethodInsn(INVOKESTATIC, "com/ixaris/commons/async/lib/Async", "result", "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;", true);
+            mv.visitMethodInsn(
+                INVOKESTATIC,
+                "com/ixaris/commons/async/lib/Async",
+                "result",
+                "(Ljava/lang/Object;)Lcom/ixaris/commons/async/lib/Async;",
+                true
+            );
             mv.visitInsn(ARETURN);
             mv.visitMaxs(16, 3);
             mv.visitEnd();
-        }).apply(getBlockedFuture("101"));
+        })
+            .apply(getBlockedFuture("101"));
         assertFalse(CompletionStageUtil.isDone(task));
         completeFutures();
         assertEquals(101, block(task));

@@ -1,0 +1,30 @@
+#%SCSL 1.0
+title: Example Service Contract
+name: example
+schema: example.proto
+basePackage: com.ixaris.commons.microservices.lib.example
+context: ExampleContext
+
+example_operation:
+    request: ExampleRequest
+    responses:
+        success: ExampleResponse
+        conflict: ExampleError
+example_operation_no_logs:
+    request: ExampleRequest
+    responses:
+        success: ExampleResponse
+example_secured:
+    security: TEST
+    request: ExampleRequest
+    responses:
+        success: ExampleResponse
+/{id}:
+    parameter: int32
+    example_operation:
+        responses:
+            success: ExampleResponse
+/nested:
+    watch:
+        responses:
+            success: ExampleEvent

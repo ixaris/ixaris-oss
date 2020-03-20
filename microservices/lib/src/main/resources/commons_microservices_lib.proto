@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+package com.ixaris.commons.microservices.lib.proto;
+
+import "valid.proto";
+import "description.proto";
+
+option optimize_for = SPEED;
+
+enum ResponseStatusCode {
+    UNKNOWN = 0;
+    OK = 200;
+    CLIENT_INVALID_REQUEST = 400;
+    CLIENT_UNAUTHORISED = 401;
+    CLIENT_FORBIDDEN_REQUEST = 403;
+    CLIENT_NOT_FOUND = 404; // library will report 405 if a resource URL is not matched
+    CLIENT_METHOD_NOT_ALLOWED = 405; // reported by library if a resource URL or method is not matched (or deprecated)
+    CLIENT_CONFLICT = 409; // used for business errors. Typically is accompanied by a schema
+    CLIENT_TOO_MANY_REQUESTS = 429; // reported by library based on RequestStrategy implementation
+    SERVER_ERROR = 500; // typically indicates a bug, may be cascaded from upstream services
+    SERVER_NOT_IMPLEMENTED = 501; // typically used in spis to indicate an unsupported capability
+    SERVER_UNAVAILABLE = 503; // may be cascaded from upstream services
+    SERVER_TIMEOUT = 504; // may be cascaded from upstream services
+}
+
+message RequestEnvelope {
+    int64 correlation_id = 1;
+    int64 call_ref = 2;
+    int64 parent_ref = 3;
+
+    string service_name = 11;
+    string service_key = 6; // for use with SPIs
+    repeated string path = 7;
+    repeated string params = 4;
+    string method = 5;
+
+    int64 intent_id = 8;
+    string tenant_id = 9;
+    bytes context = 10;
+
+    int32 timeout = 13;
+    bool json_payload = 14;
+    bytes payload = 15;
+    map<string, SuspendedTasks> resume_service_tasks = 16 [(valid.keys) = "required size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+    map<string, string> additional_headers = 17;
+}
+
+message ResponseEnvelope {
+    int64 correlation_id = 1;
+    int64 call_ref = 2;
+
+    ResponseStatusCode status_code = 12;
+    string status_message = 13;
+    bool json_payload = 14;
+    bytes payload = 15;
+}
+
+message EventEnvelope {
+    int64 correlation_id = 1;
+    int64 call_ref = 2;
+    int64 parent_ref = 3;
+
+    string service_name = 11;
+    string service_key = 6;
+    repeated string path = 7;
+    int64 partition_id = 5; // Key that can be used to partition events. Each partition respects publishing order
+
+    int64 intent_id = 8;
+    string tenant_id = 9;
+    bytes context = 10;
+    map<string, string> additional_headers = 12;
+
+    bytes payload = 15;
+}
+
+message EventAckEnvelope {
+    int64 correlation_id = 1;
+    int64 call_ref = 2;
+
+    ResponseStatusCode status_code = 12;
+    string status_message = 13;
+}
+
+message DefaultError {
+    string code = 1 [(valid.field) = "required size(_,50)", (description.field) = "A code describing the error, usually the HTTP status code for example 500 (SERVER_ERROR)."];
+    string message = 2 [(valid.field) = "size(_,255)", (description.field) = "When present helps to identify and fix the problem."];
+}
+
+message ClientInvalidRequest {
+    string code = 1 [(valid.field) = "required size(_,50)", (description.field) = "Typically set to 400 (CLIENT_INVALID_REQUEST)."];
+    string message = 2 [(valid.field) = "size(_,255)", (description.field) = "When present helps to identify and fix the problem."];
+    valid.MessageValidation validation = 3 [(description.field) = "Description of fields which were invalid."];
+}
+
+message ServerTimeout {
+    string message = 1 [(valid.field) = "size(_,255)", (description.field) = "When present helps to identify and fix the problem."];
+    map<string, SuspendedTasks> service_tasks = 2 [(valid.keys) = "required size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+}
+
+message SuspendedTasks {
+    repeated SuspendedTask task = 1 [(valid.field) = "required"];
+}
+
+message SuspendedTask {
+    option (description.message) = "A suspended task, identified by a key";
+    string code = 1 [(valid.field) = "required size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+    bytes payload = 2;
+}
+
+message PartitionRequestEnvelope {
+    RequestEnvelope request_envelope = 1;
+    int64 entity_id = 2; // a unique identifier distinguishing an entity
+    string operation = 3; // identifies the operation being done, typically corresponding to an enum
+}

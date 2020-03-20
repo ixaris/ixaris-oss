@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package com.ixaris.commons.microservices.web.service1;
+
+import "scsl.proto";
+import "valid.proto";
+import "security.proto";
+
+option optimize_for = SPEED;
+option (scsl.location) = "service1.scsl";
+
+message ExampleContext {
+    int64 programme_id = 1;
+    string auth_token = 2;
+}
+
+message LoginParams {
+    int64 programme_id = 1 [(valid.field) = "required"];
+    string credential_code = 2 [(valid.field) = "required has_text"];
+    string password = 3[(valid.field) = "required has_text", (security.sensitive) = true];
+}
+
+message LoginResult {
+    string token = 1 [(security.sensitive) = true];
+}
+
+message CreateExampleItem {
+    string friendly_name = 2 [(valid.field) = "required"];
+}
+
+message ExampleItem {
+    int64 id = 1 [(valid.field) = "required"];
+    string friendly_name = 2 [(valid.field) = "required"];
+}
+
+message ExampleItems {
+    repeated ExampleItem items = 1;
+}
+
+message ExampleConflict {
+    enum ErrorCode {
+        NO_CONFLICT = 0;
+        REFERENCE_INVALID = 1;
+        FRIENDLY_NAME_NOT_UNIQUE = 2;
+    }
+
+    string conflict_detail = 2;
+    ErrorCode error_code = 3;
+}
+
+message ExampleEvent {
+    ExampleItem item = 1;
+}

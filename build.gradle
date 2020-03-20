@@ -1,12 +1,23 @@
 buildscript {
+    apply from: "$rootDir/gradle/repositories.gradle", to: buildscript
+
     dependencies {
-        classpath 'com.google.gradle:osdetector-gradle-plugin:1.6.1'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:5.1.0'
+        classpath('nu.studer:gradle-jooq-plugin:4.1') {
+            exclude group: 'org.jooq', module: 'jooq-codegen'
+        }
+        classpath 'org.jooq:jooq-codegen:3.12.3'
+        classpath 'gradle.plugin.com.boxfuse.client:gradle-plugin-publishing:5.2.4'
+        classpath "gradle.plugin.com.google.cloud.tools:jib-gradle-plugin:2.7.0"
     }
 }
 
 plugins {
-    id 'org.jetbrains.gradle.plugin.idea-ext' version '0.5'
+    id 'org.jetbrains.gradle.plugin.idea-ext' version '0.8.1'
+    id 'com.google.osdetector' version '1.6.2' apply false
 }
+
+defaultTasks 'build'
 
 idea.project.settings {
     delegateActions {

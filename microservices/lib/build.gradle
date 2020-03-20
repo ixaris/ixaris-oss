@@ -1,0 +1,33 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-microservices-protoschema')
+    compile project(':ix-commons-protobuf-lib')
+    compile project(':ix-commons-misc-lib')
+    compile project(':ix-commons-async-lib')
+    compile project(':ix-commons-async-reactive')
+    compile project(':ix-commons-multitenancy-lib')
+    compile "io.opentracing:opentracing-api:$openTracingVersion"
+    compile "io.opentracing:opentracing-util:$openTracingVersion"
+
+    annotationProcessor project(':ix-commons-async-processor')
+    annotationProcessor project(':ix-commons-microservices-scslcodegen')
+
+    testCompile project(':ix-commons-async-test')
+    testCompile project(':ix-commons-multitenancy-test')
+    testCompile project(':ix-commons-logging-lib')
+
+    testAnnotationProcessor project(':ix-commons-async-processor')
+    testAnnotationProcessor project(':ix-commons-microservices-scslcodegen')
+
+    tasks.create('testJar', Jar) {
+        archiveClassifier = 'tests'
+        from sourceSets.test.output
+    }
+
+    artifacts {
+        testCompile testJar
+    }
+}
+
+

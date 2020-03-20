@@ -1,0 +1,28 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-microservices-spring')
+    compile project(':ix-commons-collections-lib')
+    compile project(':ix-commons-microservices-scslparser')
+    compile 'javax.servlet:javax.servlet-api:3.1.0'
+    compile 'io.swagger.core.v3:swagger-core:2.1.1'
+    compile('io.swagger.parser.v3:swagger-parser:2.0.17') {
+        exclude group: 'org.slf4j', module: 'slf4j-api'
+        exclude group: 'org.slf4j', module: 'slf4j-ext'
+        exclude group: 'javax.mail', module: 'mailapi'
+    }
+    
+    annotationProcessor project(':ix-commons-async-processor')
+
+    testCompile("org.springframework:spring-web:$springWebVersion") {
+        exclude group: 'commons-logging', module: 'commons-logging'
+    }
+    testCompile project(':ix-commons-microservices-test')
+    testCompile project(':ix-commons-spring-test')
+    testCompile project(':ix-commons-multitenancy-spring')
+    testCompile project(':ix-commons-multitenancy-test')
+    testCompile project(':ix-commons-logging-lib')
+
+    testAnnotationProcessor project(':ix-commons-async-processor')
+    testAnnotationProcessor project(':ix-commons-microservices-scslcodegen')
+}

@@ -1,0 +1,18 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-spring-composite')
+    compile("org.springframework.boot:spring-boot-actuator:$springBootVersion") {
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+    }
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.10.1'
+    compile("org.springframework.boot:spring-boot-starter-web:$springBootVersion") {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-validation'
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+        exclude group: 'commons-logging', module: 'commons-logging'
+        exclude group: 'ch.qos.logback', module: 'logback-classic'
+    }
+    compile "org.springframework.boot:spring-boot-starter-undertow:$springBootVersion"
+    compile "org.springframework.boot:spring-boot-actuator-autoconfigure:$springBootVersion"
+}

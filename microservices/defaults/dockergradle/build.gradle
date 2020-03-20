@@ -1,0 +1,19 @@
+plugins {
+    id 'java-gradle-plugin'
+    id 'groovy'
+}
+
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile "gradle.plugin.com.google.cloud.tools:jib-gradle-plugin:2.7.0"
+}
+
+gradlePlugin {
+    plugins {
+        dockerPlugin {
+            id = 'com.ixaris.commons.microservices.defaults.docker'
+            implementationClass = 'IxarisCommonsMicroservicesDefaultsDockerPlugin'
+        }
+    }
+}

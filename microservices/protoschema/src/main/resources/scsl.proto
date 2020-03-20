@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package scsl;
+
+import "google/protobuf/descriptor.proto";
+
+option optimize_for = SPEED;
+
+extend google.protobuf.FileOptions {
+    string location = 52001;
+}

@@ -1,0 +1,9 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-async-lib')
+
+    annotationProcessor project(':ix-commons-async-processor')
+
+    testAnnotationProcessor project(':ix-commons-async-processor')
+}

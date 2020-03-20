@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package com.ixaris.commons.microservices.web.logging;
+
+import "security.proto";
+import "sensitive.proto";
+
+option optimize_for = SPEED;
+        
+message NormalData {
+    string data = 1;
+}
+
+message DataWithBlankedField {
+    string data = 1;
+    string dontlogme = 2  [(security.sensitive) = true];
+    string password = 3  [(security.sensitive) = true, (sensitive.field) = TEMPORARY];
+    string card_number = 4  [(sensitive.field) = PERMANENT];
+    string masked_value = 5  [(sensitive.field) = MASKED];
+    NestedField nested_value = 6;
+}
+
+message NestedField {
+    string nested_data = 1;
+    string nested_sensitive_data = 2 [(security.sensitive) = true];
+}

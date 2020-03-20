@@ -1,0 +1,23 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-async-lib')
+    compile project(':ix-commons-async-transformer')
+
+    annotationProcessor project(':ix-commons-async-processor')
+
+    testCompile project(':ix-commons-async-transformer')
+    
+    testAnnotationProcessor project(':ix-commons-async-processor')
+}
+
+compileTestJava {
+    options.with {
+        compilerArgs.addAll([
+                '-bootclasspath', "${System.getProperty('java.home')}/../jre/lib/rt.jar",
+                '--add-exports','java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED',
+                '--add-exports','java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED',
+                '--add-exports','java.base/jdk.internal.org.objectweb.asm.tree.analysis=ALL-UNNAMED'
+        ])
+    }
+}

@@ -1,0 +1,17 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-microservices-lib')
+    compile project(':ix-commons-spring-composite')
+
+    annotationProcessor project(':ix-commons-async-processor')
+    annotationProcessor project(':ix-commons-microservices-scslcodegen')
+
+    testCompile project(':ix-commons-spring-test')
+    testCompile project(':ix-commons-multitenancy-spring')
+    testCompile project(':ix-commons-multitenancy-test')
+    testCompile project(':ix-commons-logging-lib')
+    
+    testAnnotationProcessor project(':ix-commons-async-processor')
+    testAnnotationProcessor project(':ix-commons-microservices-scslcodegen')
+}

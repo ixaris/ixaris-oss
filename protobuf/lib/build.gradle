@@ -1,0 +1,11 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-protobuf-protoschema')
+    compile project(':ix-commons-misc-lib')
+    compile "com.google.protobuf:protobuf-java-util:$protobufVersion"
+
+    annotationProcessor project(':ix-commons-protobuf-validationcodegen')
+
+    testAnnotationProcessor project(':ix-commons-protobuf-validationcodegen')
+}

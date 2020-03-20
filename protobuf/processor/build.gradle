@@ -1,0 +1,6 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compileOnly "org.slf4j:slf4j-api:$slf4jVersion"
+    compile project(':ix-commons-protobuf-codegen')
+}

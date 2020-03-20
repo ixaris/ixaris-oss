@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.ixaris.oss</groupId>
+        <artifactId>ix-commons-clustering</artifactId>
+        <version>2.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>ix-commons-clustering-lib</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.ixaris.oss</groupId>
+            <artifactId>ix-commons-async-lib</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ixaris.oss</groupId>
+            <artifactId>ix-commons-protobuf-lib</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.repaint.maven</groupId>
+                <artifactId>tiles-maven-plugin</artifactId>
+                <configuration>
+                    <tiles>
+                        <tile>com.ixaris.oss:ix-commons-protobuf-tile:${project.version}</tile>
+                    </tiles>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

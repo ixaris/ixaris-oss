@@ -1,0 +1,37 @@
+#%SCSL 1.0
+title: Edge Service Contract
+name: edge
+spi: false
+schema: edge.proto
+basePackage: com.ixaris.samples.microservices.edge.api
+context: com.ixaris.commons.microservices.defaults.context.Context
+tags: [gateway]
+get:
+  request: EdgeItemsFilter
+  responses:
+    success: EdgeItems
+login:
+  security: UNSECURED
+  request: EdgeLoginRequest
+  responses:
+    success: EdgeLoginDetails
+    conflict: EdgeLoginError
+/{id}:
+  parameter: int64
+  create:
+    tags: [gateway, create]
+    request: EdgeItem
+    responses:
+      success: EdgeItem
+      conflict: EdgeItemError
+  get:
+    responses:
+      success: EdgeItem
+  update:
+    request: EdgeItem
+    responses:
+      success: EdgeItem
+      conflict: EdgeItemError
+watch:
+  responses:
+    success: EdgeItemEvent

@@ -1,0 +1,18 @@
+#%SCSL 1.0
+title: Example Service Contract
+name: example_2
+spi: true
+schema: ../proto/example.proto
+basePackage: test.ixaris.commons.microservices.template.example
+context: ExampleContext
+get:
+  responses:
+    success: Example
+    conflict: ExampleError
+/{id}:
+  parameter: int32
+  get:
+    responses:
+      success: Example
+      conflict: ExampleError
+/examples: !include test_contract2_import.scsl

@@ -1,0 +1,8 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-spring-composite')
+    compile ("org.springframework.boot:spring-boot-starter-test:$springBootVersion") {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter'
+    }
+}

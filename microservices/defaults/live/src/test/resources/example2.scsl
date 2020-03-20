@@ -1,0 +1,15 @@
+#%SCSL 1.0
+title: Example Service Contract
+name: example_2
+schema: example2.proto
+basePackage: com.ixaris.commons.microservices.defaults.live.example2
+context: com.ixaris.commons.microservices.defaults.context.Context
+watch:
+  responses:
+    success: example.ExampleEvent
+op2:
+  security: UNSECURED
+  request: example.ExampleRequest
+  responses:
+    success: example.ExampleResponse
+

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- We need this even though there is a test log4j as the 'production' log4j defined in this module overrides this.
+     The production one casues test slowdown due to its use of GELF, as a result of timeouts -->
+<Configuration>
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d %-5p [%c{3} : %X{tenant}] (%t:%x) %m%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Logger name="com.ixaris" level="INFO"/>
+        <Root level="WARN">
+            <AppenderRef ref="console"/>
+        </Root>
+    </Loggers>
+</Configuration>

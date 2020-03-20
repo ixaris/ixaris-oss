@@ -1,0 +1,9 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile 'org.apache.maven:maven-plugin-api:3.5.3'
+    compile 'org.apache.maven:maven-core:3.5.3'
+    compile 'org.apache.maven.plugin-tools:maven-plugin-annotations:3.5.1'
+    compile project(':ix-commons-microservices-swaggergen-lib')
+    compile project(':ix-commons-microservices-scslparser')
+}

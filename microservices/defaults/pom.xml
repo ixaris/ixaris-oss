@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.ixaris.oss</groupId>
+        <artifactId>ix-commons-microservices</artifactId>
+        <version>2.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>ix-commons-microservices-defaults</artifactId>
+    <packaging>pom</packaging>
+    <properties>
+        <spring.version>5.2.0.RELEASE</spring.version>
+        <spring-boot.version>2.2.0.RELEASE</spring-boot.version>
+        <spring-cloud.version>2.2.0.RELEASE</spring-cloud.version>
+        <spring-retry.version>1.2.2.RELEASE</spring-retry.version>
+    </properties>
+    <modules>
+        <module>apitesttile</module>
+        <module>apitile</module>
+        <module>context</module>
+        <module>dockertile</module>
+        <module>live</module>
+        <module>test</module>
+        <module>webapp</module>
+    </modules>
+</project>

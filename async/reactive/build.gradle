@@ -1,0 +1,6 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile 'org.reactivestreams:reactive-streams:1.0.2'
+    compile project(':ix-commons-async-lib')
+}

@@ -1,0 +1,18 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-spring-composite')
+    compile("org.springframework.boot:spring-boot-starter-batch:$springBootVersion") {
+        exclude group: 'org.springframework', module: 'spring-beans'
+        exclude group: 'org.springframework', module: 'spring-tx'
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter'
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-jdbc'
+        exclude group: 'ch.qos.logback', module: 'logback-classic'
+    }
+    compile("org.springframework.boot:spring-boot-starter-jdbc:$springBootVersion") {
+        exclude group: 'org.springframework', module: 'spring-beans'
+        exclude group: 'org.springframework', module: 'spring-tx'
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter'
+        exclude group: 'org.apache.tomcat', module: 'tomcat-jdbc'
+    }
+}

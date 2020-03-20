@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package com.ixaris.commons.microservices.test.example;
+
+option optimize_for = SPEED;
+
+message Context {
+}
+
+message TestConflict {
+    string conflict = 1;
+}
+
+message TestMessage {
+    string s = 1;
+    string another_s = 2;
+    int32 d = 3;
+    repeated string list = 4;
+}
+
+enum TestEnumeration {
+    DEFAULT = 0;
+    A = 1;
+    B = 2;
+}

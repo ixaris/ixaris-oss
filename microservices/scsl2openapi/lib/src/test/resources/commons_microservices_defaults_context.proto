@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package com.ixaris.commons.microservices.defaults.context;
+
+import "valid.proto";
+
+option optimize_for = SPEED;
+
+message Subject {
+    int64 programme_id = 1;
+    string programme_code = 2 [(valid.field) = "size(1,20)"];
+    int64 application_id = 3;
+
+    string credential_type = 5 [(valid.field) = "size(1,50)"];
+    int64 credential_id = 6;
+    string credential_code = 7 [(valid.field) = "size(1,50)"];
+
+    string identity_type = 8 [(valid.field) = "size(1,50)"];
+    int64 identity_id = 9;
+
+    int64 session_id = 11;
+    int64 session_expiry = 12;
+
+    string tenant_id = 13 [(valid.field) = "size(1,50)"];
+    bool sandbox = 14;
+
+    string user_group_id = 15 [(valid.field) = "size(1,100)"];
+    bool is_super_user = 16;
+
+    string signature = 17;
+}
+
+message Resume {
+    string type = 1 [(valid.field) = "size(1,50)"];
+    bytes info = 2;
+}
+
+message Context {
+    Subject subject = 1;
+    Resume resume = 2;
+}

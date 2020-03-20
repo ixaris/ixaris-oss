@@ -1,0 +1,18 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-microservices-lib')
+    compile project(':ix-commons-collections-lib')
+    compile project(':ix-commons-async-test')
+    compile project(':ix-commons-spring-test')
+    compile project(':ix-commons-multitenancy-test')
+    compile 'javax.servlet:javax.servlet-api:3.1.0'
+
+    annotationProcessor project(':ix-commons-async-processor')
+    
+    testCompile project(':ix-commons-microservices-spring')
+    testCompile project(':ix-commons-multitenancy-spring')
+
+    testAnnotationProcessor project(':ix-commons-async-processor')
+    testAnnotationProcessor project(':ix-commons-microservices-scslcodegen')
+}

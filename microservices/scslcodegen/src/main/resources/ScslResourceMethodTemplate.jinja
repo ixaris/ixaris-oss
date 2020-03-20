@@ -1,0 +1,8 @@
+{% if hasDescription %}{{ tab }}    /**
+{{ tab }}     * {{ description }}
+{{ tab }}     */
+{% endif %}{% if hasSecurity %}{{ tab }}    @ServiceSecurity("{{security}}")
+{% endif %}{% if hasTags %}{{ tab }}    @ServiceTags({"{{ tags|join("\", \"") }}"})
+{% endif %}{{ tab }}    Async<{{ success }}> {{ name }}(
+{{ tab }}        ServiceOperationHeader<{{ contextClassname }}> header{% if hasRequest %},
+{{ tab }}        {{ request }} request{% endif %}){% if hasError %} throws {{ errorKey }}Exception{% endif %};

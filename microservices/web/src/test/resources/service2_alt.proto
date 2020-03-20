@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package com.ixaris.commons.microservices.web.service2alt;
+
+import "scsl.proto";
+import "valid.proto";
+import "sensitive.proto";
+import "service1.proto";
+
+option optimize_for = SPEED;
+option (scsl.location) = "service2_alt.scsl";
+
+message Login2Params {
+    int64 programme_id = 1 [(valid.field) = "required"];
+    string credential_code = 2 [(valid.field) = "required has_text"];
+    string password = 3[(valid.field) = "required has_text", (sensitive.field) = TEMPORARY];
+}
+
+message Login2Result {
+    string token2 = 1 [(sensitive.field) = MASKED];
+}

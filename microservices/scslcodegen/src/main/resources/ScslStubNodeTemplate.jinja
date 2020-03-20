@@ -1,0 +1,14 @@
+{% if hasDescription %}{{ tab }}    /**
+{{ tab }}     * {{ description }}
+{{ tab }}     */
+{% endif %}{{ tab }}    @ServicePath
+{{ tab }}    {{ capitalName }}Stub {{ name }}();
+{% if hasSecurity %}
+{{ tab }}    @ServiceSecurity("{{security}}"){% endif %}{% if hasTags %}
+{{ tab }}    @ServiceTags("{{ tags|join("\", \"") }}"){% endif %}
+{{ tab }}    interface {{ capitalName }}Stub extends {{ javaPackage }}.resource{% for p in path %}.{{ p.capital }}Resource{% endfor %} {
+
+{% for method in methods %}{{ method }}
+{% endfor %}{% for node in nodes %}{{ node }}
+{% endfor %}
+{{ tab }}    }

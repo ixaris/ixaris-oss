@@ -1,0 +1,5 @@
+{% if hasDescription %}{{ tab }}    /**
+{{ tab }}     * {{ description }}
+{{ tab }}     */
+{% endif %}{% if hasTags %}{{ tab }}    @ServiceTags({"{{ tags|join("\", \"") }}"})
+{% endif %}{{ tab }}    ServiceEventSubscription watch(ServiceEventListener<{{ contextClassname }}, {{success}}> listener);

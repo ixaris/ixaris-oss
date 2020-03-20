@@ -1,0 +1,27 @@
+#%SCSL 1.0
+title: Example Gateway Service Contract
+name: service2
+schema: service2.proto
+basePackage: com.ixaris.commons.microservices.web.service2
+context: com.ixaris.commons.microservices.web.service1.ExampleContext
+tags: [gateway]
+
+login:
+  security: UNSECURED
+  request: Login2Request
+  responses:
+    success: Login2Result
+/{id}:
+  parameter: int64
+  login:
+    security: UNSECURED
+    request: Login2Request
+    responses:
+      success: Login2Result
+
+/some_resource:
+  get:
+    security: UNSECURED
+    request: Login2Request
+    responses:
+      success: Login2Result

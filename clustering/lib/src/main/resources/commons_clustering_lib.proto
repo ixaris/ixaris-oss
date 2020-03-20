@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package com.ixaris.commons.clustering.lib;
+
+
+import "valid.proto";
+import "commons_async_lib.proto";
+
+option optimize_for = SPEED;
+
+message ClusterRequestEnvelope {
+    string type = 1 [(valid.field) = "required size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+    bytes payload = 2 [(valid.field) = "required"];
+    int64 id = 3;
+    string key = 4;
+    async.lib.AsyncLocals async_locals = 5;
+    int32 timeout = 6;
+
+    option (valid.message) = "exactly(1,id,key)";
+}
+
+message ClusterResponseEnvelope {
+    bytes payload = 1;
+    bool timeout = 2;
+    string exception_class = 3;
+    string exception_message = 4 [(valid.field) = "requires(exception_class)"];
+
+    option (valid.message) = "exactly(1,timeout,payload,exception_class)";
+}
+
+message ClusterBroadcastEnvelope {
+    string type = 1 [(valid.field) = "required size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+    bytes payload = 2 [(valid.field) = "required"];
+    async.lib.AsyncLocals async_locals = 3;
+    int32 node_id = 4;
+}

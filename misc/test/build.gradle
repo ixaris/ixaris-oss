@@ -1,0 +1,18 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+ext {
+    junitJupiterVersion = '5.5.2'
+    assertjVersion = '3.11.1'
+    mockitoVersion = '3.1.0'
+    awaitilityVersion = '3.1.6'
+}
+
+dependencies {
+    compile "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
+    compile "org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion"
+    compile "org.junit.vintage:junit-vintage-engine:$junitJupiterVersion"
+    compile "org.mockito:mockito-core:$mockitoVersion"
+    compile "org.mockito:mockito-junit-jupiter:$mockitoVersion"
+    compile "org.assertj:assertj-core:$assertjVersion"
+    compile "org.awaitility:awaitility:$awaitilityVersion"
+}

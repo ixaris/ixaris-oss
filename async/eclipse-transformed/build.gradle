@@ -1,0 +1,14 @@
+plugins {
+    id 'groovy'
+}
+
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-async-lib')
+    compile 'org.codehaus.groovy:groovy-all:2.4.15'
+
+    annotationProcessor project(':ix-commons-async-processor')
+
+    testAnnotationProcessor project(':ix-commons-async-processor')
+}

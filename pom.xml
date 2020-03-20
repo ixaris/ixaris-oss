@@ -2,8 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ixaris.oss</groupId>
-    <artifactId>ixaris-oss</artifactId>
-    <version>1.7.0-SNAPSHOT</version>
+    <artifactId>ix-oss-parent</artifactId>
+    <version>2.0.0</version>
     <packaging>pom</packaging>
     <name>Ixaris Open Source Parent</name>
     <description>Ixaris Open Source</description>
@@ -27,21 +27,24 @@
     <scm>
         <url>https://github.com/ixaris/ixaris-oss</url>
         <connection>scm:git:https://github.com/ixaris/ixaris-oss</connection>
-        <tag>1.1.0</tag>
+        <tag>ixaris-oss-1.6.0</tag>
     </scm>
     <properties>
-        <java.version>1.8</java.version>
-        <slf4j.version>1.7.26</slf4j.version>
-        <junit.jupiter.version>5.4.0</junit.jupiter.version>
+        <java.version>11</java.version>
+        <groovy.version>2.5.6</groovy.version>
+        <netty.version>4.1.48.Final</netty.version>
+        <opentracing.version>0.33.0</opentracing.version>
+        <slf4j.version>1.7.30</slf4j.version>
+        <junit.jupiter.version>5.6.0</junit.jupiter.version>
         <assertj.version>3.11.1</assertj.version>
-        <mockito.version>2.23.4</mockito.version>
+        <mockito.version>3.1.0</mockito.version>
         <awaitility.version>3.1.6</awaitility.version>
         <JAVA_HOME>${env.JAVA_HOME}</JAVA_HOME>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
+        <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
     </properties>
     <dependencies>
         <dependency>
@@ -65,6 +68,11 @@
             <artifactId>junit-jupiter-params</artifactId>
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>${junit.jupiter.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -98,10 +106,15 @@
         </dependency>
     </dependencies>
     <modules>
-        <module>commons-async</module>
-        <module>commons-collections</module>
-        <module>commons-misc</module>
-        <module>commons-protobuf</module>
+        <module>async</module>
+        <module>clustering</module>
+        <module>collections</module>
+        <module>logging</module>
+        <module>microservices</module>
+        <module>misc</module>
+        <module>multitenancy</module>
+        <module>protobuf</module>
+        <module>spring</module>
     </modules>
     <distributionManagement>
         <snapshotRepository>
@@ -158,6 +171,11 @@
                     <artifactId>maven-source-plugin</artifactId>
                     <version>3.0.1</version>
                 </plugin>
+                <plugin>
+                    <groupId>io.repaint.maven</groupId>
+                    <artifactId>tiles-maven-plugin</artifactId>
+                    <version>2.14</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <extensions>
@@ -165,6 +183,11 @@
                 <groupId>kr.motd.maven</groupId>
                 <artifactId>os-maven-plugin</artifactId>
                 <version>1.6.1</version>
+            </extension>
+            <extension>
+                <groupId>io.repaint.maven</groupId>
+                <artifactId>tiles-maven-plugin</artifactId>
+                <version>2.14</version>
             </extension>
         </extensions>
         <plugins>

@@ -1,0 +1,57 @@
+#%SCSL 1.0
+title: Example Service Contract
+name: example
+spi: true
+schema: ../proto/example.proto
+basePackage: test.ixaris.commons.microservices.template.example
+context: ExampleContext
+constants:
+  test1: test 1
+  test2: test 2
+tags: [A, B, C]
+get:
+  responses:
+    success: Example
+    conflict: ExampleError
+/{id}:
+  parameter: int32
+  get:
+    responses:
+      success: Example
+      conflict: ExampleError
+/examples:
+  description: This is a nice resource
+  get:
+    request: ExamplesFilter
+    responses:
+      success: Examples
+      conflict: ExampleError
+  post:
+    request: Example
+    responses:
+      success: Example
+      conflict: ExampleError
+  watch:
+    responses:
+      success: ExampleEvent
+  /nested:
+    description: This is a nested resource
+    get:
+      request: NestedRequest
+      responses:
+        success: Success
+  /{id}:
+    parameter: int32
+    get:
+      responses:
+        success: Example
+        conflict: ExampleError
+    patch:
+      request: Example
+      responses:
+        success: Example
+        conflict: ExampleError
+    delete:
+      responses:
+        success: Example
+        conflict: ExampleError

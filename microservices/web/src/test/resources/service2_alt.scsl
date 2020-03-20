@@ -1,0 +1,18 @@
+#%SCSL 1.0
+title: Example Gateway Service Contract
+name: service2_alt
+schema: service2_alt.proto
+basePackage: com.ixaris.commons.microservices.web.service2alt
+context: com.ixaris.commons.microservices.web.service1.ExampleContext
+tags: [testing]
+
+watch:
+  responses:
+    success: com.ixaris.commons.microservices.web.service1.ExampleEvent
+/{id}:
+  parameter: int64
+  alt_login:
+    security: UNSECURED
+    request: Login2Params
+    responses:
+      success: Login2Result

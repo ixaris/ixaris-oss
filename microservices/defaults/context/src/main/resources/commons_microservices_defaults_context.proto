@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package com.ixaris.commons.microservices.defaults.context;
+
+import "valid.proto";
+
+option optimize_for = SPEED;
+
+message TypeId {
+    int64 id = 1 [(valid.field) = "required"];
+    string type = 2 [(valid.field) = "required size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+}
+
+message Subject {
+    int64 programme_id = 1;
+    string programme_code = 2 [(valid.field) = "size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+    int64 application_id = 3;
+
+    string credential_type = 5 [(valid.field) = "size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+    int64 credential_id = 6;
+    string credential_code = 7 [(valid.field) = "size(_,50) regex(^[a-zA-Z0-9_.*@-]*$|^[a-zA-Z0-9.!#$%&*+\\/=?^_|~-]+@[a-zA-Z0-9_-]+(?:\\.[a-zA-Z0-9_-]+)*$)"];
+
+    string identity_type = 8 [(valid.field) = "size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+    int64 identity_id = 9;
+
+    int64 session_id = 11;
+    int64 session_expiry = 12;
+
+    string tenant_id = 13 [(valid.field) = "size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+    bool sandbox = 14;
+
+    string user_group_id = 15 [(valid.field) = "size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+    bool is_super_user = 16;
+
+    string signature = 17;
+}
+
+message Resume {
+    string type = 1 [(valid.field) = "size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+    bytes payload = 2;
+}
+
+message Context {
+    Subject subject = 1;
+    Resume resume = 2;
+}
+
+message Header {
+    int64 correlation_id = 1;
+    int64 call_ref = 2;
+    int64 parent_ref = 3;
+
+    string service_name = 5;
+    string service_key = 6;
+    
+    int64 intent_id = 10;
+    string tenant_id = 11;
+    Context context = 12;
+}

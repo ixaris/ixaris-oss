@@ -1,0 +1,11 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-misc-lib')
+    compile project(':ix-commons-clustering-lib')
+    compile project(':ix-commons-protobuf-lib')
+
+    annotationProcessor project(':ix-commons-async-processor')
+
+    testAnnotationProcessor project(':ix-commons-async-processor')
+}

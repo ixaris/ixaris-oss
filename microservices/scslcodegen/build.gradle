@@ -1,0 +1,13 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compileOnly "org.slf4j:slf4j-api:$slf4jVersion"
+    compile project(':ix-commons-protobuf-validationcodegen')
+    compile project(':ix-commons-microservices-protoschema')
+    compile project(':ix-commons-microservices-scslparser')
+    compile project(':ix-commons-collections-lib')
+    compile("com.hubspot.jinjava:jinjava:$jinJavaVersion") {
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
+    }
+    compile "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
+}

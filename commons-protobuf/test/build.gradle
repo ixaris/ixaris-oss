@@ -1,7 +1,0 @@
-apply from: "$rootDir/common.gradle"
-
-dependencies {
-    compile project(':ixaris-commons-protobuf-lib')
-    
-    testAnnotationProcessor project(':ixaris-commons-protobuf-validationcodegen')
-}

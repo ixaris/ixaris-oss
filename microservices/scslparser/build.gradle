@@ -1,0 +1,6 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile 'org.yaml:snakeyaml:1.25'
+    compile project(':ix-commons-misc-lib')
+}

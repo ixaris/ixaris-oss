@@ -1,0 +1,5 @@
+{{ tab }}    interface {{ capitalName }}Skeleton {
+
+{% for method in methods %}{{ method }}
+{% endfor %}{% for resource in resources %}{{ resource }}
+{% endfor %}{{ tab }}    }

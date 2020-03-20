@@ -1,0 +1,15 @@
+#%SCSL 1.0
+title: Example Service Contract
+name: example_spi
+spi: true
+schema: exampleSpi.proto
+basePackage: com.ixaris.commons.microservices.spring.examplespi
+context: example.ExampleContext
+op:
+  request: example.ExampleRequest
+  responses:
+    success: example.ExampleResponse
+    conflict: ExampleSpiError
+watch:
+  responses:
+    success: example.ExampleEvent

@@ -1,0 +1,11 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+ext {
+    metricsVersion = '3.1.0'
+}
+
+dependencies {
+    compile "io.dropwizard.metrics:metrics-core:$metricsVersion"
+    compile "io.dropwizard.metrics:metrics-healthchecks:$metricsVersion"
+    compile "org.springframework.boot:spring-boot-actuator:$springBootVersion"
+}

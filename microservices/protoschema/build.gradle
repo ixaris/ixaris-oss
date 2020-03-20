@@ -1,0 +1,9 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-protobuf-protoschema')
+    
+    annotationProcessor project(':ix-commons-protobuf-processor')
+}
+
+

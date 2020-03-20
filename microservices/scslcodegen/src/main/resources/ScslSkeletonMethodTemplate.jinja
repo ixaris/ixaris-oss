@@ -1,0 +1,13 @@
+{{ tab }}    class {{ capitalName }} extends ServiceOperation<{{ contextClassname }}, {% if hasRequest %}{{ request }}{% else %}Nil{% endif %}, {{ success }}, {{ error }}> {
+
+{% for param in params %}{{ tab }}        public final {{ param.type }} {{ param.name }};
+{% endfor %}{{ tab }}        public {{ capitalName }}({% for param in params %}final {{ param.type }} {{ param.name }},
+{{ tab }}            {% endfor %}final ServiceOperationHeader<{{ contextClassname }}> header,
+{% if hasRequest %}{{ tab }}            final {{ request }} request,
+{% endif %}{{ tab }}            final ServiceResponseWrapper<{{ success }}, {{ error }}> responseWrapper,
+{{ tab }}            final ServiceOperationAroundAsync aroundAsync) {
+
+{{ tab }}            super(header, {% if hasRequest %}request{% else %}Nil.getInstance(){% endif %}, responseWrapper, aroundAsync);
+{% for param in params %}{{ tab }}            this.{{ param.name }} = {{ param.name }};
+{% endfor %}{{ tab }}        }
+{{ tab }}    }

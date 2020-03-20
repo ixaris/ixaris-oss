@@ -1,0 +1,18 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+dependencies {
+    compileOnly "org.slf4j:slf4j-api:$slf4jVersion"
+    compile project(':ix-commons-async-transformer')
+}
+
+configurations {
+    runtime.exclude module: 'javax.annotation-api'
+    runtime.exclude module: 'slf4j-api'
+}
+
+shadowJar {
+    archiveClassifier = 'nodeps'
+    relocate 'org.objectweb.asm', 'com.ixaris.org.objectweb.asm'
+}

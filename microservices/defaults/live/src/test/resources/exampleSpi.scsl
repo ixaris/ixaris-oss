@@ -1,0 +1,13 @@
+#%SCSL 1.0
+title: Example Service Contract
+name: example_spi
+spi: true
+schema: exampleSpi.proto
+basePackage: com.ixaris.commons.microservices.defaults.live.examplespi
+context: com.ixaris.commons.microservices.defaults.context.Context
+op:
+  security: UNSECURED
+  request: example.ExampleRequest
+  responses:
+    success: example.ExampleResponse
+    conflict: ExampleSpiError

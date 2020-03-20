@@ -1,0 +1,7 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-multitenancy-lib')
+    compile 'javax.servlet:javax.servlet-api:3.1.0'
+    testCompile project(':ix-commons-multitenancy-test')
+}

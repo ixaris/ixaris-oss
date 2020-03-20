@@ -1,0 +1,14 @@
+{% if hasDescription %}{{ tab }}    /**
+{{ tab }}     * {{ description }}
+{{ tab }}     */
+{% endif %}{{ tab }}    @ServicePath
+{{ tab }}    {{ capitalName }}Resource {{ name }}({% if isParam %}{{ type }} {{ name }}{% endif %});
+{% if hasSecurity %}
+{{ tab }}    @ServiceSecurity("{{security}}"){% endif %}{% if hasTags %}
+{{ tab }}    @ServiceTags("{{ tags|join("\", \"") }}"){% endif %}
+{{ tab }}    interface {{ capitalName }}Resource {
+
+{% for method in methods %}{{ method }}
+{% endfor %}{% for node in nodes %}{{ node }}
+{% endfor %}
+{{ tab }}    }

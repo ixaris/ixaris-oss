@@ -1,0 +1,9 @@
+expose_tags=gateway
+create_tags=create
+headers=programme-key:programme-key
+
+samples_microservices_edge_api.scsl
+service2_alt.scsl=service_two
+service2.scsl=service_two
+service1.scsl=service_one
+

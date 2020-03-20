@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <dependencies>
+        <dependency>
+            <groupId>com.ixaris.oss</groupId>
+            <artifactId>ix-commons-microservices-defaults-app</artifactId>
+            <version>@project.version@</version>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+    <properties>
+        <namespace>local/services</namespace>
+        <imageTag>latest</imageTag>
+        <!-- keep them empty to get maven to substitute the placeholders with an empty string, otherwise we start getting errors -->
+        <jenkins.build.number/>
+        <jenkins.job.name/>
+    </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>2.0.0</version>
+                <configuration>
+                    <from>
+                        <image>openjdk:11.0.10-jdk</image>
+                    </from>
+                    <to>
+                        <image>${namespace}/${project.artifactId}:${imageTag}</image>
+                    </to>
+                    <container>
+                        <appRoot>/opt/springboot</appRoot>
+                        <workingDirectory>/opt/springboot</workingDirectory>
+                        <user>ips</user>
+                        <entrypoint>INHERIT</entrypoint>
+                        <environment>
+                            <CONFIG_URI>http://service-config:8888</CONFIG_URI>
+                            <PROFILE>dev</PROFILE>
+                        </environment>
+                        <args>
+                            <arg>/bin/sh</arg>
+                            <arg>-c</arg>
+                            <!-- the $HOSTNAME is also Docker-generated and guaranteed to be unique, useful when we need to differentiate between replicas (eg. for health checks) -->
+                            <!-- exec is required as otherwise the Java process will spawn as a child process of bash. this has the side-effect of SIGTERM calls not being propagated properly to the JVM - so, the application never shuts down gracefully on docker stop! -->
+                            <!-- tini is required so that java process does not hog the PID 1, which is special and causes jstack and other jdk tools to stop working -->
+                            <arg>exec tini java -noverify -XX:TieredStopAtLevel=1 $JAVA_OPTS \
+                                $JMX_ARGS -Dspring.application.name=${service.name} -Ddocker.id=$HOSTNAME \
+                                -Dorg.springframework.boot.logging.LoggingSystem=com.ixaris.commons.microservices.defaults.app.Log4J2System \
+                                -Dspring.cloud.config.failFast=true -Dspring.cloud.config.retry.initialInterval=10000 -Dspring.cloud.config.retry.maxInterval=300000 \
+                                -Dspring.cloud.config.retry.maxAttempts=30 -Dhealth.config.enabled=false -Dspring.cloud.config.uri=$CONFIG_URI \
+                                -Dspring.main.allow-bean-definition-overriding=true \
+                                -Dspring.profiles.active=$PROFILE \
+                                -cp /opt/springboot/resources:/opt/springboot/classes:/opt/springboot/libs/* \
+                                com.ixaris.commons.microservices.defaults.app.Application \
+                                $CMD_ARGS
+                            </arg>
+                        </args>
+                        <ports>
+                            <port>8080</port>
+                            <port>6005</port>
+                            <port>9010</port>
+                        </ports>
+                        <labels>
+                            <com.ixaris.port.http>8080</com.ixaris.port.http>
+                            <com.ixaris.service>${service.name}</com.ixaris.service>
+                            <com.ixaris.build.tag>${imageTag}</com.ixaris.build.tag>
+                        </labels>
+                    </container>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <profiles>
+        <profile>
+            <id>docker</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>dockerBuild</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>docker-jib</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>push-image</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <!-- This profile cleans all dangling images and volumes so that we don't have to manually clean them up after each build.
+          However Docker still has some issues reclaiming the space - This issue can be tracked through https://github.com/docker/for-win/issues/244
+          (Possibly we can add the trim command in this profile after Docker Beta33 is released, however we will probably still require a docker / VM restart-->
+            <id>cleanDangling</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.6.0</version>
+                        <executions>
+                            <execution>
+                                <id>clean_dangling_images</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <!--Cannot run a script since we would have to assume the directory of the script on each dev machine.
+                                    If we commit the script with the project, than we would not be able to run the profile from individual modules (or we would have to commit a script in each module)-->
+                                    <executable>docker.exe</executable>
+                                    <arguments>
+                                        <argument>images</argument>
+                                        <argument>--quiet</argument>
+                                        <argument>--filter=dangling=true</argument>
+                                        <argument>|</argument>
+                                        <argument>xargs</argument>
+                                        <argument>--no-run-if-empty</argument>
+                                        <argument>docker</argument>
+                                        <argument>rmi</argument>
+                                        <argument>--force</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>clean_dangling_volumes</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>docker.exe</executable>
+                                    <arguments>
+                                        <argument>volume</argument>
+                                        <argument>ls</argument>
+                                        <argument>--quiet</argument>
+                                        <argument>--filter=dangling=true</argument>
+                                        <argument>|</argument>
+                                        <argument>xargs</argument>
+                                        <argument>--no-run-if-empty</argument>
+                                        <argument>docker</argument>
+                                        <argument>volume</argument>
+                                        <argument>rm</argument>
+                                        <argument>--force</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package com.ixaris.commons.microservices.defaults.live.example2;
+
+import "scsl.proto";
+import "example.proto";
+import "commons_microservices_defaults_context.proto";
+
+option optimize_for = SPEED;
+option (scsl.location) = "example2.scsl";

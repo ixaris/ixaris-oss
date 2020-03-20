@@ -1,0 +1,52 @@
+#%SCSL 1.0
+title: Example Gateway Service Contract
+name: service1
+schema: service1.proto
+basePackage: com.ixaris.commons.microservices.web.service1
+context: ExampleContext
+tags: [gateway]
+
+watch:
+  responses:
+    success: ExampleEvent
+login:
+  security: UNSECURED
+  request: LoginRequest
+  responses:
+    success: LoginResult
+/prot:
+  watch:
+    tags: [unexposed]
+    responses:
+      success: ExampleEvent
+  /nested_prot:
+    watch:
+      tags: [unexposed]
+      responses:
+        success: ExampleEvent
+  /nested_unprot:
+    watch:
+      responses:
+        success: ExampleEvent
+/unprot:
+  watch:
+    responses:
+      success: ExampleEvent
+  /nested_unprot:
+    watch:
+      responses:
+        success: ExampleEvent
+/{id}:
+  parameter: int64
+  get:
+    responses:
+      success: ExampleItem
+  create:
+    tags: [gateway, create]
+    request: CreateExampleItem
+    responses:
+      success: ExampleItem
+      conflict: ExampleConflict
+  lookup_all:
+    responses:
+      success: ExampleItems

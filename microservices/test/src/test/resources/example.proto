@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package com.ixaris.commons.microservices.test.example;
+
+import "scsl.proto";
+
+option optimize_for = SPEED;
+option (scsl.location) = "example.scsl";
+
+message ExampleContext {
+    string security = 1;
+}
+
+message ExampleEvent {
+
+}

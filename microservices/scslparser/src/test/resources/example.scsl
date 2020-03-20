@@ -1,0 +1,38 @@
+#%SCSL 1.0
+---
+title: Example Service Contract
+name: example
+spi: false
+schema: ../proto/example.proto
+basePackage: test.ixaris.commons.microservices.template.example
+context: ExampleContext
+/examples:
+  description: This is a nice resource
+  get:
+    request: ExamplesFilter
+    responses:
+      success: Examples
+      conflict: ExampleError
+  post:
+    request: Example
+    responses:
+      success: Example
+      conflict: ExampleError
+  watch:
+    responses:
+      success: ExampleEvent
+  /{id}:
+    parameter: int32
+    get:
+      responses:
+        success: Example
+        conflict: ExampleError
+    patch:
+      request: Example
+      responses:
+        success: Example
+        conflict: ExampleError
+    delete:
+      responses:
+        success: Example
+        conflict: ExampleError

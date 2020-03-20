@@ -1,0 +1,17 @@
+#%SCSL 1.0
+title: Example Service Contract
+name: example
+schema: example.proto
+basePackage: com.ixaris.commons.microservices.spring.example
+context: ExampleContext
+watch:
+  responses:
+    success: ExampleEvent
+op:
+  request: ExampleRequest
+  responses:
+    success: ExampleResponse
+op_no_logs:
+  request: ExampleRequest
+  responses:
+    success: ExampleResponse

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package com.ixaris.commons.microservices.defaults.live.examplespi;
+
+import "scsl.proto";
+import "example.proto";
+import "commons_microservices_defaults_context.proto";
+
+option optimize_for = SPEED;
+option (scsl.location) = "exampleSpi.scsl";
+
+message ExampleSpiError {
+    enum ExampleSpiErrorCode {
+        NO_ERROR = 0;
+        EXAMPLE_ERROR = 1;
+    }
+    
+    ExampleSpiErrorCode code = 1;
+}
+
+

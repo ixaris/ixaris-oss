@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- disable the shutdown hook, otherwise we wont actually get any logs on shutdown! we will handle the shutdown ourselves -->
+<Configuration status="WARN" shutdownHook="disable">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%style{%d}{magenta} %highlight{%-5p} %m [%c] %X (%t) %n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Logger name="org.apache.catalina.startup.DigesterFactory" level="ERROR"/>
+        <Logger name="org.apache.catalina.util.LifecycleBase" level="ERROR"/>
+        <Logger name="org.apache.coyote.http11.Http11NioProtocol" level="WARN"/>
+        <Logger name="org.apache.sshd.common.util.SecurityUtils" level="WARN"/>
+        <Logger name="org.apache.tomcat.util.net.NioSelectorPool" level="WARN"/>
+        <Logger name="org.crsh.plugin" level="WARN"/>
+        <Logger name="org.crsh.ssh" level="WARN"/>
+        <Logger name="org.eclipse.jetty.util.component.AbstractLifeCycle" level="ERROR"/>
+        <Logger name="org.springframework.boot.actuate.autoconfigure.CrshAutoConfiguration" level="WARN"/>
+        <Logger name="org.springframework.boot.actuate.endpoint.jmx" level="WARN"/>
+        <Logger name="org.thymeleaf" level="WARN"/>
+        <Logger name="com.ixaris" level="INFO"/>
+        <Logger name="kafka.utils.VerifiableProperties" level="INFO"/>
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

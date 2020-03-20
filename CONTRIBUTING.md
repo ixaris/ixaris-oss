@@ -28,4 +28,4 @@ See http://central.sonatype.org/pages/ossrh-guide.html and https://maven.apache.
     </profiles>
 </settings>
 ```
-5. run `mvn deploy`
+5. run `mvn deploy -Pdeploy`

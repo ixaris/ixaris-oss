@@ -1,0 +1,17 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-microservices-defaults-live')
+    compile project(':ix-commons-microservices-defaults-webapp')
+    compile project(':ix-commons-microservices-defaults-context')
+    compile project(':ix-commons-microservices-test')
+    compile project(':ix-commons-spring-test')
+    compile project(':ix-commons-multitenancy-test')
+    compile project(':ix-commons-logging-lib')
+    compile "org.springframework.boot:spring-boot-test:$springBootVersion"
+    compile 'com.h2database:h2:1.4.196'
+
+    annotationProcessor project(':ix-commons-async-processor')
+
+    testAnnotationProcessor project(':ix-commons-async-processor')
+}

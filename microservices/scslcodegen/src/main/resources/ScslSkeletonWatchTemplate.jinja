@@ -1,0 +1,3 @@
+{{ tab }}    @PublisherProxy
+{% endif %}{% if hasTags %}{{ tab }}    @ServiceTags({"{{ tags|join("\", \"") }}"})
+{% endif %}{{ tab }}    interface {{ capitalName }} extends ServiceEventPublisher<{{ contextClassname }}, {{ success }}, Object> {}

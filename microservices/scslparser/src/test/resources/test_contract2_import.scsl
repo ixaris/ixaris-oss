@@ -1,0 +1,36 @@
+#%SCSL 1.0 Fragment
+description: This is a nice resource
+get:
+  request: ExamplesFilter
+  responses:
+    success: Examples
+    conflict: ExampleError
+post:
+  request: Example
+  responses:
+    success: Example
+    conflict: ExampleError
+watch:
+  responses:
+    success: ExampleEvent
+/nested:
+  description: This is a nested resource
+  get:
+    request: NestedRequest
+    responses:
+      success: Success
+/{id}:
+  parameter: int32
+  get:
+    responses:
+      success: Example
+      conflict: ExampleError
+  patch:
+    request: Example
+    responses:
+      success: Example
+      conflict: ExampleError
+  delete:
+    responses:
+      success: Example
+      conflict: ExampleError

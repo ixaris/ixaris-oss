@@ -1,0 +1,27 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+task filter(type: Copy) {
+    from 'tile.xml'
+    into "$buildDir"
+    outputs.file "$buildDir/tile.xml"
+    
+    filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
+        'protobuf.version': protobufVersion,
+        'spring-boot.version': springBootVersion,
+        'jooq.version': jooqVersion,
+        'flyway.version': flywayVersion,
+        'mysql-connector.version': mysqlConnectorVersion,
+        'project.version': version,
+    ])
+}
+
+publishing {
+    publications {
+        tile(MavenPublication) {
+            artifact("$buildDir/tile.xml") {
+                builtBy filter
+            }
+            pom { packaging 'xml' }
+        }
+    }
+}

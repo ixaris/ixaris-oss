@@ -1,0 +1,11 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-spring-composite')
+    compile project(':ix-commons-jooq-microservices')
+    compile project(':ix-commons-hikari-persistence')
+    compile project(':ix-commons-microservices-secrets')
+    compile project(':ix-commons-misc-spring')
+    compile project(':ix-commons-spring-health')
+    compile project(':ix-commons-logging-lib')
+}

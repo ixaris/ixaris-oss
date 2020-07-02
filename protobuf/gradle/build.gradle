@@ -1,0 +1,19 @@
+plugins {
+    id 'java-gradle-plugin'
+    id 'groovy'
+}
+
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-protobuf-codegen')
+}
+
+gradlePlugin {
+    plugins {
+        jooqPlugin {
+            id = 'com.ixaris.commons.protobuf'
+            implementationClass = 'IxarisCommonsProtobufPlugin'
+        }
+    }
+}

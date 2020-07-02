@@ -16,13 +16,19 @@
         </dependency>
         <dependency>
             <groupId>com.ixaris.oss</groupId>
-            <artifactId>ix-commons-multitenancy-spring</artifactId>
+            <artifactId>ix-commons-microservices-secrets</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.ixaris.oss</groupId>
             <artifactId>ix-commons-spring-health</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ixaris.oss</groupId>
+            <artifactId>ix-commons-microservices-defaults-composite</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.ixaris.oss</groupId>
@@ -33,6 +39,12 @@
         <dependency>
             <groupId>com.ixaris.oss</groupId>
             <artifactId>ix-commons-spring-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ixaris.oss</groupId>
+            <artifactId>ix-commons-jooq-test</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

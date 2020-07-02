@@ -1,0 +1,10 @@
+#%SCSL 1.0
+title: Example Service Contract
+name: example
+schema: example.proto
+basePackage: com.ixaris.commons.jooq.microservices.example
+context: ExampleContext
+
+watch:
+    responses:
+        success: ExampleEvent

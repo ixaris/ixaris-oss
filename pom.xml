@@ -109,10 +109,13 @@
         <module>async</module>
         <module>clustering</module>
         <module>collections</module>
+        <module>hikari</module>
+        <module>jooq</module>
         <module>logging</module>
         <module>microservices</module>
         <module>misc</module>
         <module>multitenancy</module>
+        <module>persistence</module>
         <module>protobuf</module>
         <module>spring</module>
     </modules>

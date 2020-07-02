@@ -16,7 +16,7 @@ import com.ixaris.commons.multitenancy.test.TestTenants;
 
 @DirtiesContext
 @ContextConfiguration(classes = LocalMicroservicesTestConfig.class)
-@TestPropertySource(properties = { "local=true" })
+@TestPropertySource(properties = { "local=true", "akka.cluster.auto-join=false" })
 @SuppressWarnings("squid:S1607")
 public class MicroservicesStackLocalIT extends AbstractMicroservicesStackIT {
     

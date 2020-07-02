@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- disable the shutdown hook, otherwise we wont actually get any logs on shutdown! we will handle the shutdown ourselves -->
+<Configuration status="WARN" shutdownHook="disable">
+    <Appenders>
+        <GELF name="Gelf" server="${sys:GRAYLOG_HOST_ADDRESS}" port="${sys:GRAYLOG_HOST_PORT}" protocol="UDP" includeExceptionCause="true" ignoreExceptions="true" includeFullMdc="true">
+            <PatternLayout pattern="%d %-5p [%c{3} : %X{tenant}] (%t:%x) %m%n"/>
+            <KeyValuePair key="jvm" value="${java:vm}"/>
+            <KeyValuePair key="os" value="${java:os}"/>
+            <KeyValuePair key="locale" value="${java:locale}"/>
+            <KeyValuePair key="serviceName" value="${sys:spring.application.name}"/>
+            <KeyValuePair key="activeSpringProfile" value="${sys:spring.profiles.active}"/>
+        </GELF>
+    </Appenders>
+    <Loggers>
+        <Logger name="org.apache.catalina.startup.DigesterFactory" level="ERROR"/>
+        <Logger name="org.apache.catalina.util.LifecycleBase" level="ERROR"/>
+        <Logger name="org.apache.coyote.http11.Http11NioProtocol" level="WARN"/>
+        <Logger name="org.apache.sshd.common.util.SecurityUtils" level="WARN"/>
+        <Logger name="org.apache.tomcat.util.net.NioSelectorPool" level="WARN"/>
+        <Logger name="org.crsh.plugin" level="WARN"/>
+        <Logger name="org.crsh.ssh" level="WARN"/>
+        <Logger name="org.eclipse.jetty.util.component.AbstractLifeCycle" level="ERROR"/>
+        <Logger name="org.hibernate.validator.internal.util.Version" level="WARN"/>
+        <Logger name="org.springframework.boot.actuate.autoconfigure.CrshAutoConfiguration" level="WARN"/>
+        <Logger name="org.springframework.boot.actuate.endpoint.jmx" level="WARN"/>
+        <Logger name="org.thymeleaf" level="WARN"/>
+        <Logger name="com.ixaris" level="INFO"/>
+        <Logger name="kafka.utils.VerifiableProperties" level="INFO"/>
+        <Root level="INFO">
+            <AppenderRef ref="Gelf"/>
+        </Root>
+    </Loggers>
+</Configuration>

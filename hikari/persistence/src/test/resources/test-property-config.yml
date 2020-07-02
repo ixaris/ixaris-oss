@@ -1,0 +1,28 @@
+environment.name: test
+
+multitenancy.tenants: default, left, right, poolMissing, urlMissing, userMissing, passwordMissing
+
+multitenancy.mysql.left.url: jdbc:mysql://localhost:13306?autoReconnect=true&verifyServerCertificate=false&useSSL=true&useUniCode=true&characterEncoding=UTF-8
+multitenancy.mysql.left.user: root
+multitenancy.mysql.left.password: root
+
+#this is intentionally a different URL, to allow the test to simulate a failed tenant data source startup
+multitenancy.mysql.right.url: jdbc:mysql://localhost:13307?autoReconnect=true&verifyServerCertificate=false&useSSL=true&useUniCode=true&characterEncoding=UTF-8
+multitenancy.mysql.right.user: root
+multitenancy.mysql.right.password: root
+
+#intentionally missing the url
+multitenancy.mysql.urlMissing.user: root
+multitenancy.mysql.urlMissing.password: root
+
+#intentionally missing the user
+multitenancy.mysql.userMissing.url: jdbc:mysql://localhost:13306?autoReconnect=true&verifyServerCertificate=false&useSSL=true&useUniCode=true&characterEncoding=UTF-8
+multitenancy.mysql.userMissing.password: root
+
+#intentionally missing the password
+multitenancy.mysql.passwordMissing.url: jdbc:mysql://localhost:13306?autoReconnect=true&verifyServerCertificate=false&useSSL=true&useUniCode=true&characterEncoding=UTF-8
+multitenancy.mysql.passwordMissing.user: root
+
+multitenancy.defaults.mysql.url: jdbc:mysql://localhost:13306?autoReconnect=true&verifyServerCertificate=false&useSSL=true&useUniCode=true&characterEncoding=UTF-8
+multitenancy.defaults.db_user: root
+multitenancy.defaults.dbPassword: root

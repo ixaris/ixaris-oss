@@ -1,0 +1,6 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+
+dependencies {
+    compile project(':ix-commons-persistence-lib')
+}

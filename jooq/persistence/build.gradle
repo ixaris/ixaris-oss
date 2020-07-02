@@ -1,0 +1,29 @@
+apply from: "$rootDir/gradle/common.gradle"
+apply from: "$rootDir/jooq/gradle/plugin.gradle"
+
+ixarisJooq {
+    library = true
+}
+
+dependencies {
+    compile project(':ix-commons-persistence-lib')
+    compile project(':ix-commons-collections-lib')
+    compile "org.jooq:jooq:$jooqVersion"
+    compile "org.jooq:jooq-meta:$jooqVersion"
+    compile "org.flywaydb:flyway-core:$flywayVersion"
+
+    annotationProcessor project(':ix-commons-async-processor')
+    annotationProcessor project(':ix-commons-protobuf-validationcodegen')
+
+    testCompile ("mysql:mysql-connector-java:$mysqlConnectorVersion") {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
+    testCompile project(path: ':ix-commons-persistence-test', configuration: 'testCompile')
+    testCompile project(':ix-commons-jooq-test')
+    testCompile project(':ix-commons-spring-test')
+    testCompile project(':ix-commons-async-test')
+    testCompile project(':ix-commons-logging-lib')
+    
+    testAnnotationProcessor project(':ix-commons-async-processor')
+    testAnnotationProcessor project(':ix-commons-protobuf-validationcodegen')
+}

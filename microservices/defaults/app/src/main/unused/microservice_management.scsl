@@ -1,0 +1,16 @@
+#%SCSL 1.0
+title: Kafka Health Check API
+name: microservice_management
+schema: microservice_management.proto
+basePackage:  com.ixaris.core.microservices.app
+context: com.ixaris.core.microservices.context.Context
+
+/kafka:
+    publish_health_event:
+        request: HealthCheckEvent
+        responses:
+            success: HealthCheckEvent
+
+watch:
+    responses:
+        success: HealthCheckEvent

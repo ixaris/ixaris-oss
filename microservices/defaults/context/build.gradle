@@ -2,6 +2,7 @@ apply from: "$rootDir/gradle/common.gradle"
 
 dependencies {
     compile project(':ix-commons-microservices-spring')
+    compile project(':ix-commons-persistence-lib')
 
     annotationProcessor project(':ix-commons-microservices-scslcodegen')
     

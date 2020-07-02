@@ -1,0 +1,16 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-persistence-lib')
+    compile project(':ix-commons-multitenancy-test')
+    compile project(':ix-commons-misc-test')
+}
+
+tasks.create('testJar', Jar) {
+    archiveClassifier = 'tests'
+    from sourceSets.test.output
+}
+
+artifacts {
+    testCompile testJar
+}

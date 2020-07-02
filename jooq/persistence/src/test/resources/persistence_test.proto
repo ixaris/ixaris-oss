@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package com.ixaris.commons.jooq.persistence.test;
+
+option optimize_for = SPEED;
+
+message Author {
+    int64 id = 1;
+    int64 owner_id = 2;
+    string name = 3;
+    Nationality nationality = 4;
+    repeated string books = 5;
+    repeated Article articles = 6;
+}
+
+
+enum Nationality {
+    MARTIAN = 0;
+    EARTHLING = 1;
+    ALIEN = 2;
+}
+
+message Article {
+    string name = 1;
+    int64 published_date = 2;
+    repeated string related = 3;
+}

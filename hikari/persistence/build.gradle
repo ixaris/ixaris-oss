@@ -1,0 +1,14 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-persistence-lib')
+    compile project(':ix-commons-misc-spring')
+    compile 'com.zaxxer:HikariCP:3.3.1'
+    compile("mysql:mysql-connector-java:$mysqlConnectorVersion") {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
+    testCompile project(':ix-commons-jooq-persistence')
+    testCompile project(':ix-commons-spring-test')
+    testCompile project(':ix-commons-multitenancy-test')
+    testCompile project(':ix-commons-logging-lib')
+}

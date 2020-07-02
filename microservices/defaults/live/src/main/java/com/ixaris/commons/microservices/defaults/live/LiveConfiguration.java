@@ -18,6 +18,8 @@ import com.ixaris.commons.microservices.lib.service.support.ServiceExceptionTran
 import com.ixaris.commons.microservices.lib.service.support.ServiceFilterFactory;
 import com.ixaris.commons.microservices.lib.service.support.ServiceKeys;
 import com.ixaris.commons.microservices.lib.service.support.ServiceSecurityChecker;
+import com.ixaris.commons.microservices.secrets.CertificateLoader;
+import com.ixaris.commons.microservices.secrets.CertificateLoaderImpl;
 import com.ixaris.commons.misc.lib.defaults.Defaults;
 import com.ixaris.commons.misc.lib.net.Localhost;
 import com.ixaris.commons.multitenancy.lib.MultiTenancy;
@@ -51,6 +53,13 @@ public class LiveConfiguration {
     @ConditionalOnMissingBean
     public static MetricRegistry metricRegistry() {
         return new MetricRegistry();
+    }
+    
+    @Bean
+    public static CertificateLoader certificateLoader(@Value("${environment.name}") final String environment,
+                                                      @Value("${spring.application.name}") final String serviceName,
+                                                      @Value("${certificates.rootpath:}") final String certificateRootPath) {
+        return new CertificateLoaderImpl(environment, serviceName, certificateRootPath);
     }
     
     //    @Bean

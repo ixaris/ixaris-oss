@@ -27,7 +27,6 @@
         <module>scslparser</module>
         <module>scslcodegen</module>
         <module>spring</module>
-        <module>swaggergen</module>
         <module>test</module>
         <module>tile</module>
         <module>web</module>

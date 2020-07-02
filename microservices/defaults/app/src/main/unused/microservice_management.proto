@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package com.ixaris.core.microservices.app;
+
+import "scsl.proto";
+import "valid.proto";
+import "core_microservices_context.proto";
+
+option optimize_for = SPEED;
+option (scsl.location) = "microservice_management.scsl";
+
+message HealthCheckEvent {
+    int64 timestamp = 1;
+    string uniqueId = 2;
+}

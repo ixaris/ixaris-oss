@@ -2,13 +2,15 @@ apply from: "$rootDir/gradle/common.gradle"
 
 dependencies {
     compile project(':ix-commons-microservices-spring')
-    compile project(':ix-commons-multitenancy-spring')
+    compile project(':ix-commons-microservices-secrets')
     compile project(':ix-commons-spring-health')
 
     annotationProcessor project(':ix-commons-async-processor')
 
+    testCompile project(':ix-commons-microservices-defaults-composite')
     testCompile project(':ix-commons-microservices-defaults-context')
     testCompile project(':ix-commons-spring-test')
+    testCompile project(':ix-commons-jooq-test')
     testCompile project(':ix-commons-multitenancy-test')
     testCompile project(':ix-commons-logging-lib')
     

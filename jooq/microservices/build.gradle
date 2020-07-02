@@ -1,0 +1,24 @@
+apply from: "$rootDir/gradle/common.gradle"
+apply from: "$rootDir/jooq/gradle/src/main/groovy/plugin.groovy"
+
+ixarisJooq {
+    library = true
+}
+
+dependencies {
+    compile project(':ix-commons-jooq-persistence')
+    compile project(':ix-commons-persistence-microservices')
+
+    annotationProcessor project(':ix-commons-async-processor')
+
+    testCompile("mysql:mysql-connector-java:$mysqlConnectorVersion") {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
+    testCompile project(path: ':ix-commons-persistence-test', configuration: 'testCompile')
+    testCompile project(':ix-commons-jooq-test')
+    testCompile project(':ix-commons-spring-test')
+    testCompile project(':ix-commons-logging-lib')
+
+    testAnnotationProcessor project(':ix-commons-async-processor')
+    testAnnotationProcessor project(':ix-commons-microservices-scslcodegen')
+}

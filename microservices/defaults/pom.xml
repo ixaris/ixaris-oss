@@ -18,8 +18,11 @@
     <modules>
         <module>apitesttile</module>
         <module>apitile</module>
+        <module>app</module>
+        <module>composite</module>
         <module>context</module>
         <module>dockertile</module>
+        <module>impltile</module>
         <module>live</module>
         <module>test</module>
         <module>webapp</module>

@@ -16,6 +16,11 @@
         </dependency>
         <dependency>
             <groupId>com.ixaris.oss</groupId>
+            <artifactId>ix-commons-persistence-lib</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ixaris.oss</groupId>
             <artifactId>ix-commons-spring-test</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

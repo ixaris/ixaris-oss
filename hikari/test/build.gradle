@@ -1,0 +1,7 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-hikari-persistence')
+    compile project(':ix-commons-jooq-persistence')
+    compile project(':ix-commons-jooq-test')
+}

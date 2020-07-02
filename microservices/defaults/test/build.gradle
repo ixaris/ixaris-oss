@@ -6,6 +6,9 @@ dependencies {
     compile project(':ix-commons-microservices-defaults-context')
     compile project(':ix-commons-microservices-test')
     compile project(':ix-commons-spring-test')
+    compile project(':ix-commons-jooq-test')
+    compile project(':ix-commons-jooq-persistence')
+    compile project(':ix-commons-hikari-persistence')
     compile project(':ix-commons-multitenancy-test')
     compile project(':ix-commons-logging-lib')
     compile "org.springframework.boot:spring-boot-test:$springBootVersion"

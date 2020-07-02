@@ -1,0 +1,8 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-persistence-lib')
+    compile project(':ix-commons-microservices-lib')
+
+    annotationProcessor project(':ix-commons-async-processor')
+}

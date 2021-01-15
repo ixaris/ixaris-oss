@@ -1,0 +1,18 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile "org.apache.kafka:kafka-clients:$kafkaVersion"
+    compile project(':ix-commons-protobuf-lib')
+    compile project(':ix-commons-multitenancy-spring')
+    compile project(':ix-commons-async-lib')
+    compile project(':ix-commons-misc-spring')
+
+    annotationProcessor project(':ix-commons-async-processor')
+
+    testCompile project(':ix-commons-kafka-test')
+    testCompile project(':ix-commons-async-test')
+    testCompile project(':ix-commons-multitenancy-test')
+    testCompile project(':ix-commons-logging-lib')
+
+    testAnnotationProcessor project(':ix-commons-async-processor')
+}

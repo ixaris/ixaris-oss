@@ -1,0 +1,14 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-microservices-lib')
+    compile project(':ix-commons-kafka-multitenancy')
+
+    annotationProcessor project(':ix-commons-async-processor')
+
+    testCompile project(':ix-commons-kafka-test')
+    testCompile project(':ix-commons-multitenancy-test')
+    testCompile project(':ix-commons-logging-lib')
+    
+    testAnnotationProcessor project(':ix-commons-async-processor')
+}

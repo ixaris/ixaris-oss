@@ -3,6 +3,11 @@ apply from: "$rootDir/gradle/common.gradle"
 dependencies {
     compile project(':ix-commons-microservices-spring')
     compile project(':ix-commons-microservices-secrets')
+    compile project(':ix-commons-netty-clustering')
+    compile project(':ix-commons-zookeeper-microservices')
+    compile project(':ix-commons-zookeeper-multitenancy')
+    compile project(':ix-commons-zeromq-microservices')
+    compile project(':ix-commons-kafka-microservices')
     compile project(':ix-commons-spring-health')
 
     annotationProcessor project(':ix-commons-async-processor')
@@ -10,6 +15,7 @@ dependencies {
     testCompile project(':ix-commons-microservices-defaults-composite')
     testCompile project(':ix-commons-microservices-defaults-context')
     testCompile project(':ix-commons-spring-test')
+    testCompile project(':ix-commons-kafka-test')
     testCompile project(':ix-commons-jooq-test')
     testCompile project(':ix-commons-multitenancy-test')
     testCompile project(':ix-commons-logging-lib')

@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package com.ixaris.commons.financial.lib;
+
+import "valid.proto";
+import "description.proto";
+
+message CurrencyAmountMessage {
+    option (description.message) = "A message representing a monetary amount in a particular currency.";
+
+    string currency = 1
+        [(valid.field) = "required size(3, 3) regex([A-Z]*)",
+         (description.field) = "The currency ISO-4217 code, i.e. a three letter uppercase code, such as GBP, EUR, USD."];
+
+    int64 amount = 2 [(description.field) = "The monetary amount, scaled to the lowest denomination of the currency. For example, an amount of 1000 for a EUR currency is actually 1000 Euro cents, i.e. EUR 10.00."];
+}
+
+message ScaledAmount {
+    option (description.message) = "A floating point number, represented as a value and its scale. Its actual value can be obtained using the equation: value * pow(10, -scale).";
+    int64 value = 1;
+    int32 scale = 2;
+}

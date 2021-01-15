@@ -6,6 +6,7 @@ dependencies {
     compile project(':ix-commons-microservices-defaults-context')
     compile project(':ix-commons-microservices-test')
     compile project(':ix-commons-spring-test')
+    compile project(':ix-commons-kafka-test')
     compile project(':ix-commons-jooq-test')
     compile project(':ix-commons-jooq-persistence')
     compile project(':ix-commons-hikari-persistence')
@@ -13,6 +14,11 @@ dependencies {
     compile project(':ix-commons-logging-lib')
     compile "org.springframework.boot:spring-boot-test:$springBootVersion"
     compile 'com.h2database:h2:1.4.196'
+    compile('io.findify:s3mock_2.12:0.2.4') {
+        exclude group: 'com.google.guava', module: 'guava'
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+        exclude group: 'commons-logging', module: 'commons-logging'
+    }
 
     annotationProcessor project(':ix-commons-async-processor')
 

@@ -21,6 +21,31 @@
         </dependency>
         <dependency>
             <groupId>com.ixaris.oss</groupId>
+            <artifactId>ix-commons-netty-clustering</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ixaris.oss</groupId>
+            <artifactId>ix-commons-zookeeper-microservices</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ixaris.oss</groupId>
+            <artifactId>ix-commons-zookeeper-multitenancy</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ixaris.oss</groupId>
+            <artifactId>ix-commons-zeromq-microservices</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ixaris.oss</groupId>
+            <artifactId>ix-commons-kafka-microservices</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ixaris.oss</groupId>
             <artifactId>ix-commons-spring-health</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -39,6 +64,12 @@
         <dependency>
             <groupId>com.ixaris.oss</groupId>
             <artifactId>ix-commons-spring-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ixaris.oss</groupId>
+            <artifactId>ix-commons-kafka-test</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

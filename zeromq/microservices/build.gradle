@@ -1,0 +1,14 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile 'org.zeromq:jeromq:0.4.2'
+    compile project(':ix-commons-microservices-lib')
+
+    annotationProcessor project(':ix-commons-async-processor')
+
+    testCompile project(':ix-commons-microservices-test')
+    testCompile project(':ix-commons-logging-lib')
+    
+    testAnnotationProcessor project(':ix-commons-async-processor')
+    testAnnotationProcessor project(':ix-commons-microservices-scslcodegen')
+}

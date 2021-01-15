@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package com.ixaris.commons.dimensions.config;
+
+import "valid.proto";
+import "description.proto";
+import "commons_dimensions_lib.proto";
+
+option optimize_for = SPEED;
+
+message ConfigValueDef {
+    option (description.message) = "Metadata for configuration (config) value.";
+
+    string key = 1 [(valid.field) = "required has_text", (description.field) = "A unique key to identify a specific value definition."];
+    string name = 2 [(description.field) = "An optional friendly name for the config, to be shown on a UI."];
+    string description = 3 [(description.field) = "An optional description to explain how this config is intented to be used."];
+    lib.ContextDef context_def = 4 [(description.field) = "Metadata for the context in which a config should be applied, including names of dimensions e.g. [accountType=X,accountCode=ABC]. The dimension names here would be accountType and accountCode. Other information of how these may be set may be provided."];
+    repeated Part parts = 5 [(description.field) = "Metadata for the value part or parts that need to be set for a config with a given context e.g. [cardBrand=X] = {bin=1234, productCode=ABC}. The part names here would be bin and productCode. Other information of how these may be set may be provided."];
+    bool deletable = 6 [(description.field) = "A boolean indicating whether the config allows deletions or not."];
+}
+
+message ConfigValueDefs {
+    option (description.message) = "Metadata for a number of configuration (config) values.";
+
+    repeated ConfigValueDef value_defs = 1;
+}
+
+message ConfigValue {
+    option (description.message) = "A configuration (config) with some context which maps one-to-one with one or more value parts.";
+    
+    lib.Context context = 1 [(description.field) = "The context in which a config value should be applied e.g. [instrumentType=V_C] = {value=123}. The context here would be the [instrumentType=V_C], meaning that value 123 only applies when using a virtual card."];
+    Value value = 2 [(description.field) = "The value parts for configs in terms of a defined context e.g. [accountType=X] = {username=XYZ, password=Password123}. The value parts for context [accountType=X] here would be XYZ,Password123"];
+}
+
+message ConfigValues {
+    option (description.message) = "A list of all configuration (config) values in terms of all context combinations.";
+
+    repeated ConfigValue values = 1;
+}
+
+message ConfigSetDef {
+    option (description.message) = "Metadata for configuration (config) set";
+
+    string key = 1 [(valid.field) = "required has_text", (description.field) = "A unique key to identify a specific set definition."];
+    string name = 2 [(description.field) = "An optional friendly name for the config, to be shown on a UI."];
+    string description = 3 [(description.field) = "An optional description to explain how this config is intented to be used."];
+    lib.ContextDef context_def = 4 [(description.field) = "Metadata for the context in which a config should be applied, including names of dimensions e.g. [cardBrand=X,cardLevelClassification=Y]. The dimension names here would be cardBrand and cardLevelClassification. Other information of how these may be set may be provided."];
+    repeated Part parts = 5 [(description.field) = "Metadata for the set part or parts that need to be set for a config with a given context e.g. [cardBrand=X] = {bins=1234,4567, productCodes=ABC,XYZ}. The part names here would be bins and productCodes. Other information of how these may be set may be provided."];
+    bool incremental = 6 [(description.field) = "An incremental set is a configurable set built from all matching sets, typically used for e.g. whitelists e.g. if [*] = {1,2,3} and [X] = {4,5}, incremental set for context [X] returns {1,2,3,4,5}. If this is set to true, the matching algorithm while configs are being queries will work incrementally."];
+}
+
+message ConfigSetDefs {
+    option (description.message) = "Metadata for a number of configuration (config) sets.";
+
+    repeated ConfigSetDef set_defs = 1;
+}
+
+message ConfigSet {
+    option (description.message) = "A configuration (config) with some context which maps one-to-many with one or more set parts.";
+
+    lib.Context context = 1 [(description.field) = "The context in which a config should be applied e.g. [instrumentType=V_C] = {value=123}. The context here would be the [instrument_type=V_C], meaning that value 123 applies only when using a virtual card."];
+    Set set = 2 [(description.field) = "A set is made up of one or more values with one or more parts e.g. [cardBrand=VISA] = {bins=1234,4567, productCodes=ABC,XYZ}. The set parts for context [cardBrand=VISA] here would be [1234,ABC],[4567,XYZ]."];
+}
+
+message ConfigSets {
+    option (description.message) = "A list of all configuration (config) sets in terms of all context combinations.";
+
+    repeated ConfigSet sets = 1;
+}
+
+message ConfigSetUpdates {
+    lib.Context context = 1 [(description.field) = "The context in which a config should be applied e.g. [instrumentType=V_C] = {value=123}. The context here would be the [instrument_type=V_C], meaning that value 123 applies only when using a virtual card."];
+    Set added = 2 [(description.field) = "The added values to one or more set parts for the config with given context."];
+    Set removed = 3 [(description.field) = "The removed values from one or more set parts for the config with given context."];
+}
+
+message Part {
+    string name = 1 [(description.field) = "The name of the value or set part e.g. [cardBrand=VISA] = {bins=1234,4567, productCodes=ABC,XYZ}. Part name would be bins or productCodes."];
+    repeated lib.KeyName fixed_values = 2 [(description.field) = "Sometimes a value or set part may have fixed values e.g. [cardBrand=VISA] = {currency=EUR}. The fixed values for part with name currency would be a set of allowed currencies e.g. EUR,GBP,USD. If a part has no fixed_values, this means that any string may be used as a value for that particular part."];
+}
+
+message Set {
+    repeated Value values = 1 [(description.field) = "A set is made up of one or more values with one or more parts. e.g. [cardBrand=VISA] = {bins=1234,4567, productCodes=ABC,XYZ}. The set parts for context [cardBrand=VISA] here would be [1234,ABC],[4567,XYZ]."];
+}
+
+message Value {
+    repeated string parts = 1 [(description.field) = "The various parts that make up one config value e.g. [cardBrand=VISA] = {bin=1234, productCode=ABC}, parts=[1234,ABC]."];
+}
+
+message InvalidateConfigCache {
+    string key = 1 [(valid.field) = "required has_text"];
+    bool set = 2;
+}

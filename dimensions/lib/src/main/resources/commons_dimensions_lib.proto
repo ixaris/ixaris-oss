@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package com.ixaris.commons.dimensions.lib;
+
+import "valid.proto";
+import "description.proto";
+
+option optimize_for = SPEED;
+
+message Context {
+     repeated Dimension dimensions = 1 [(description.field) = "A context is made up of a number of dimensions e.g. [cardBrand=VISA,cardLevelClassification=CORPORATE] where cardBrand and cardLevelClassifications are dimensions."];
+}
+
+message Dimension {
+    string key = 1 [(valid.field) = "required size(_,50) regex(^[a-zA-Z0-9_-]+$)", (description.field) = "In a context [cardBrand=VISA,cardLevelClassification=CORPORATE], cardBrand and cardLevelClassification are the dimension keys."];
+    string value = 2 [(description.field) = "In a context [cardBrand=VISA,cardLevelClassification=CORPORATE], VISA and CORPORATE are the dimension values."];
+    bool match_any = 3 [(description.field) = "Only applicable for counter dimensions. If true, this means that we aggregate on the given value for this dimension e.g. if dimension is a card id for a funds limit of EUR 1000 and card id is set as match any, this means that each card cannot exceed the EUR 1000 limit."];
+}
+
+message ContextDef {
+    option (description.message) = "Metadata for context used in a configuration (config).";
+
+    repeated DimensionDef dimensions = 1 [(description.field) = "Metadata about each dimension used in a config, including the key and name of dimensions e.g. [accountType=X,accountCode=ABC]. The dimension key and name here would be accountType and accountCode.]  Other information of how these may be set may be provided."];
+}
+
+message DimensionDef {
+    option (description.message) = "Metadata for a Dimension.";
+
+    enum ConfigRequirement {
+        UNDEFINED_OR_MATCH_ANY = 0;
+        OPTIONAL = 1;
+        REQUIRED = 2;
+    }
+
+    string key = 1 [(valid.field) = "required size(_,50) regex(^[a-zA-Z0-9_-]+$)", (description.field) = "A unique dimension key, usually equivalent to the dimension name, but may be less friendly."];
+    string name = 2 [(valid.field) = "required has_text", (description.field) = "The dimension name, usually equivalent to the dimension key, but may be more friendly in order to be shown in a UI."];
+    bool match_any_supported = 3 [(description.field) = "Only applicable for counter dimensions. This determines whether a dimension may be set as match any for aggregation. See Dimension[match_any] for more details."];
+    repeated KeyName fixed_values = 4 [(description.field) = "The key and name of fixed values of a dimension, if any. E.g. a currency dimension fixed values will be a set of allowed currencies e.g. EUR,GBP,USD. The key and name here would be currency."];
+    ConfigRequirement config_requirement = 5 [(description.field) = "Indicates whether the dimension is required to be set in order to be able to create or update a config."];
+    bool required_for_query = 6 [(description.field) = "Indicates whether the dimension is required to be available in order to query the config and be able to use its value in a defined context."];
+}
+
+message KeyName {
+    string key = 1 [(valid.field) = "required size(_,50) regex(^[a-zA-Z0-9_-]+$)", (description.field) = "A unique key, usually equivalent to the name, but may be less friendly."];
+    string name = 2 [(valid.field) = "required has_text", (description.field) = "A name, usually equivalent to the key, but may be more friendly in order to be shown in a UI."];
+}

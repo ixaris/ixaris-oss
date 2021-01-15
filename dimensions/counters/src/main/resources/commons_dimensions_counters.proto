@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package com.ixaris.commons.dimensions.counters;
+
+import "valid.proto";
+import "description.proto";
+import "commons_dimensions_lib.proto";
+
+option optimize_for = SPEED;
+
+message CounterWindowWidth {
+
+    enum TimeUnit {
+        MINUTE = 0;
+        HOUR = 1;
+        DAY = 2;
+        WEEK = 3;
+        MONTH = 4;
+        YEAR = 5;
+        ALWAYS = 6;
+    }
+
+    int32 width = 1;
+    TimeUnit unit = 2;
+}
+
+message GetCounter {
+    string key = 1 [(valid.field) = "required size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+    lib.Context context = 2;
+    CounterWindowWidth narrow_window_width = 3;
+    int32 wide_window_multiple = 4;
+    bool last_full = 5;
+}
+
+message GetCounterResult {
+    int64 wide_count = 1;
+    int64 wide_sum = 2;
+    int64 narrow_count = 3;
+    int64 narrow_sum = 4;
+}

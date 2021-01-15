@@ -1,3 +1,8 @@
+# 2.0.0
+
+## New Features
+* Introduced many new modules
+
 # 1.5.0 (2018-06-22)
 
 ## New Features

@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package com.ixaris.commons.microservices.defaults.app.example;
+
+import "scsl.proto";
+import "commons_microservices_defaults_context.proto";
+
+option optimize_for = SPEED;
+option (scsl.location) = "example.scsl";
+
+message ExampleContext {
+    string security = 1;
+}
+
+message ExampleRequest {
+	int32 id = 1;
+	int32 sleepDuration = 2;
+	bool throwException = 3;
+}
+
+message ExampleResponse {
+	int32 id = 1;
+}
+
+message ExampleOperationNoLogsRequest {
+	int32 id = 1;
+}
+
+message ExampleEvent {
+	int32 id = 1;
+}

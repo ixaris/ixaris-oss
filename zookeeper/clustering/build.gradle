@@ -1,0 +1,13 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-clustering-lib')
+    compile project(':ix-commons-zookeeper-multitenancy')
+    
+    annotationProcessor project(':ix-commons-protobuf-validationcodegen')
+
+    testCompile project(':ix-commons-zookeeper-test')
+    testCompile project(':ix-commons-logging-lib')
+
+    testAnnotationProcessor project(':ix-commons-protobuf-validationcodegen')
+}

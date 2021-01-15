@@ -1,0 +1,22 @@
+apply from: "$rootDir/gradle/common.gradle"
+apply from: "$rootDir/jooq/gradle/plugin.gradle"
+
+ixarisJooq {
+    library = true
+}
+
+dependencies {
+    compile project(':ix-commons-dimensions-lib')
+    compile project(':ix-commons-misc-spring')
+
+    annotationProcessor project(':ix-commons-async-processor')
+    annotationProcessor project(':ix-commons-protobuf-validationcodegen')
+    
+    testCompile project(':ix-commons-hikari-persistence')
+    testCompile project(':ix-commons-hikari-test')
+    testCompile project(':ix-commons-multitenancy-test')
+    testCompile project(':ix-commons-logging-lib')
+    
+    testAnnotationProcessor project(':ix-commons-async-processor')
+    testAnnotationProcessor project(':ix-commons-protobuf-validationcodegen')
+}

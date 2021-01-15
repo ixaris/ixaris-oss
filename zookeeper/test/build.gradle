@@ -1,0 +1,10 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-protobuf-lib')
+    compile ('org.apache.curator:curator-test:2.13.0') {
+        because 'this is the version that works with zk 3.4 see https://curator.apache.org/zk-compatibility.html'
+        exclude group: 'com.google.guava', module: 'guava'
+        exclude group: 'log4j', module: 'log4j'
+    }
+}

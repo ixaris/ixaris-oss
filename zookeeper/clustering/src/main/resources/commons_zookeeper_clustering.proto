@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package com.ixaris.commons.zookeeper.clustering;
+
+import "valid.proto";
+
+option optimize_for = SPEED;
+
+message ClusterInfo {
+    int32 max_shards = 1 [(valid.field) = "required range(1,_)"];
+}
+
+message NodeInfo {
+    int64 timestamp = 1 [(valid.field) = "required"];
+    repeated int32 shard = 2;
+    repeated int32 shard_stopping = 3;
+    map<string, string> attribute = 4;
+}

@@ -1,0 +1,18 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+ext {
+    bouncyCastleVersion = '1.46'
+}
+
+dependencies {
+    compile project(':ix-commons-async-lib')
+    compile project(':ix-commons-misc-lib')
+    compile "org.bouncycastle:bcmail-jdk16:$bouncyCastleVersion"
+    compile "org.bouncycastle:bcprov-jdk16:$bouncyCastleVersion"
+    compile 'javax.mail:javax.mail-api:1.6.2'
+    compile 'com.sun.mail:javax.mail:1.6.2'
+
+    annotationProcessor project(':ix-commons-async-processor')
+
+    testAnnotationProcessor project(':ix-commons-async-processor')
+}

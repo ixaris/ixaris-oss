@@ -109,15 +109,25 @@
         <module>async</module>
         <module>clustering</module>
         <module>collections</module>
+        <module>dimensions</module>
+        <module>emails</module>
+        <module>files</module>
+        <module>financial</module>
         <module>hikari</module>
+        <module>iso8583</module>
         <module>jooq</module>
+        <module>kafka</module>
         <module>logging</module>
         <module>microservices</module>
+        <module>minio</module>
         <module>misc</module>
         <module>multitenancy</module>
+        <module>netty</module>
         <module>persistence</module>
         <module>protobuf</module>
         <module>spring</module>
+        <module>zeromq</module>
+        <module>zookeeper</module>
     </modules>
     <distributionManagement>
         <snapshotRepository>

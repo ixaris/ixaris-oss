@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package com.ixaris.commons.dimensions.limits;
+
+import "valid.proto";
+import "commons_protobuf_lib.proto";
+import "commons_dimensions_lib.proto";
+
+option optimize_for = SPEED;
+
+enum LimitCriterion {
+    MIN = 0;
+    MAX = 1;
+    MIN_MAX = 2;
+    COUNT = 3;
+    COUNT_MIN = 4;
+    COUNT_MAX = 5;
+    COUNT_MIN_MAX = 6;
+}
+
+message ValueLimitDef {
+    string key = 1 [(valid.field) = "required size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+    string name = 2;
+    string description = 3;
+    lib.ContextDef context_def = 4;
+    LimitCriterion criterion = 5;
+}
+
+message ValueLimitDefs {
+    repeated ValueLimitDef limit_defs = 1;
+}
+
+message ValueLimit {
+    lib.Context context = 1;
+    LimitValue value = 2;
+}
+
+message ValueLimits {
+    repeated ValueLimit limits = 1;
+}
+
+message CounterLimitDef {
+    string key = 1 [(valid.field) = "required size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+    string name = 2;
+    string description = 3;
+    lib.ContextDef context_def = 4;
+    LimitCriterion criterion = 5;
+    repeated lib.Dimension constant_dimensions = 6;
+}
+
+message CounterLimitDefs {
+    repeated CounterLimitDef limit_defs = 1;
+}
+
+message CounterLimit {
+    lib.Context context = 1;
+    CounterLimitValue value = 2;
+}
+
+message CounterLimits {
+    repeated CounterLimit limits = 1;
+}
+
+message UnsetLimit {
+    lib.Context context = 1;
+    int64 effective_from = 2;
+    int64 effective_to = 3 [(valid.field) = "exc_range(effective_from,_)"];
+}
+
+message LimitValue {
+    int64 effective_from = 1;
+    int64 effective_to = 2 [(valid.field) = "exc_range(effective_from,_)"];
+    protobuf.lib.NullableInt64 max_count = 3;
+    protobuf.lib.NullableInt64 min_amount = 4;
+    protobuf.lib.NullableInt64 max_amount = 5;
+}
+
+message CounterLimitValue {
+    LimitValue value = 1;
+    int32 narrow_window_width = 2 [(valid.field) = "required"];
+    WindowTimeUnit narrow_window_unit = 3;
+    int32 wide_window_multiple = 4 [(valid.field) = "required range(1, 32)"];
+
+    enum WindowTimeUnit {
+        MINUTE = 0;
+        HOUR = 1;
+        DAY = 2;
+        WEEK = 3;
+        MONTH = 4;
+        YEAR = 5;
+        ALWAYS = 6;
+    }
+}
+
+message InvalidateLimitCache {
+    string key = 1 [(valid.field) = "required size(_,50) regex(^[a-zA-Z0-9_-]+$)"];
+    bool value = 2;
+}

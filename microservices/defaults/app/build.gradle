@@ -31,6 +31,7 @@ dependencies {
 
     testCompile project(':ix-commons-microservices-defaults-context')
     testCompile project(':ix-commons-spring-test')
+    testCompile project(':ix-commons-kafka-test')
     testCompile project(':ix-commons-multitenancy-test')
     testCompile project(':ix-commons-jooq-test')
     testCompile 'com.github.tomakehurst:wiremock-jre8:2.26.3'

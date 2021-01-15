@@ -1,0 +1,17 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile "io.netty:netty-handler:$nettyVersion"
+    compile "io.netty:netty-transport-native-epoll:$nettyVersion:linux-x86_64"
+    compile project(':ix-commons-zookeeper-clustering')
+
+    annotationProcessor project(':ix-commons-async-processor')
+    annotationProcessor project(':ix-commons-protobuf-validationcodegen')
+
+    testCompile project(':ix-commons-multitenancy-test')
+    testCompile project(':ix-commons-zookeeper-test')
+    testCompile project(':ix-commons-logging-lib')
+    
+    testAnnotationProcessor project(':ix-commons-async-processor')
+    testAnnotationProcessor project(':ix-commons-protobuf-validationcodegen')
+}

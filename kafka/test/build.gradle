@@ -1,0 +1,15 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-zookeeper-composite')
+    compile project(':ix-commons-zookeeper-test')
+    compile("org.apache.kafka:kafka_2.12:$kafkaVersion") {
+        exclude group: 'log4j', module: 'log4j'
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+        exclude group: 'org.apache.zookeeper', module: 'zookeeper'
+    }
+
+    annotationProcessor project(':ix-commons-async-processor')
+
+    testAnnotationProcessor project(':ix-commons-async-processor')
+}

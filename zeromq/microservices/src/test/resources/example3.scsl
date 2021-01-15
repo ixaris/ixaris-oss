@@ -1,0 +1,11 @@
+#%SCSL 1.0
+title: Example Service Contract
+name: example_3
+schema: example3.proto
+basePackage: com.ixaris.commons.zeromq.microservices.example3
+context: example.ExampleContext
+op:
+  request: example.ExampleRequest
+  responses:
+    success: example.ExampleResponse
+

@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package com.ixaris.commons.zeromq.microservices.examplesupport;
+
+import "scsl.proto";
+import "example.proto";
+
+option optimize_for = SPEED;
+option (scsl.location) = "example_support.scsl";
+

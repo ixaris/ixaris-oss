@@ -1,9 +1,32 @@
 package com.ixaris.commons.microservices.defaults.live;
 
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
+
 import com.codahale.metrics.MetricRegistry;
+
 import com.ixaris.commons.async.lib.AsyncExecutor;
 import com.ixaris.commons.clustering.lib.service.ClusterDispatchFilterFactory;
 import com.ixaris.commons.clustering.lib.service.ClusterHandleFilterFactory;
+import com.ixaris.commons.clustering.lib.service.DefaultShardAllocationStrategy;
 import com.ixaris.commons.microservices.lib.client.discovery.ServiceDiscovery;
 import com.ixaris.commons.microservices.lib.client.support.ServiceClientFilterFactory;
 import com.ixaris.commons.microservices.lib.common.ServiceHandlerStrategy;
@@ -23,21 +46,18 @@ import com.ixaris.commons.microservices.secrets.CertificateLoaderImpl;
 import com.ixaris.commons.misc.lib.defaults.Defaults;
 import com.ixaris.commons.misc.lib.net.Localhost;
 import com.ixaris.commons.multitenancy.lib.MultiTenancy;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import javax.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
+import com.ixaris.commons.multitenancy.lib.TenantLifecycleListener;
+import com.ixaris.commons.netty.clustering.NettyBean;
+import com.ixaris.commons.netty.clustering.NettyClusterShardingFactory;
+import com.ixaris.commons.zookeeper.clustering.LocalClusterRegistryHelperFactory;
+import com.ixaris.commons.zookeeper.clustering.ZookeeperClusterRegistryHelperFactory;
+import com.ixaris.commons.zookeeper.microservices.ZookeeperServiceDiscovery;
+import com.ixaris.commons.zookeeper.microservices.ZookeeperServiceDiscoveryConnection;
+import com.ixaris.commons.zookeeper.microservices.ZookeeperServiceRegistry;
+import com.ixaris.commons.zookeeper.multitenancy.TenantProvider;
+import com.ixaris.commons.zookeeper.multitenancy.ZookeeperClient;
 
+@Import(ZMQKafkaConfiguration.class)
 @ImportResource("classpath*:spring/*.xml")
 @SuppressWarnings("squid:S1313")
 public class LiveConfiguration {
@@ -146,6 +166,89 @@ public class LiveConfiguration {
     public LocalService localService(final Set<? extends ClusterDispatchFilterFactory> dispatchFilterFactories,
                                      final Set<? extends ClusterHandleFilterFactory> handleFilterFactories) {
         return new LocalService(dispatchFilterFactories, handleFilterFactories);
+    }
+    
+    @Bean
+    @ConditionalOnProperty(value = "cluster.enabled", matchIfMissing = true, havingValue = "false")
+    public LocalClusterRegistryHelperFactory localClusterRegistryHelperFactory() {
+        return new LocalClusterRegistryHelperFactory();
+    }
+    
+    @Bean(destroyMethod = "shutdown")
+    @ConditionalOnProperty(value = "local", matchIfMissing = true, havingValue = "false")
+    public NettyBean nettyBean(@Value("${netty.start-port:" + DEFAULT_NETTY_START_PORT + "}") final int startPort,
+                               @Value("${netty.num-threads:1}") final int numThreads) {
+        return new NettyBean(numThreads, Localhost.HOSTNAME, startPort);
+    }
+    
+    @Bean
+    @ConditionalOnProperty(value = "cluster.enabled", havingValue = "true")
+    public NettyClusterShardingFactory nettyClusterShardingFactory(final NettyBean nettyBean, final ScheduledExecutorService executor) {
+        return new NettyClusterShardingFactory(nettyBean, executor);
+    }
+    
+    @Bean
+    @ConditionalOnProperty(value = "local", matchIfMissing = true, havingValue = "false")
+    public static ZookeeperServiceDiscovery zookeeperServiceDiscovery(final ZookeeperServiceDiscoveryConnection zookeeperServiceDiscoveryConnection,
+                                                                      final Executor executor) {
+        return new ZookeeperServiceDiscovery(zookeeperServiceDiscoveryConnection, executor);
+    }
+    
+    @Bean
+    @ConditionalOnProperty(value = "local", matchIfMissing = true, havingValue = "false")
+    public static ZookeeperServiceRegistry zookeeperServiceRegistry(final ZookeeperServiceDiscoveryConnection zookeeperServiceDiscoveryConnection,
+                                                                    final ZookeeperClusterRegistryHelperFactory clusterRegistryHelperFactory,
+                                                                    final Executor executor,
+                                                                    final Set<? extends ClusterDispatchFilterFactory> dispatchFilterFactories,
+                                                                    final Set<? extends ClusterHandleFilterFactory> handleFilterFactories) {
+        return new ZookeeperServiceRegistry(zookeeperServiceDiscoveryConnection,
+            new DefaultShardAllocationStrategy(72),
+            executor,
+            clusterRegistryHelperFactory,
+            dispatchFilterFactories,
+            handleFilterFactories);
+    }
+    
+    @Bean
+    @ConditionalOnProperty(value = "local", matchIfMissing = true, havingValue = "false")
+    public static ZookeeperServiceDiscoveryConnection zookeeperServiceDiscoveryConnection(@Value("${spring.application.name}") final String serviceName,
+                                                                                          final ZookeeperClient zookeeperClient) {
+        return new ZookeeperServiceDiscoveryConnection(serviceName, zookeeperClient);
+    }
+    
+    @Bean
+    @ConditionalOnProperty(value = "local", matchIfMissing = true, havingValue = "false")
+    public static TenantProvider tenantProvider(final MultiTenancy multiTenancy,
+                                                final ZookeeperClient zookeeperClient,
+                                                @Value("${zookeeper.tenants.path:/tenants}") final String path) {
+        return new TenantProvider(multiTenancy, zookeeperClient, path);
+    }
+    
+    @Bean
+    @ConditionalOnProperty(value = "local", matchIfMissing = true, havingValue = "false")
+    public ApplicationListener<ContextRefreshedEvent> startCluster(final ZookeeperServiceRegistry zookeeperServiceRegistry,
+                                                                   final MultiTenancy multiTenancy,
+                                                                   final TenantProvider tenantProvider) {
+        return e -> {
+            multiTenancy.addTenantLifecycleListener(new TenantLifecycleListener() {
+                
+                @Override
+                public void onTenantActive(final String tenantId) {
+                    if (tenantId.equals(MultiTenancy.SYSTEM_TENANT)) {
+                        zookeeperServiceRegistry.start();
+                        multiTenancy.removeTenantLifecycleListener(this);
+                    }
+                }
+                
+                @Override
+                public void onTenantInactive(final String tenantId) {
+                    // nothing to do
+                }
+                
+            });
+            multiTenancy.addTenant(MultiTenancy.SYSTEM_TENANT);
+            tenantProvider.start();
+        };
     }
     
     // (POSSIBLY) service admin console registration

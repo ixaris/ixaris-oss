@@ -1,0 +1,11 @@
+#%SCSL 1.0
+title: Example Service Contract
+name: example_listener_error2
+schema: example_listener_error2.proto
+basePackage: com.ixaris.commons.zeromq.microservices.examplelistener.error2
+context: example.ExampleContext
+op:
+  request: example.ExampleRequest
+  responses:
+    success: example.ExampleResponse
+

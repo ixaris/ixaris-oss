@@ -1,0 +1,8 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-spring-composite')
+    compile project(':ix-commons-misc-lib')
+    compile 'io.findify:s3mock_2.12:0.2.6'
+//    compile 'org.testcontainers:testcontainers:1.14.3'
+}

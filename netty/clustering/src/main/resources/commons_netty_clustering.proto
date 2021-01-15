@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package com.ixaris.commons.netty.clustering;
+
+import "valid.proto";
+import "commons_clustering_lib.proto";
+
+option optimize_for = SPEED;
+
+message NettyRequestEnvelope {
+    int64 ref = 1;
+    oneof message {
+        commons.clustering.lib.ClusterRequestEnvelope route = 2;
+        commons.clustering.lib.ClusterBroadcastEnvelope broadcast = 3;
+        NettyShardStopped shard_stopped = 4;
+    }
+
+    option (valid.message) = "exactly(1,route,broadcast,shard_stopped)";
+}
+
+message NettyResponseEnvelope {
+    int64 ref = 1;
+    oneof message {
+        commons.clustering.lib.ClusterResponseEnvelope route = 2;
+    }
+
+    option (valid.message) = "exactly(1,route)";
+}
+
+message NettyShardStopped {
+    int32 node_id = 1;
+    int32 shard = 2;
+}

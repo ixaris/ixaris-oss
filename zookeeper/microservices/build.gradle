@@ -1,0 +1,9 @@
+apply from: "$rootDir/gradle/common.gradle"
+
+dependencies {
+    compile project(':ix-commons-microservices-lib')
+    compile project(':ix-commons-zookeeper-clustering')
+
+    testCompile project(':ix-commons-zookeeper-test')
+    testCompile project(':ix-commons-logging-lib')
+}

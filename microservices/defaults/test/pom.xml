@@ -36,6 +36,11 @@
         </dependency>
         <dependency>
             <groupId>com.ixaris.oss</groupId>
+            <artifactId>ix-commons-kafka-test</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ixaris.oss</groupId>
             <artifactId>ix-commons-jooq-test</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -78,6 +83,25 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.4.196</version>
+        </dependency>
+        <dependency>
+            <groupId>io.findify</groupId>
+            <artifactId>s3mock_2.12</artifactId>
+            <version>0.2.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>
